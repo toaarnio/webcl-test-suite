@@ -395,7 +395,7 @@ describe("WebCL", function() {
     // 
     describe("createCommandQueue", function() {
 
-      it("must work with an empty argument list (CRITICAL)", function() {
+      it("must work with an empty argument list", function() {
         queue = ctx.createCommandQueue();
         expect('queue instanceof WebCLCommandQueue').toEvalAs(true);
         queue.release();
