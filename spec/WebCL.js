@@ -946,15 +946,21 @@ describe("WebCL", function() {
   // 
   describe("Kernel language", function() {
     
-    if (INCLUDE_NEGATIVE_TESTS) {
-      it("must not allow 'goto'", function() {
-        src = loadSource('kernels/goto.cl');
-        var ctx = webcl.createContext();
-        program = ctx.createProgram(src);
-        devices = ctx.getInfo(WebCL.CONTEXT_DEVICES);
-        expect('program.build(devices)').toFail();
-      });
-    }
+    it("must not allow 'goto'", function() {
+      src = loadSource('kernels/goto.cl');
+      var ctx = webcl.createContext();
+      program = ctx.createProgram(src);
+      devices = ctx.getInfo(WebCL.CONTEXT_DEVICES);
+      expect('program.build(devices)').toFail();
+    });
+
+    it("must not allow kernel-to-kernel calls", function() {
+      src = loadSource('kernels/kernel-to-kernel.cl');
+      var ctx = webcl.createContext();
+      program = ctx.createProgram(src);
+      devices = ctx.getInfo(WebCL.CONTEXT_DEVICES);
+      expect('program.build(devices)').toFail();
+    });
 
   });
 
