@@ -746,7 +746,6 @@ describe("WebCL", function() {
         expect('program.build(devices, "-w -D foo=0xdeadbeef")').not.toFail();
         expect('program.getBuildInfo(device, WebCL.PROGRAM_BUILD_OPTIONS)').not.toFail();
         expect('program.getBuildInfo(device, WebCL.PROGRAM_BUILD_OPTIONS) === "-w -D foo=0xdeadbeef"').toEvalAs(true);
-        DEBUG(program.getBuildInfo(device, WebCL.PROGRAM_BUILD_OPTIONS));
         program.release();
       });
 
@@ -779,6 +778,45 @@ describe("WebCL", function() {
 
     });
     
+  });
+
+
+  //////////////////////////////////////////////////////////////////////////////
+  //
+  // WebCL -> WebCLKernel
+  // 
+  describe("WebCLKernel", function() {
+    
+    src = "kernel void dummy() {}";
+
+    beforeEach(function() {
+      ctx = webcl.createContext();
+      devices = ctx.getInfo(WebCL.CONTEXT_DEVICES);
+      device = devices[0];
+      program = ctx.createProgram(src);
+      program.build(devices);
+    });
+
+    afterEach(function() {
+      program.release();
+      ctx.release();
+    });
+
+    //////////////////////////////////////////////////////////////////////////////
+    //
+    // WebCL -> WebCLKernel -> getWorkGroupInfo
+    // 
+    describe("getWorkGroupInfo", function() {
+
+      it("must support KERNEL_WORK_GROUP_SIZE", function() {
+        kernel = program.createKernelsInProgram()[0];
+        expect('kernel.getWorkGroupInfo(device, WebCL.KERNEL_WORK_GROUP_SIZE)').not.toFail();
+        expect('kernel.getWorkGroupInfo(device, WebCL.KERNEL_WORK_GROUP_SIZE) >= 1').toEvalAs(true);
+        kernel.release();
+      });
+
+    });
+
   });
 
   //////////////////////////////////////////////////////////////////////////////
