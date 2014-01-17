@@ -497,6 +497,10 @@ describe("WebCL", function() {
         program.release();
       });
 
+      it("must work with empty kernel source", function() {
+        expect('ctx.createProgram("")').not.toFail();
+      });
+
       if (INCLUDE_NEGATIVE_TESTS) {
         it("must not validate or build the source", function() {
           var src = "foobar";
@@ -505,8 +509,7 @@ describe("WebCL", function() {
           program.release();
         });
 
-        it("must throw if source === ''/null/undefined/omitted", function() {
-          expect('ctx.createProgram("")').toFail();
+        it("must throw if source === null/undefined/omitted", function() {
           expect('ctx.createProgram(null)').toFail();
           expect('ctx.createProgram(undefined)').toFail();
           expect('ctx.createProgram()').toFail();
