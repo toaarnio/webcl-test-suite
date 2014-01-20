@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Jasmine Spec Runner for WebCL</title>
+  <title>Nokia WebCL Test Suite</title>
 
   <meta content="text/html;charset=utf-8" http-equiv="Content-Type"/>
 
@@ -29,5 +29,14 @@
 </head>
 
 <body>
+  <h1>Nokia WebCL Test Suite</h1>
+  <p>You can use URL parameters to control the test suite:</p>
+  <ul>
+    <li>Default settings: <a href="./?device=0">http://toaarnio.github.io/webcl-test-suite/</a></li>
+    <li>Run on Device #0: <a href="./?device=0">http://toaarnio.github.io/webcl-test-suite/?device=0</a></li>
+    <li>Run on Device #1: <a href="./?device=1">http://toaarnio.github.io/webcl-test-suite/?device=1</a></li>
+    <li>Run on Device #2: <a href="./?device=2">http://toaarnio.github.io/webcl-test-suite/?device=2</a></li>
+    <li>Exclude crash-prone tests: <a href="./?nocrashing=true">http://toaarnio.github.io/webcl-test-suite/?nocrashing=true</a></li>
+    <li>Run on Device #0, exclude crashing: <a href="./?device=0&nocrashing=true">http://toaarnio.github.io/webcl-test-suite/?device=0&nocrashing=true</a></li>
 </body>
 </html>

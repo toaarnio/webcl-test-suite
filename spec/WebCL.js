@@ -9,26 +9,28 @@
  * The Original Contributor of this Source Code Form is
  * Nokia Research Tampere (http://webcl.nokiaresearch.com).
  *
- * Author: Tomi Aarnio, 2013
+ * Author: Tomi Aarnio, 2014
  */
 
-var LOG_INFO = false;
-var LOG_ERROR = true;
-var LOG_DEBUG = true;
-
-var INCLUDE_NEGATIVE_TESTS = true;
-
-var SELECTED_DEVICES = [];  // [0] to only test on the first device
-
-//////////////////////////////////////////////////////////////////////////////
-//
-// WebCL Test Suite
-// 
 describe("WebCL", function() {
+  
+  var LOG_INFO = false;
+  var LOG_ERROR = true;
+  var LOG_DEBUG = true;
   
   var INFO = LOG_INFO ? console.info : new Function();
   var ERROR = LOG_ERROR ? console.error : new Function();
   var DEBUG = LOG_DEBUG ? console.log : new Function();
+
+  var SELECTED_DEVICE = +getURLParameter('device');  // e.g., "?device=2"
+  var EXCLUDE_CRASHING = getURLParameter('nocrashing') === 'true' ? true : false;
+  var INCLUDE_NEGATIVE_TESTS = true;
+
+  var deviceVendors = {
+    4098 : "AMD",
+    4318 : "NVIDIA",
+    32902 : "Intel",
+  };
 
   beforeEach(function() {
     this.addMatchers({
@@ -46,7 +48,6 @@ describe("WebCL", function() {
       },
     });
   });
-
 
   //////////////////////////////////////////////////////////////////////////////
   //
@@ -189,11 +190,14 @@ describe("WebCL", function() {
       }
     });
 
-    it("must support the standard getInfo queries", function() {
-      forEachDevice(function(device, deviceIndex) {
-        expect(function() { checkInfo(deviceInfoEnums, device) }).not.toThrow();
-        expect(function() { checkInfo(removedDeviceInfoEnums, device) }).toThrow();
+    it("must support the standard getInfo queries on all devices", function() {
+      webcl.getPlatforms().forEach(function(plat) {
+        plat.getDevices().forEach(function(device) {
+          expect(checkInfo.bind(this, deviceInfoEnums, device)).not.toThrow();
+          expect(checkInfo.bind(this, removedDeviceInfoEnums, device)).toThrow();
+        });
       });
+
       function checkInfo(enumList, device) {
         for (var enumName in enumList) {
           var enumVal = enumList[enumName];
@@ -353,7 +357,7 @@ describe("WebCL", function() {
   describe("WebCLContext", function() {
 
     beforeEach(function() {
-      ctx = webcl.createContext();
+      ctx = createContext();
       device = ctx.getInfo(WebCL.CONTEXT_DEVICES)[0];
     });
 
@@ -515,6 +519,80 @@ describe("WebCL", function() {
 
     });
 
+    //////////////////////////////////////////////////////////////////////////////
+    //
+    // WebCL -> WebCLContext -> createBuffer
+    // 
+    describe("createBuffer", function() {
+
+      it("must work if flags = MEM_READ_ONLY", function() {
+        buffer = ctx.createBuffer(WebCL.MEM_READ_ONLY, 1024);
+        expect('buffer instanceof WebCLBuffer').toEvalAs(true);
+        buffer.release();
+      });
+
+      it("must work if flags = MEM_WRITE_ONLY", function() {
+        buffer = ctx.createBuffer(WebCL.MEM_WRITE_ONLY, 1024);
+        expect('buffer instanceof WebCLBuffer').toEvalAs(true);
+        buffer.release();
+      });
+
+      it("must work if flags = MEM_READ_WRITE", function() {
+        buffer = ctx.createBuffer(WebCL.MEM_READ_WRITE, 1024);
+        expect('buffer instanceof WebCLBuffer').toEvalAs(true);
+        buffer.release();
+      });
+
+    });
+
+    //////////////////////////////////////////////////////////////////////////////
+    //
+    // WebCL -> WebCLContext -> createImage
+    // 
+    describe("createImage", function() {
+
+      it("must work with a minimal WebCLImageDescriptor and flags = MEM_READ_ONLY", function() {
+        var descriptor = { width : 64, height : 64 };
+        image = ctx.createImage(WebCL.MEM_READ_ONLY, descriptor);
+        expect('image instanceof WebCLImage').toEvalAs(true);
+        image.release();
+      });
+
+      it("must work with a minimal WebCLImageDescriptor and flags = MEM_WRITE_ONLY", function() {
+        var descriptor = { width : 64, height : 64 };
+        image = ctx.createImage(WebCL.MEM_WRITE_ONLY, descriptor);
+        expect('image instanceof WebCLImage').toEvalAs(true);
+        image.release();
+      });
+
+      it("must work with a minimal WebCLImageDescriptor and flags = MEM_READ_WRITE", function() {
+        var descriptor = { width : 64, height : 64 };
+        image = ctx.createImage(WebCL.MEM_READ_WRITE, descriptor);
+        expect('image instanceof WebCLImage').toEvalAs(true);
+        image.release();
+      });
+
+      it("must work with a fully specified WebCLImageDescriptor and all flags", function() {
+        var descriptor = { 
+          channelOrder : WebCL.RGBA,
+          channelType : WebCL.UNORM_INT8,
+          width : 64, 
+          height : 64,
+          rowPitch : 0,
+        };
+        imageReadOnly = ctx.createImage(WebCL.MEM_READ_ONLY, descriptor);
+        imageWriteOnly = ctx.createImage(WebCL.MEM_WRITE_ONLY, descriptor);
+        imageReadWrite = ctx.createImage(WebCL.MEM_READ_WRITE, descriptor);
+        expect('imageReadOnly instanceof WebCLImage').toEvalAs(true);
+        expect('imageWriteOnly instanceof WebCLImage').toEvalAs(true);
+        expect('imageReadWrite instanceof WebCLImage').toEvalAs(true);
+        imageReadWrite.release();
+        imageWriteOnly.release();
+        imageReadOnly.release();
+      });
+
+    });
+
   });
 
   //////////////////////////////////////////////////////////////////////////////
@@ -526,7 +604,7 @@ describe("WebCL", function() {
     src = "kernel void dummy() {}";
 
     beforeEach(function() {
-      ctx = webcl.createContext();
+      ctx = createContext();
       devices = ctx.getInfo(WebCL.CONTEXT_DEVICES);
       device = devices[0];
     });
@@ -558,7 +636,6 @@ describe("WebCL", function() {
         program = ctx.createProgram(src);
         ctxQueriedFromProgram = program.getInfo(WebCL.PROGRAM_CONTEXT);
         expect('ctxQueriedFromProgram instanceof WebCLContext').toEvalAs(true);
-        ctxQueriedFromProgram.release();
         program.release();
       });
 
@@ -659,16 +736,18 @@ describe("WebCL", function() {
           program.release();
         });
 
-        it("must throw if kernel source is slightly invalid", function() {
-          var src = "kernel int dummy() {}";
-          program = ctx.createProgram(src);
-          expect('program.build()').toFail();
-          expect('program.build(null)').toFail();
-          expect('program.build([])').toFail();
-          expect('program.build(devices)').toFail();
-          expect('program.build(devices, "-w")').toFail();
-          program.release();
-        });
+        if (!EXCLUDE_CRASHING) {  // known to crash on Intel/Win7
+          it("must throw if kernel source is slightly invalid", function() {
+            var src = "kernel int dummy() {}";
+            program = ctx.createProgram(src);
+            expect('program.build()').toFail();
+            expect('program.build(null)').toFail();
+            expect('program.build([])').toFail();
+            expect('program.build(devices)').toFail();
+            expect('program.build(devices, "-w")').toFail();
+            program.release();
+          });
+        }
       }
 
     });
@@ -790,7 +869,7 @@ describe("WebCL", function() {
     src = "kernel void dummy() {}";
 
     beforeEach(function() {
-      ctx = webcl.createContext();
+      ctx = createContext();
       devices = ctx.getInfo(WebCL.CONTEXT_DEVICES);
       device = devices[0];
       program = ctx.createProgram(src);
@@ -825,18 +904,17 @@ describe("WebCL", function() {
   // 
   describe("WebCLCommandQueue", function() {
     
-    it("must support getInfo(QUEUE_CONTEXT)", function() {
-      var ctx = webcl.createContext();
+    it("must support getInfo(QUEUE_CONTEXT)", function() {  // crashes on NVIDIA/Win7
+      var ctx = createContext();
       queue = ctx.createCommandQueue();
       ctxQueriedFromQueue = queue.getInfo(WebCL.QUEUE_CONTEXT);
       expect('ctxQueriedFromQueue instanceof WebCLContext').toEvalAs(true);
-      ctxQueriedFromQueue.release();
       queue.release();
       ctx.release();
     });
 
     it("must support getInfo(QUEUE_DEVICE)", function() {
-      var ctx = webcl.createContext();
+      var ctx = createContext();
       queue = ctx.createCommandQueue();
       expect('queue.getInfo(WebCL.QUEUE_DEVICE) instanceof WebCLDevice').toEvalAs(true);
       queue.release();
@@ -844,7 +922,7 @@ describe("WebCL", function() {
     });
 
     it("must support getInfo(QUEUE_PROPERTIES)", function() {
-      var ctx = webcl.createContext();
+      var ctx = createContext();
       queue = ctx.createCommandQueue();
       maxValidEnum = WebCL.QUEUE_OUT_OF_ORDER_EXEC_MODE_ENABLE | WebCL.QUEUE_PROFILING_ENABLE;
       expect('queue.getInfo(WebCL.QUEUE_PROPERTIES) <= maxValidEnum').toEvalAs(true);
@@ -859,7 +937,7 @@ describe("WebCL", function() {
     describe("enqueueNDRangeKernel", function() {
 
       beforeEach(function() {
-        ctx = webcl.createContext();
+        ctx = createContext();
         queue = ctx.createCommandQueue();
         src = "kernel void dummy() {}";
         program = ctx.createProgram(src);
@@ -948,18 +1026,22 @@ describe("WebCL", function() {
     
     it("must not allow 'goto'", function() {
       src = loadSource('kernels/goto.cl');
-      var ctx = webcl.createContext();
+      var ctx = createContext();
       program = ctx.createProgram(src);
       devices = ctx.getInfo(WebCL.CONTEXT_DEVICES);
       expect('program.build(devices)').toFail();
+      program.release();
+      ctx.release();
     });
 
     it("must not allow kernel-to-kernel calls", function() {
       src = loadSource('kernels/kernel-to-kernel.cl');
-      var ctx = webcl.createContext();
+      var ctx = createContext();
       program = ctx.createProgram(src);
       devices = ctx.getInfo(WebCL.CONTEXT_DEVICES);
       expect('program.build(devices)').toFail();
+      program.release();
+      ctx.release();
     });
 
   });
@@ -971,22 +1053,17 @@ describe("WebCL", function() {
   describe("Crash tests", function() {
 
     it("must not crash or throw when calling release() more than once (CRITICAL)", function()  {
-      forEachDevice(function(device, deviceIndex) {
-        ctx = webcl.createContext({ devices: [device] });
-        ctx.release();
-        expect('ctx.release()').not.toThrow();
-      });
+      ctx = createContext();
+      ctx.release();
+      expect('ctx.release()').not.toThrow();
     });
 
-    if (INCLUDE_NEGATIVE_TESTS) {
-      it("must throw when trying to use an object that has been released", function() {
-        forEachDevice(function(device, deviceIndex) {
-          ctx = webcl.createContext({ devices: [device] });
-          ctx.release();
-          expect('ctx.getInfo(WebCL.CONTEXT_NUM_DEVICES)').toThrow();
-        });
-      });
-    }
+    it("must throw when trying to use an object that has been released", function() {
+      ctx = createContext();
+      ctx.release();
+      expect('ctx.getInfo(WebCL.CONTEXT_NUM_DEVICES)').toThrow();
+    });
+
   });
 
   //////////////////////////////////////////////////////////////
@@ -1028,15 +1105,21 @@ describe("WebCL", function() {
     });
   });
 
-  function forEachDevice(callback) {
-    var plats = webcl.getPlatforms();
-    for (var i=0, deviceIndex=0; i < plats.length; i++) {
-      var devices = plats[i].getDevices();
-      for (var j=0; j < devices.length; j++, deviceIndex++) {
-        if (SELECTED_DEVICES.length === 0 || SELECTED_DEVICES.indexOf(deviceIndex) >= 0) {
-          callback(devices[j], deviceIndex, plats[i], i);
-        }
-      }
+  function createContext() {
+    var selected = getDeviceAtIndex(SELECTED_DEVICE);
+    var properties = selected ? { devices: [selected] } : null;
+    var ctx = webcl.createContext(properties);
+    var device = ctx.getInfo(WebCL.CONTEXT_DEVICES)[0];
+    var vendorId = device.getInfo(WebCL.DEVICE_VENDOR_ID);
+    DEBUG("Selected device: " + deviceVendors[vendorId] + " (VENDOR_ID="+vendorId+")");
+    return ctx;
+    
+    function getDeviceAtIndex(index) {
+      var devices = [];
+      webcl.getPlatforms().forEach(function(plat) {
+        Array.prototype.push.apply(devices, plat.getDevices());
+      });
+      return devices[index];
     }
   };
 
@@ -1049,6 +1132,10 @@ describe("WebCL", function() {
         expect(className).not.toHaveFunction(funcName);
       }
     }
+  };
+
+  function getURLParameter(name) {
+    return decodeURIComponent((new RegExp('[?|&]' + name + '=' + '([^&;]+?)(&|#|;|$)').exec(location.search)||[,""])[1].replace(/\+/g, '%20'))||null
   };
 
   // ### loadSource() ###
