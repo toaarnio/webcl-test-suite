@@ -364,6 +364,102 @@ describe("WebCL", function() {
 
   //////////////////////////////////////////////////////////////////////////////
   //
+  // WebCL -> createContext (proposed simplified API)
+  // 
+  describe("createContext (proposed simplified API)", function() {
+    
+    it("createContext()", function() {
+      ctx = createContextSimplified();
+      expect('ctx instanceof WebCLContext').toEvalAs(true);
+    });
+
+    it("createContext(DEVICE_TYPE_DEFAULT)", function() {
+      ctx = createContextSimplified(WebCL.DEVICE_TYPE_DEFAULT);
+      expect('ctx instanceof WebCLContext').toEvalAs(true);
+    });
+
+    it("createContext(DEVICE_TYPE_CPU || DEVICE_TYPE_GPU)", function() {
+      ctx1 = createContextSimplified(WebCL.DEVICE_TYPE_CPU);
+      ctx2 = createContextSimplified(WebCL.DEVICE_TYPE_GPU);
+      expect(ctx1 instanceof WebCLContext || ctx2 instanceof WebCLContext).toBeTruthy();
+    });
+
+    it("createContext(aPlatform)", function() {
+      var defaultPlatform = webcl.getPlatforms()[0];
+      ctx = createContextSimplified(defaultPlatform);
+      expect('ctx instanceof WebCLContext').toEvalAs(true);
+    });
+
+    it("createContext(aPlatform, DEVICE_TYPE_CPU || DEVICE_TYPE_GPU)", function() {
+      var defaultPlatform = webcl.getPlatforms()[0];
+      ctx1 = createContextSimplified(defaultPlatform, WebCL.DEVICE_TYPE_CPU);
+      ctx2 = createContextSimplified(defaultPlatform, WebCL.DEVICE_TYPE_GPU);
+      expect(ctx1 instanceof WebCLContext || ctx2 instanceof WebCLContext).toBeTruthy();
+    });
+
+    it("createContext(aDevice)", function() {
+      var defaultDevice = webcl.getPlatforms()[0].getDevices()[0];
+      ctx = createContextSimplified(defaultDevice);
+      expect('ctx instanceof WebCLContext').toEvalAs(true);
+    });
+
+    it("createContext([aDevice])", function() {
+      var defaultDevice = webcl.getPlatforms()[0].getDevices()[0];
+      ctx = createContextSimplified([defaultDevice]);
+      expect('ctx instanceof WebCLContext').toEvalAs(true);
+    });
+
+    it("must return null if there is no device of the given deviceType", function() {
+      var defaultPlatform = webcl.getPlatforms()[0];
+      ctx = createContextSimplified(WebCL.DEVICE_TYPE_ACCELERATOR);
+      expect(ctx).toEqual(null);
+    });
+
+    if (INCLUDE_NEGATIVE_TESTS) {
+      it("throw on createContext(0)", function() {
+        expect('createContextSimplified(0);').toFail();
+      });
+
+      it("throw on createContext(null)", function() {
+        expect('createContextSimplified(null);').toFail();
+      });
+
+      it("throw on createContext([])", function() {
+        expect('createContextSimplified([]);').toFail();
+      });
+
+      it("throw on createContext([null])", function() {
+        expect('createContextSimplified([null]);').toFail();
+      });
+
+      it("throw on createContext('foobar')", function() {
+        expect('createContextSimplified("foobar");').toFail();
+      });
+
+      it("throw on createContext(['foobar'])", function() {
+        expect('createContextSimplified(["foobar"]);').toFail();
+      });
+
+      it("throw on createContext([aDevice, undefined])", function() {
+        defaultDevice = webcl.getPlatforms()[0].getDevices()[0];
+        expect('createContextSimplified([defaultDevice, undefined]);').toFail();
+      });
+
+      it("throw on createContext([aDevice, null])", function() {
+        defaultDevice = webcl.getPlatforms()[0].getDevices()[0];
+        expect('createContextSimplified([defaultDevice, null]);').toFail();
+      });
+
+      it("throw on createContext([aDevice, 'foobar'])", function() {
+        defaultDevice = webcl.getPlatforms()[0].getDevices()[0];
+        expect('createContextSimplified([defaultDevice, "foobar"]);').toFail();
+      });
+    }
+
+  });
+
+  //////////////////////////////////////////////////////////////////////////////
+  //
   // WebCL -> WebCLContext
   // 
   describe("WebCLContext", function() {
@@ -1094,6 +1190,30 @@ describe("WebCL", function() {
       });
       return devices[index];
     }
+  };
+
+  function createContextSimplified() {
+    if (arguments.length === 0) {
+      return webcl.createContext();
+    }
+    
+    if (typeof(arguments[0]) === 'number') {
+      return webcl.createContext({ deviceType: arguments[0] });
+    }
+
+    if (arguments[0] instanceof WebCLPlatform) {
+      return webcl.createContext({ platform: arguments[0], deviceType: arguments[1] });
+    }
+
+    if (arguments[0] instanceof WebCLDevice) {
+      return webcl.createContext({ devices: [arguments[0]] });
+    }
+
+    if (Array.isArray(arguments[0]) && arguments[0].length > 0) {
+      return webcl.createContext({ devices: arguments[0] });
+    }
+
+    throw "createContextSimplified: Invalid arguments " + arguments;
   };
 
   function checkSignature(className, checkExisting) {
