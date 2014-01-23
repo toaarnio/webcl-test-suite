@@ -960,20 +960,20 @@ describe("WebCL", function() {
     // --> moved to Crash tests until we have a fix or workaround
     xit("must support getInfo(QUEUE_CONTEXT)", function() {
       var ctx = createContext();
-      queue = ctx.createCommandQueue();
+      queue = ctx.createCommandQueue(null, 0);
       ctxQueriedFromQueue = queue.getInfo(WebCL.QUEUE_CONTEXT);
       expect('ctxQueriedFromQueue instanceof WebCLContext').toEvalAs(true);
     });
 
     it("must support getInfo(QUEUE_DEVICE)", function() {
       var ctx = createContext();
-      queue = ctx.createCommandQueue();
+      queue = ctx.createCommandQueue(null, 0);
       expect('queue.getInfo(WebCL.QUEUE_DEVICE) instanceof WebCLDevice').toEvalAs(true);
     });
 
     it("must support getInfo(QUEUE_PROPERTIES)", function() {
       var ctx = createContext();
-      queue = ctx.createCommandQueue();
+      queue = ctx.createCommandQueue(null, 0);
       maxValidEnum = WebCL.QUEUE_OUT_OF_ORDER_EXEC_MODE_ENABLE | WebCL.QUEUE_PROFILING_ENABLE;
       expect('queue.getInfo(WebCL.QUEUE_PROPERTIES) <= maxValidEnum').toEvalAs(true);
     });
@@ -986,7 +986,7 @@ describe("WebCL", function() {
 
       beforeEach(function() {
         ctx = createContext();
-        queue = ctx.createCommandQueue();
+        queue = ctx.createCommandQueue(null, 0);
         src = "kernel void dummy() {}";
         program = ctx.createProgram(src);
         devices = ctx.getInfo(WebCL.CONTEXT_DEVICES);
@@ -1103,6 +1103,7 @@ describe("WebCL", function() {
     // This test is known to crash on Win7
     // --> moved to Crash tests until we have a fix or workaround
     it("must support getInfo(PROGRAM_CONTEXT)", function() {
+      ctx = createContext();
       program = ctx.createProgram(src);
       ctxQueriedFromProgram = program.getInfo(WebCL.PROGRAM_CONTEXT);
       expect('ctxQueriedFromProgram instanceof WebCLContext').toEvalAs(true);
@@ -1111,15 +1112,16 @@ describe("WebCL", function() {
     // This test is known to crash on Win7
     // --> moved to Crash tests until we have a fix or workaround
     it("must support getInfo(QUEUE_CONTEXT)", function() {
-      var ctx = createContext();
-      queue = ctx.createCommandQueue();
+      ctx = createContext();
+      queue = ctx.createCommandQueue(null, 0);
       ctxQueriedFromQueue = queue.getInfo(WebCL.QUEUE_CONTEXT);
       expect('ctxQueriedFromQueue instanceof WebCLContext').toEvalAs(true);
     });
 
     // This test is known to crash on Intel OpenCL / Win7
     // --> moved to Crash tests until we have a fix or workaround
-    it("must throw if kernel source is slightly invalid", function() {
+    xit("must throw if kernel source is slightly invalid", function() {
+      ctx = createContext();
       var src = "kernel int dummy() {}";
       program = ctx.createProgram(src);
       expect('program.build()').toFail();
