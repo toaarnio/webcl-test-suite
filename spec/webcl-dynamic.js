@@ -554,7 +554,7 @@ describe("Functionality", function() {
         var descriptor = { width : 64, height : 64 };
         image = ctx.createImage(WebCL.MEM_READ_ONLY, descriptor);
         expect('image instanceof WebCLImage').toEvalAs(true);
-        expect('image.getInfo()').not.toFail();
+        expect('image.getInfo()').not.toThrow();
         expect('image.getInfo() != null').toEvalAs(true);
       });
     });
@@ -955,6 +955,7 @@ describe("Functionality", function() {
         var ctx = createContext();
         program = ctx.createProgram(src);
         devices = ctx.getInfo(WebCL.CONTEXT_DEVICES);
+        expect('program.build(devices)').toThrow();
         expect('program.build(devices)').toThrow('BUILD_PROGRAM_FAILURE');
       });
 
@@ -963,6 +964,7 @@ describe("Functionality", function() {
         var ctx = createContext();
         program = ctx.createProgram(src);
         devices = ctx.getInfo(WebCL.CONTEXT_DEVICES);
+        expect('program.build(devices)').toThrow();
         expect('program.build(devices)').toThrow('BUILD_PROGRAM_FAILURE');
       });
     });
