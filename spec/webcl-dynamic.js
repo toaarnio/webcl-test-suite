@@ -534,6 +534,35 @@ describe("Functionality", function() {
 
   //////////////////////////////////////////////////////////////////////////////
   //
+  // Functionality -> WebCLImage
+  // 
+  describe("WebCLImage", function() {
+    
+    beforeEach(function() {
+      ctx = createContext();
+      devices = ctx.getInfo(WebCL.CONTEXT_DEVICES);
+      device = devices[0];
+    });
+
+    //////////////////////////////////////////////////////////////////////////////
+    //
+    // Functionality -> WebCLImage -> getInfo
+    // 
+    describe("getInfo", function() {
+
+      it("must return a non-null object", function() {
+        var descriptor = { width : 64, height : 64 };
+        image = ctx.createImage(WebCL.MEM_READ_ONLY, descriptor);
+        expect('image instanceof WebCLImage').toEvalAs(true);
+        expect('image.getInfo()').not.toFail();
+        expect('image.getInfo() != null').toEvalAs(true);
+      });
+    });
+    
+  });
+
+  //////////////////////////////////////////////////////////////////////////////
+  //
   // Functionality -> WebCLProgram
   // 
   describe("WebCLProgram", function() {
