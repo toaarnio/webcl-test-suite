@@ -281,6 +281,7 @@ describe("Functionality", function() {
         device = ctx.getInfo(WebCL.CONTEXT_DEVICES)[0];
       } catch (e) {
         ERROR("Functionality -> WebCLContext -> beforeEach: Unable to create WebCLContext, all tests will fail!");
+        throw e;
       }
     });
 
@@ -539,9 +540,14 @@ describe("Functionality", function() {
   describe("WebCLImage", function() {
     
     beforeEach(function() {
-      ctx = createContext();
-      devices = ctx.getInfo(WebCL.CONTEXT_DEVICES);
-      device = devices[0];
+      try {
+        ctx = createContext();
+        devices = ctx.getInfo(WebCL.CONTEXT_DEVICES);
+        device = devices[0];
+      } catch (e) {
+        ERROR("Functionality -> WebCLImage -> beforeEach: Unable to create WebCLContext, all tests will fail!");
+        throw e;
+      }
     });
 
     //////////////////////////////////////////////////////////////////////////////
@@ -570,9 +576,14 @@ describe("Functionality", function() {
     src = "kernel void dummy() {}";
 
     beforeEach(function() {
-      ctx = createContext();
-      devices = ctx.getInfo(WebCL.CONTEXT_DEVICES);
-      device = devices[0];
+      try {
+        ctx = createContext();
+        devices = ctx.getInfo(WebCL.CONTEXT_DEVICES);
+        device = devices[0];
+      } catch (e) {
+        ERROR("Functionality -> WebCLProgram -> beforeEach: Unable to create WebCLContext, all tests will fail!");
+        throw e;
+      }
     });
 
     //////////////////////////////////////////////////////////////////////////////
@@ -810,11 +821,16 @@ describe("Functionality", function() {
     src = "kernel void dummy() {}";
 
     beforeEach(function() {
-      ctx = createContext();
-      devices = ctx.getInfo(WebCL.CONTEXT_DEVICES);
-      device = devices[0];
-      program = ctx.createProgram(src);
-      program.build(devices);
+      try {
+        ctx = createContext();
+        devices = ctx.getInfo(WebCL.CONTEXT_DEVICES);
+        device = devices[0];
+        program = ctx.createProgram(src);
+        program.build(devices);
+      } catch (e) {
+        ERROR("Functionality -> WebCLKernel -> beforeEach: Unable to create WebCLContext, all tests will fail!");
+        throw e;
+      }
     });
 
     //////////////////////////////////////////////////////////////////////////////
@@ -868,13 +884,18 @@ describe("Functionality", function() {
     describe("enqueueNDRangeKernel", function() {
 
       beforeEach(function() {
-        ctx = createContext();
-        queue = ctx.createCommandQueue(null, 0);
-        src = "kernel void dummy() {}";
-        program = ctx.createProgram(src);
-        devices = ctx.getInfo(WebCL.CONTEXT_DEVICES);
-        program.build(devices);
-        kernel = program.createKernelsInProgram()[0];
+        try {
+          ctx = createContext();
+          queue = ctx.createCommandQueue(null, 0);
+          src = "kernel void dummy() {}";
+          program = ctx.createProgram(src);
+          devices = ctx.getInfo(WebCL.CONTEXT_DEVICES);
+          program.build(devices);
+          kernel = program.createKernelsInProgram()[0];
+        } catch (e) {
+          ERROR("Functionality -> WebCLCommandQueue -> enqueueNDRangeKernel -> beforeEach: Unable to create WebCLContext, all tests will fail!");
+          throw e;
+        }
       });
       
       it("must work if all arguments are fully specified", function() {

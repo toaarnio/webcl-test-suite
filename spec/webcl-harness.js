@@ -46,16 +46,21 @@
   };
 
   createContext = function() {
-    if (DEVICE_INDEX === null) {
-      return webcl.createContext();
-    } else {
-      var selected = getDeviceAtIndex(DEVICE_INDEX);
-      var properties = selected ? { devices: [selected] } : null;
-      var ctx = webcl.createContext(properties);
-      var device = ctx.getInfo(WebCL.CONTEXT_DEVICES)[0];
-      var vendorId = device.getInfo(WebCL.DEVICE_VENDOR_ID);
-      DEBUG("Selected device: " + deviceVendors[vendorId] + " (VENDOR_ID="+vendorId+")");
-      return ctx;
+    try {
+      if (DEVICE_INDEX === null) {
+        return webcl.createContext();
+      } else {
+        var selected = getDeviceAtIndex(DEVICE_INDEX);
+        var properties = selected ? { devices: [selected] } : null;
+        var ctx = webcl.createContext(properties);
+        var device = ctx.getInfo(WebCL.CONTEXT_DEVICES)[0];
+        var vendorId = device.getInfo(WebCL.DEVICE_VENDOR_ID);
+        DEBUG("Selected device: " + deviceVendors[vendorId] + " (VENDOR_ID="+vendorId+")");
+        return ctx;
+      }
+    } catch (e) {
+      ERROR("webcl-harness.js: createContext() failed");
+      throw e;
     }
   };
 
