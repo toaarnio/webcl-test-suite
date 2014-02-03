@@ -26,19 +26,16 @@
 //
 (function setup() {
 
-  var LOG_INFO = getURLParameter('info') || false;
-  var LOG_ERROR = getURLParameter('debug') || true;
-  var LOG_DEBUG = getURLParameter('debug') || true;
-  var LOG_TRACE = getURLParameter('trace') || true;
-
-  INFO = LOG_INFO ? console.info : new Function();
-  ERROR = LOG_ERROR ? console.error : new Function();
-  DEBUG = LOG_DEBUG ? console.log : new Function();
-  TRACE = LOG_TRACE ? console.log : new Function();
-
-  STRICT = (getURLParameter('strict') === true) ? true : false;
-
-  SELECTED_DEVICE = getURLParameter('device');
+  (function getURLParameters() {
+    READY = (getURLParameter('run') === 'true');
+    STRICT = (getURLParameter('strict') === 'true');
+    INFO = (getURLParameter('info') === 'true') ? console.info : new Function();
+    ERROR = (getURLParameter('debug') === 'true') ? console.error : new Function();
+    DEBUG = (getURLParameter('debug') === 'true') ? console.log : new Function();
+    TRACE = (getURLParameter('trace') === 'true') ? console.log : new Function();
+    DEVICE = getURLParameter('device');
+    DEVICE_INDEX = isNaN(+DEVICE) ? null : +DEVICE;
+  })();
 
   testSuiteAsString = function(suite) {
     if (suite.parentSuite === null) {
@@ -49,10 +46,10 @@
   };
 
   createContext = function() {
-    if (SELECTED_DEVICE === null) {
+    if (DEVICE_INDEX === null) {
       return webcl.createContext();
     } else {
-      var selected = getDeviceAtIndex(SELECTED_DEVICE);
+      var selected = getDeviceAtIndex(DEVICE_INDEX);
       var properties = selected ? { devices: [selected] } : null;
       var ctx = webcl.createContext(properties);
       var device = ctx.getInfo(WebCL.CONTEXT_DEVICES)[0];

@@ -2,42 +2,47 @@
 <html>
 <head>
   <title>Nokia WebCL Test Suite</title>
-
   <meta content="text/html;charset=utf-8" http-equiv="Content-Type"/>
-
   <link rel="shortcut icon" type="image/png" href="lib/jasmine-1.3.1/jasmine_favicon.png">
-  <link rel="stylesheet" type="text/css" href="lib/jasmine-1.3.1/jasmine.css">
-  <script type="text/javascript" src="lib/jasmine-1.3.1/jasmine.js"></script>
-  <script type="text/javascript" src="lib/jasmine-1.3.1/jasmine-html.js"></script>
-
-  <!-- include spec files here... -->
-  <script type="text/javascript" src="spec/webcl-harness.js"></script>
-  <script type="text/javascript" src="spec/webcl-static.js"></script>
-  <script type="text/javascript" src="spec/webcl-dynamic.js"></script>
-  <script type="text/javascript">
-    (function() {
-      var jasmineEnv = jasmine.getEnv();
-      var htmlReporter = new jasmine.HtmlReporter();
-      jasmineEnv.addReporter(htmlReporter);
-      jasmineEnv.specFilter = function(spec) {
-        return htmlReporter.specFilter(spec);
-      }
-    })();
-  </script>
-
 </head>
 
 <body>
   <h1>Nokia WebCL Test Suite</h1>
   <p>If the browser crashes when running the full test suite, try running the subsets one by one,
-  and/or select another OpenCL device:</p>
-  <ul>
-    <li><a href="./?spec=Properties">Static properties only</a></li>
-    <li><a href="./?device=0">Full test suite on Device #0</a></li>
-    <li><a href="./?device=1">Full test suite on Device #1</a></li>
-    <li><a href="./?spec=Functionality Robustness&device=0">Crash tests on Device #0</a></li>
-    <li><a href="./?spec=Functionality Robustness&device=1">Crash tests on Device #1</a></li>
-  </ul>
-  <button onclick="jasmine.getEnv().execute()">Run!</button>
+  and/or select another OpenCL device.</p>
+  <form name="input" action="run.html" method="get">
+    <fieldset>
+      <legend>OpenCL Device</legend>
+      <input type="radio" name="device" value="0" disabled>Device #0</input><br>
+      <input type="radio" name="device" value="1" disabled>Device #1</input><br>
+      <input type="radio" name="device" value="2" disabled>Device #2</input><br>
+      <input type="radio" name="device" value="DEFAULT" checked="true">Default</input><br>
+    </fieldset>
+    <fieldset>
+      <legend>Test Subsets</legend>
+      <input type="radio" name="spec" value="Properties">Static properties</input><br>
+      <input type="radio" name="spec" value="Functionality">Functionality</input><br>
+      <fieldset style="border:none;">
+        <input type="radio" name="spec" value="Functionality createContext">createContext</input><br>
+        <input type="radio" name="spec" value="Functionality WebCLContext">Context</input><br>
+        <input type="radio" name="spec" value="Functionality WebCLBuffer">Buffer</input><br>
+        <input type="radio" name="spec" value="Functionality WebCLImage">Image</input><br>
+        <input type="radio" name="spec" value="Functionality WebCLProgram">Program</input><br>
+        <input type="radio" name="spec" value="Functionality WebCLKernel">Kernel</input><br>
+        <input type="radio" name="spec" value="Functionality WebCLCommandQueue">CommandQueue</input><br>
+        <input type="radio" name="spec" value="Functionality WebCLEvent">Event</input><br>
+        <input type="radio" name="spec" value="Functionality Kernel language Validator">Validator</input><br>
+        <input type="radio" name="spec" value="Functionality Robustness">Robustness</input><br>
+      </fieldset>
+      <input type="radio" name="spec" value="" checked="true">All</input><br>
+    </fieldset>
+    <fieldset>
+      <legend>Web Console Output</legend>
+      <input type="checkbox" name="error" value="true">Debug</input><br>
+      <input type="checkbox" name="trace" value="true">Trace</input><br>
+      <input type="checkbox" name="info" value="true">Info</input><br>
+    </fieldset>
+    <input type="submit" autofocus="true" value="Run">
+  </form>
 </body>
 </html>
