@@ -48,6 +48,7 @@
   createContext = function() {
     try {
       if (DEVICE_INDEX === null) {
+        DEBUG("Selected device: DEFAULT");
         return webcl.createContext();
       } else {
         var selected = getDeviceAtIndex(DEVICE_INDEX);
@@ -56,6 +57,7 @@
         var device = ctx.getInfo(WebCL.CONTEXT_DEVICES)[0];
         var vendorId = device.getInfo(WebCL.DEVICE_VENDOR_ID);
         DEBUG("Selected device: " + deviceVendors[vendorId] + " (VENDOR_ID="+vendorId+")");
+        ctx.vendor = deviceVendors[vendorId];
         return ctx;
       }
     } catch (e) {

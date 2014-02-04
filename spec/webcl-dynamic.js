@@ -24,6 +24,30 @@ describe("Functionality", function() {
     try { webcl.releaseAll() } catch(e) { ERROR("  webcl.releaseAll FAIL"); }
   });
 
+  describe("Test framework", function() {
+
+    it(".toThrow()", function() {
+      expect('illegalStatement').toThrow();
+    });
+
+    it(".not.toThrow()", function() {
+      expect('var foo=0').not.toThrow();
+    });
+
+    it(".toThrow('EXCEPTION_NAME')", function() {
+      customException = { name: 'CUSTOM_EXCEPTION' };
+      expect('illegalStatement').toThrow('ReferenceError');
+      expect('throw customException').toThrow('CUSTOM_EXCEPTION');
+    });
+
+    it(".not.toThrow('EXCEPTION_NAME')", function() {
+      customException = { name: 'CUSTOM_EXCEPTION' }
+      expect('var foo=0').not.toThrow('ReferenceError');
+      expect('throw customException').not.toThrow('ReferenceError');
+    });
+
+  });
+
   //////////////////////////////////////////////////////////////////////////////
   //
   // Functionality -> createContext
@@ -184,7 +208,7 @@ describe("Functionality", function() {
     });
 
     it("createContext(aPlatform, DEVICE_TYPE_ALL)", function() {
-      var defaultPlatform = webcl.getPlatforms()[0];
+      defaultPlatform = webcl.getPlatforms()[0];
       expect('createContextSimplified(defaultPlatform, WebCL.DEVICE_TYPE_ALL)').not.toThrow();
     });
 
@@ -988,6 +1012,25 @@ describe("Functionality", function() {
         expect('program.build(devices)').toThrow();
         expect('program.build(devices)').toThrow('BUILD_PROGRAM_FAILURE');
       });
+
+    });
+
+    describe("Compiler", function() {
+
+      // Performs illegal pointer casts between private, local and global
+      // address spaces and checks if the CL compiler catches them. As of
+      // Feb 4, 2014, the AMD CPU driver does, while the NVIDIA and Intel
+      // drivers do not.
+      //
+      it("must not allow pointer casts between address spaces", function() {
+        src = loadSource('kernels/pointerAddressSpaceCast.cl');
+        var ctx = createContext();
+        program = ctx.createProgram(src);
+        devices = ctx.getInfo(WebCL.CONTEXT_DEVICES);
+        expect('program.build(devices)').toThrow();
+        expect('program.build(devices)').toThrow('BUILD_PROGRAM_FAILURE');
+      });
+
     });
 
   });
@@ -1002,14 +1045,12 @@ describe("Functionality", function() {
       ctx = createContext();
       ctx.release();
       expect('ctx.release()').not.toThrow();
-      webcl.releaseAll();
     });
 
     it("must throw when trying to use an object that has been released", function() {
       ctx = createContext();
       ctx.release();
       expect('ctx.getInfo(WebCL.CONTEXT_NUM_DEVICES)').toThrow();
-      webcl.releaseAll();
     });
 
     // This test is known to crash on Intel OpenCL / Win7
@@ -1022,7 +1063,6 @@ describe("Functionality", function() {
       expect('program.build([], "-invalid-option")').toThrow();
       expect('program.build(null, "-invalid-option")').toThrow();
       expect('program.build(undefined, "-invalid-option")').toThrow();
-      webcl.releaseAll();
     });
 
   });
@@ -1038,27 +1078,12 @@ describe("Functionality", function() {
         var wrapper = new Function(this.actual);
         try { 
           wrapper.apply(this, arguments);
+          DEBUG(this.actual + " did not throw an exception");
+          return false;
         } catch(e) {
-          var success = (expected === undefined) || (STRICT === false) || (e.name === expected);
-          if (success) return true;
-          this.message = function() {
-            return "Expected '" + this.actual + "' to throw " + expected + " but it threw " + e.name + ".";
-          }
-        }
-        return false;
-      },
-      toThrowOriginal: function() {
-        if (typeof(this.actual) === 'string') {
-          var sourceStr = this.actual;
-          this.actual = Function(this.actual);
-          var asExpected = jasmine.Matchers.prototype.toThrow.call(this);
-          var not = this.isNot ? "not " : "";
-          this.message = function() { 
-            return "Expected '" + sourceStr + "' " + not + "to throw an exception."
-          }
-          return asExpected;
-        } else {
-          return jasmine.Matchers.prototype.toThrow.call(this);
+          DEBUG(this.actual + " threw exception " + e.name + "; expecting " + (expected || "any exception type"));
+          var success = (expected === undefined) || (e.name === expected);
+          return success;
         }
       },
     });
