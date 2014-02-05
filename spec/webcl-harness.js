@@ -30,8 +30,8 @@
     READY = (getURLParameter('run') === 'true');
     STRICT = (getURLParameter('strict') === 'true');
     INFO = (getURLParameter('info') === 'true') ? console.info : new Function();
-    ERROR = (getURLParameter('debug') === 'true') ? console.error : new Function();
-    DEBUG = (getURLParameter('debug') === 'true') ? console.log : new Function();
+    ERROR = (getURLParameter('debug') === 'false') ? new Function() : console.error;
+    DEBUG = (getURLParameter('debug') === 'false') ? new Function() : console.log;
     TRACE = (getURLParameter('trace') === 'true') ? console.log : new Function();
     DEVICE = getURLParameter('device');
     DEVICE_INDEX = isNaN(+DEVICE) ? null : +DEVICE;
@@ -62,6 +62,10 @@
       }
     } catch (e) {
       ERROR("webcl-harness.js: createContext() failed");
+      ERROR("Catastrophic error, terminating test suite!");
+      jasmine.getEnv().specFilter = function(spec) {
+        return false;
+      };
       throw e;
     }
   };

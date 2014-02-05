@@ -24,14 +24,14 @@ describe("Functionality", function() {
     try { webcl.releaseAll() } catch(e) { ERROR("  webcl.releaseAll FAIL"); }
   });
 
-  describe("Test framework", function() {
+  xdescribe("Jasmine customizations", function() {
 
     it(".toThrow()", function() {
       expect('illegalStatement').toThrow();
     });
 
     it(".not.toThrow()", function() {
-      expect('var foo=0').not.toThrow();
+      expect('var validStatement').not.toThrow();
     });
 
     it(".toThrow('EXCEPTION_NAME')", function() {
@@ -42,8 +42,28 @@ describe("Functionality", function() {
 
     it(".not.toThrow('EXCEPTION_NAME')", function() {
       customException = { name: 'CUSTOM_EXCEPTION' }
-      expect('var foo=0').not.toThrow('ReferenceError');
+      expect('var validStatement').not.toThrow('ReferenceError');
       expect('throw customException').not.toThrow('ReferenceError');
+    });
+
+    it(".toThrow() [FAIL]", function() {
+      expect('var validStatement').toThrow();
+    });
+
+    it(".not.toThrow() [FAIL]", function() {
+      expect('illegalStatement').not.toThrow();
+    });
+
+    it(".toThrow('EXCEPTION_NAME') [FAIL]", function() {
+      customException = { name: 'CUSTOM_EXCEPTION' };
+      expect('var validStatement').toThrow('ReferenceError');
+      expect('throw customException').toThrow('ReferenceError');
+    });
+
+    it(".not.toThrow('EXCEPTION_NAME') [FAIL]", function() {
+      customException = { name: 'CUSTOM_EXCEPTION' };
+      expect('illegalStatement').not.toThrow('ReferenceError');
+      expect('throw customException').not.toThrow('CUSTOM_EXCEPTION');
     });
 
   });
@@ -52,7 +72,7 @@ describe("Functionality", function() {
   //
   // Functionality -> createContext
   // 
-  describe("createContext (legacy)", function() {
+  xdescribe("createContext (legacy)", function() {
 
     it("must work if properties === undefined", function() {
       ctx1 = webcl.createContext();
@@ -809,7 +829,7 @@ describe("Functionality", function() {
       it("must throw if device === undefined/null/<invalid>", function() {
         program = ctx.createProgram(src);
         expect('program instanceof WebCLProgram').toEvalAs(true);
-        expect('program.getBuildInfo("foobar", WebCL.PROGRAM_BUILD_STATUS)').toThrow();
+        expect('program.getBuildInfo("foobar", WebCL.PROGRAM_BUILD_STATUS)').toThrow('INVALID_VALUE');
         expect('program.getBuildInfo([], WebCL.PROGRAM_BUILD_STATUS)').toThrow();
         expect('program.getBuildInfo(null, WebCL.PROGRAM_BUILD_STATUS)').toThrow();
         expect('program.getBuildInfo(undefined, WebCL.PROGRAM_BUILD_STATUS)').toThrow();
@@ -992,43 +1012,138 @@ describe("Functionality", function() {
   // Functionality -> Kernel language
   // 
   describe("Kernel language", function() {
-    
+
+    beforeEach(function() {
+      this.addMatchers({
+        toBuild: function() {
+          try {
+            var pathToSource = this.actual;
+            src = loadSource(pathToSource);
+            var ctx = createContext();
+            program = ctx.createProgram(src);
+            devices = ctx.getInfo(WebCL.CONTEXT_DEVICES);
+            device = devices[0];
+            program.build(devices);
+            DEBUG("Building '" + pathToSource + "' did not throw any exception");
+            return true;
+          } catch(e) {
+            DEBUG("Building '" + pathToSource + "' threw " + e.name);
+            try {
+              DEBUG("Build log: " + program.getBuildInfo(device, WebCL.BUILD_LOG));
+            } catch (e2) {
+              DEBUG("Failed to get BUILD_LOG: ", e2);
+            }
+            return false;
+          }
+        }
+      });
+    });
+
+    //////////////////////////////////////////////////////////////////////////////
+    //
+    // Functionality -> Kernel language -> Validator
+    // 
     describe("Validator", function() {
 
       it("must not allow 'goto'", function() {
-        src = loadSource('kernels/goto.cl');
-        var ctx = createContext();
-        program = ctx.createProgram(src);
-        devices = ctx.getInfo(WebCL.CONTEXT_DEVICES);
-        expect('program.build(devices)').toThrow();
-        expect('program.build(devices)').toThrow('BUILD_PROGRAM_FAILURE');
+        expect('kernels/goto.cl').not.toBuild();
       });
 
       it("must not allow kernel-to-kernel calls", function() {
-        src = loadSource('kernels/kernel-to-kernel.cl');
-        var ctx = createContext();
-        program = ctx.createProgram(src);
-        devices = ctx.getInfo(WebCL.CONTEXT_DEVICES);
-        expect('program.build(devices)').toThrow();
-        expect('program.build(devices)').toThrow('BUILD_PROGRAM_FAILURE');
+        expect('kernels/kernel-to-kernel.cl').not.toBuild();
+      });
+
+      // Performs an out-of-bounds write to an int variable through a long
+      // pointer. The WebCL validator should catch the illegal pointer cast
+      // from int* to long*.
+      //
+      it("must not allow casting an int* to long*", function() {
+        expect('kernels/pointerSizeCast.cl').not.toBuild();
       });
 
     });
 
+    //////////////////////////////////////////////////////////////////////////////
+    //
+    // Functionality -> Kernel language -> Compiler
+    // 
     describe("Compiler", function() {
 
-      // Performs illegal pointer casts between private, local and global
-      // address spaces and checks if the CL compiler catches them. As of
-      // Feb 4, 2014, the AMD CPU driver does, while the NVIDIA and Intel
-      // drivers do not.
+      // Known failures as of 2014-02-05:
+      //  * Win7 / NVIDIA GPU driver
+      //  * Win7 / Intel CPU driver
       //
       it("must not allow pointer casts between address spaces", function() {
-        src = loadSource('kernels/pointerAddressSpaceCast.cl');
-        var ctx = createContext();
-        program = ctx.createProgram(src);
-        devices = ctx.getInfo(WebCL.CONTEXT_DEVICES);
-        expect('program.build(devices)').toThrow();
-        expect('program.build(devices)').toThrow('BUILD_PROGRAM_FAILURE');
+        expect('kernels/pointerAddressSpaceCast.cl').not.toBuild();
+      });
+
+      // Known failures as of 2014-02-05:
+      //  * Win7 / NVIDIA GPU driver
+      //  * Win7 / Intel CPU driver
+      //
+      it("must not allow the 'extern' keyword", function() {
+        expect('kernels/externQualifier.cl').not.toBuild();
+      });
+
+      // Known failures as of 2014-02-05:
+      //  * <none>
+      //
+      it("must not allow initializing 'local' variables", function() {
+        expect('kernels/localMemInit.cl').not.toBuild();
+      });
+
+      // Known failures as of 2014-02-05:
+      //  * Win7 / NVIDIA GPU driver
+      //  * Win7 / Intel CPU driver
+      //
+      it("must not allow declaring 'local' variables in inner scope", function() {
+        expect('kernels/localMemAlloc.cl').not.toBuild();
+      });
+
+      // Known failures as of 2014-02-05:
+      //  * <none>
+      //
+      it("must not allow dynamic memory allocation", function() {
+        expect('kernels/dynamicArray.cl').not.toBuild();
+      });
+
+      // Known failures as of 2014-02-05:
+      //  * Win7 / NVIDIA GPU driver
+      //  * Win7 / Intel CPU driver
+      //
+      it("must not allow local memory pointer as return value", function() {
+        expect('kernels/localMemReturn.cl').not.toBuild();
+      });
+
+      // Known failures as of 2014-02-05:
+      //  * <none>
+      //
+      it("must not allow writing to 'constant' address space", function() {
+        expect('kernels/constantWrite.cl').not.toBuild();
+      });
+
+      // Known failures as of 2014-02-05:
+      //  * Win7 / NVIDIA GPU driver
+      //  * Win7 / Intel CPU driver
+      //
+      it("must not allow allocating 6 GB of 'private' memory", function() {
+        expect('kernels/largeArrayPrivate.cl').not.toBuild();
+      });
+
+      // Known failures as of 2014-02-05:
+      //  * Win7 / NVIDIA GPU driver (crashes on second run)
+      //  * Win7 / Intel CPU driver (crashes on first run)
+      //
+      xit("must not allow allocating 6 GB of 'local' memory", function() {
+        expect('kernels/largeArrayLocal.cl').not.toBuild();
+      });
+
+      // Known failures as of 2014-02-05:
+      //  * Win7 / NVIDIA GPU driver (crashes on second run)
+      //  * Win7 / Intel CPU driver (crashes on first run)
+      //
+      it("must not allow allocating 6 GB of 'global' memory", function() {
+        expect('kernels/largeArrayGlobal.cl').not.toBuild();
       });
 
     });
@@ -1078,12 +1193,19 @@ describe("Functionality", function() {
         var wrapper = new Function(this.actual);
         try { 
           wrapper.apply(this, arguments);
-          DEBUG(this.actual + " did not throw an exception");
+          var not = this.isNot ? "" : ", although it was expected to";
+          DEBUG(this.actual + " did not throw an exception" + not);
           return false;
         } catch(e) {
-          DEBUG(this.actual + " threw exception " + e.name + "; expecting " + (expected || "any exception type"));
-          var success = (expected === undefined) || (e.name === expected);
-          return success;
+          var not = this.isNot ? "not " : "";
+          if (expected === undefined) {
+            DEBUG(this.actual + " threw exception " + e.name + "; " + not + "expecting any exception");
+            return true;
+          } else {
+            var not = this.isNot ? "no exception or any exception but " : "";
+            DEBUG(this.actual + " threw exception " + e.name + "; expecting " + not + expected);
+            return (e.name === expected);
+          }
         }
       },
     });
