@@ -81,131 +81,10 @@ describe("Properties", function() {
 
   });
 
-  //////////////////////////////////////////////////////////////////////////////
-  //
-  // Properties -> WebCLPlatform
-  // 
-  describe("WebCLPlatform", function() {
-
-    it("must have at least one instance", function() {
-      expect(webcl.getPlatforms().length).toBeGreaterThan(0);
-    });
-
-    it("must support the standard getInfo queries", function() {
-      var plats = webcl.getPlatforms();
-      function checkInfo() {
-        for (var i=0; i < plats.length; i++) {
-          var name = plats[i].getInfo(WebCL.PLATFORM_NAME)
-          var vendor = plats[i].getInfo(WebCL.PLATFORM_VENDOR)
-          var version = plats[i].getInfo(WebCL.PLATFORM_VERSION)
-          var profile = plats[i].getInfo(WebCL.PLATFORM_PROFILE)
-          var extensions = plats[i].getInfo(WebCL.PLATFORM_EXTENSIONS)
-          expect(name.length).toBeGreaterThan(0);
-          expect(vendor.length).toBeGreaterThan(0);
-          expect(version.length).toBeGreaterThan(0);
-          expect(profile.length).toBeGreaterThan(0);
-          INFO("Platform["+i+"]:");
-          INFO("  " + name);
-          INFO("  " + vendor);
-          INFO("  " + version);
-          INFO("  " + profile);
-        }
-      };
-      expect(checkInfo).not.toThrow();
-    });
-
-  });
-
-  //////////////////////////////////////////////////////////////////////////////
-  //
-  // Properties -> WebCLDevice
-  // 
-  describe("WebCLDevice", function() {
-
-    it("must have at least one instance on each Platform", function() {
-      var platforms = webcl.getPlatforms();
-      for (var p=0; p < platforms.length; p++) {
-        expect(platforms[p].getDevices().length).toBeGreaterThan(0);
-      }
-    });
-
-    it("must not have any instances that are not actually available", function() {
-      var platforms = webcl.getPlatforms();
-      for (var p=0; p < platforms.length; p++) {
-        var devices = platforms[p].getDevices();
-        for (var d=0; d < devices.length; d++) {
-          expect(devices[d].getInfo(WebCL.DEVICE_AVAILABLE)).toEqual(true);
-        }
-      }
-    });
-
-    it("must support the standard getInfo queries on all devices", function() {
-      webcl.getPlatforms().forEach(function(plat, index) {
-        plat.getDevices().forEach(function(device) {
-          INFO(" ");
-          INFO("Platform["+index+"]:");
-          expect(checkInfo.bind(this, deviceInfoEnums, device)).not.toThrow();
-          expect(checkInfo.bind(this, removedDeviceInfoEnums, device)).toThrow();
-          function checkInfo(enumList, device) {
-            for (var enumName in enumList) {
-              var enumVal = enumList[enumName];
-              var property = device.getInfo(enumVal)
-              if (property === null) throw "getInfo(CL."+enumName+") returned null."
-              INFO("  " + enumName + ": " + property);
-            }
-          };
-        });
-      });
-    });
-
-  });
-
-  //////////////////////////////////////////////////////////////////////////////
-  //
-  // Properties -> JavaScript semantics
-  // 
-  describe("JavaScript semantics", function() {
-
-    it("objects must accommodate user-defined fields", function() {
-      platform = webcl.getPlatforms()[0];
-      expect('platform.name = "foo"').not.toFail();
-      expect('platform.name === "foo"').toEvalAs(true);
-    });
-    
-    it("getters must return the same object every time (CRITICAL)", function() {
-      platform = webcl.getPlatforms()[0];
-      expect('webcl.getPlatforms()[0] === webcl.getPlatforms()[0]').toEvalAs(true);
-      expect('platform === platform.getDevices()[0].getInfo(WebCL.DEVICE_PLATFORM)').toEvalAs(true);
-    });
-
-  });
-
   //////////////////////////////////////////////////////////////
 
   beforeEach(function() {
     this.addMatchers({
-      toEvalAs: function(result) {
-        return eval(this.actual) === eval(result);
-      },
-      toFail: function() {
-        var wrapper = new Function(this.actual);
-        try { wrapper() } catch(e) { return true; }
-        return false;
-      },
-      toThrow: function() {
-        if (typeof(this.actual) === 'string') {
-          var sourceStr = this.actual;
-          this.actual = Function(this.actual);
-          var asExpected = jasmine.Matchers.prototype.toThrow.call(this);
-          var not = this.isNot ? "not " : "";
-          this.message = function() { 
-            return "Expected '" + sourceStr + "' " + not + "to throw an exception."
-          }
-          return asExpected;
-        } else {
-          return jasmine.Matchers.prototype.toThrow.call(this);
-        }
-      },
       toHaveProperty: function(name) {
         var obj = typeof(this.actual) === "string" ? window[this.actual] : this.actual;
         return (obj[name] !== undefined);
@@ -215,14 +94,6 @@ describe("Properties", function() {
         var exists = obj && typeof(obj[name]) === 'function';
         exists = exists || (obj && obj.prototype && typeof(obj.prototype[name]) === 'function');
         return exists;
-      },
-      toSupportInfoEnum: function(name) {
-        var obj = this.actual;
-        var val = undefined;
-        try {
-          val = obj.getInfo(WebCL[name]);
-        } catch (e) {}
-        return (val !== undefined);
       },
     });
   });
