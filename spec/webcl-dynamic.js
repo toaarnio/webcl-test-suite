@@ -14,231 +14,6 @@
 
 describe("Functionality", function() {
 
-  beforeEach(function() {
-    //TRACE(testSuiteAsString(this.suite) + " -> " + this.description);
-  });
-
-  afterEach(function() {
-    var resultStr = this.results().passed() ? "PASS" : "FAIL";
-    TRACE(testSuiteAsString(this.suite) + " -> " + this.description + ": " + resultStr);
-    try { webcl.releaseAll() } catch(e) { ERROR("  webcl.releaseAll FAIL"); }
-  });
-
-  xdescribe("Jasmine customizations", function() {
-
-    it(".toThrow()", function() {
-      expect('illegalStatement').toThrow();
-    });
-
-    it(".not.toThrow()", function() {
-      expect('var validStatement').not.toThrow();
-    });
-
-    it(".toThrow('EXCEPTION_NAME')", function() {
-      customException = { name: 'CUSTOM_EXCEPTION' };
-      expect('illegalStatement').toThrow('ReferenceError');
-      expect('throw customException').toThrow('CUSTOM_EXCEPTION');
-    });
-
-    it(".not.toThrow('EXCEPTION_NAME')", function() {
-      customException = { name: 'CUSTOM_EXCEPTION' }
-      expect('var validStatement').not.toThrow('ReferenceError');
-      expect('throw customException').not.toThrow('ReferenceError');
-    });
-
-    it(".toThrow() [FAIL]", function() {
-      expect('var validStatement').toThrow();
-    });
-
-    it(".not.toThrow() [FAIL]", function() {
-      expect('illegalStatement').not.toThrow();
-    });
-
-    it(".toThrow('EXCEPTION_NAME') [FAIL]", function() {
-      customException = { name: 'CUSTOM_EXCEPTION' };
-      expect('var validStatement').toThrow('ReferenceError');
-      expect('throw customException').toThrow('ReferenceError');
-    });
-
-    it(".not.toThrow('EXCEPTION_NAME') [FAIL]", function() {
-      customException = { name: 'CUSTOM_EXCEPTION' };
-      expect('illegalStatement').not.toThrow('ReferenceError');
-      expect('throw customException').not.toThrow('CUSTOM_EXCEPTION');
-    });
-
-  });
-
-  //////////////////////////////////////////////////////////////////////////////
-  //
-  // Functionality -> JavaScript semantics
-  // 
-  describe("JavaScript semantics", function() {
-
-    it("objects must accommodate user-defined fields", function() {
-      platform = webcl.getPlatforms()[0];
-      expect('webcl.foo = "bar"').not.toThrow();
-      expect('webcl.foo === "bar"').toEvalAs(true);
-      expect('platform.name = "foo"').not.toThrow();
-      expect('platform.name === "foo"').toEvalAs(true);
-    });
-    
-    it("getters must return the same object every time (CRITICAL)", function() {
-      platform = webcl.getPlatforms()[0];
-      expect('webcl.getPlatforms()[0] === webcl.getPlatforms()[0]').toEvalAs(true);
-      expect('platform === platform.getDevices()[0].getInfo(WebCL.DEVICE_PLATFORM)').toEvalAs(true);
-    });
-
-  });
-
-  //////////////////////////////////////////////////////////////////////////////
-  //
-  // Functionality -> getPlatforms
-  // 
-  describe("getPlatforms", function() {
-
-    it("getPlatforms() must not throw", function() {
-      expect('webcl.getPlatforms()').not.toThrow();
-    });
-
-    it("getPlatforms() must return a WebCLPlatform array with length >= 1", function() {
-      expect('webcl.getPlatforms()').not.toThrow();
-      expect('webcl.getPlatforms() instanceof Array').toEvalAs(true);
-      expect('webcl.getPlatforms().length >= 1').toEvalAs(true);
-      expect('webcl.getPlatforms()[0] instanceof WebCLPlatform').toEvalAs(true)
-    });
-
-    it("getPlatforms(invalidArgument) must throw", function() {
-      expect('webcl.getPlatforms()').not.toThrow();
-      expect('webcl.getPlatforms("foo")').toThrow();
-      expect('webcl.getPlatforms(0x1234)').toThrow();
-      expect('webcl.getPlatforms({})').toThrow();
-    });
-    
-  });
-
-  //////////////////////////////////////////////////////////////////////////////
-  //
-  // Functionality -> getDevices
-  // 
-  describe("getDevices", function() {
-
-    it("getDevices() must not throw", function() {
-      platforms = webcl.getPlatforms();
-      for (i=0; i < platforms.length; i++) {
-        expect('platforms['+i+'].getDevices()').not.toThrow();
-      }
-    });
-
-    it("getDevices(DEVICE_TYPE_ALL) must not throw", function() {
-      platforms = webcl.getPlatforms();
-      for (i=0; i < platforms.length; i++) {
-        expect('platforms['+i+'].getDevices(WebCL.DEVICE_TYPE_ALL)').not.toThrow();
-      }
-    });
-
-    it("getDevices(DEVICE_TYPE_DEFAULT) must not throw", function() {
-      platforms = webcl.getPlatforms();
-      for (i=0; i < platforms.length; i++) {
-        expect('platforms['+i+'].getDevices(WebCL.DEVICE_TYPE_ALL)').not.toThrow();
-      }
-    });
-
-    it("getDevices(CPU || GPU || ACCELERATOR) must not throw", function() {
-      platforms = webcl.getPlatforms();
-      for (i=0; i < platforms.length; i++) {
-        var defaultDevice = platforms[i].getDevices(WebCL.DEVICE_TYPE_DEFAULT)[0];
-        var defaultDeviceType = defaultDevice.getInfo(WebCL.DEVICE_TYPE);
-        switch (defaultDeviceType) {
-        case WebCL.DEVICE_TYPE_CPU:
-          expect('platforms['+i+'].getDevices(WebCL.DEVICE_TYPE_CPU)').not.toThrow();
-          break;
-        case WebCL.DEVICE_TYPE_GPU:
-          expect('platforms['+i+'].getDevices(WebCL.DEVICE_TYPE_GPU)').not.toThrow();
-          break;
-        case WebCL.DEVICE_TYPE_ACCELERATOR:
-          expect('platforms['+i+'].getDevices(WebCL.DEVICE_TYPE_ACCELERATOR)').not.toThrow();
-          break;
-        default:
-          throw "Unrecognized device type (" + defaultDeviceType + ") on platform["+i+"]!";
-        }
-      }
-    });
-
-    it("getDevices() must return a WebCLDevice array with length >= 1", function() {
-      platforms = webcl.getPlatforms();
-      for (i=0; i < platforms.length; i++) {
-        expect('platforms['+i+'].getDevices()').not.toThrow();
-        expect('platforms['+i+'].getDevices() instanceof Array').toEvalAs(true);
-        expect('platforms['+i+'].getDevices().length >= 1').toEvalAs(true);
-        expect('platforms['+i+'].getDevices()[0] instanceof WebCLDevice').toEvalAs(true);
-      }
-    });
-
-    it("getDevices(DEVICE_TYPE_ALL) must return a WebCLDevice array with length >= 1", function() {
-      platforms = webcl.getPlatforms();
-      for (i=0; i < platforms.length; i++) {
-        expect('platforms['+i+'].getDevices(WebCL.DEVICE_TYPE_ALL)').not.toThrow();
-        expect('platforms['+i+'].getDevices(WebCL.DEVICE_TYPE_ALL) instanceof Array').toEvalAs(true);
-        expect('platforms['+i+'].getDevices(WebCL.DEVICE_TYPE_ALL).length >= 1').toEvalAs(true);
-        expect('platforms['+i+'].getDevices(WebCL.DEVICE_TYPE_ALL)[0] instanceof WebCLDevice').toEvalAs(true);
-      }
-    });
-
-    it("getDevices(DEVICE_TYPE_DEFAULT) must return a WebCLDevice array with length >= 1", function() {
-      platforms = webcl.getPlatforms();
-      for (i=0; i < platforms.length; i++) {
-        expect('platforms['+i+'].getDevices(WebCL.DEVICE_TYPE_DEFAULT)').not.toThrow();
-        expect('platforms['+i+'].getDevices(WebCL.DEVICE_TYPE_DEFAULT) instanceof Array').toEvalAs(true);
-        expect('platforms['+i+'].getDevices(WebCL.DEVICE_TYPE_DEFAULT).length >= 1').toEvalAs(true);
-        expect('platforms['+i+'].getDevices(WebCL.DEVICE_TYPE_DEFAULT)[0] instanceof WebCLDevice').toEvalAs(true);
-      }
-    });
-
-    it("getDevices(CPU || GPU || ACCELERATOR) must return a WebCLDevice array with length >= 1", function() {
-      platforms = webcl.getPlatforms();
-      for (i=0; i < platforms.length; i++) {
-        var defaultDevice = platforms[i].getDevices(WebCL.DEVICE_TYPE_DEFAULT)[0];
-        var defaultDeviceType = defaultDevice.getInfo(WebCL.DEVICE_TYPE);
-        switch (defaultDeviceType) {
-        case WebCL.DEVICE_TYPE_CPU:
-          expect('platforms['+i+'].getDevices(WebCL.DEVICE_TYPE_CPU)').not.toThrow();
-          expect('platforms['+i+'].getDevices(WebCL.DEVICE_TYPE_CPU) instanceof Array').toEvalAs(true);
-          expect('platforms['+i+'].getDevices(WebCL.DEVICE_TYPE_CPU).length >= 1').toEvalAs(true);
-          expect('platforms['+i+'].getDevices(WebCL.DEVICE_TYPE_CPU)[0] instanceof WebCLDevice').toEvalAs(true);
-          break;
-        case WebCL.DEVICE_TYPE_GPU:
-          expect('platforms['+i+'].getDevices(WebCL.DEVICE_TYPE_GPU)').not.toThrow();
-          expect('platforms['+i+'].getDevices(WebCL.DEVICE_TYPE_GPU) instanceof Array').toEvalAs(true);
-          expect('platforms['+i+'].getDevices(WebCL.DEVICE_TYPE_GPU).length >= 1').toEvalAs(true);
-          expect('platforms['+i+'].getDevices(WebCL.DEVICE_TYPE_GPU)[0] instanceof WebCLDevice').toEvalAs(true);
-          break;
-        case WebCL.DEVICE_TYPE_ACCELERATOR:
-          expect('platforms['+i+'].getDevices(WebCL.DEVICE_TYPE_ACCELERATOR)').not.toThrow();
-          expect('platforms['+i+'].getDevices(WebCL.DEVICE_TYPE_ACCELERATOR) instanceof Array').toEvalAs(true);
-          expect('platforms['+i+'].getDevices(WebCL.DEVICE_TYPE_ACCELERATOR).length >= 1').toEvalAs(true);
-          expect('platforms['+i+'].getDevices(WebCL.DEVICE_TYPE_ACCELERATOR)[0] instanceof WebCLDevice').toEvalAs(true);
-          break;
-        default:
-          throw "Unrecognized device type (" + defaultDeviceType + ") on platform["+i+"]!";
-        }
-      }
-    });
-
-    it("getDevices(invalidArgument) must throw", function() {
-      platforms = webcl.getPlatforms();
-      for (i=0; i < platforms.length; i++) {
-        expect('platforms['+i+'].getDevices()').not.toThrow();
-        expect('platforms['+i+'].getDevices(0)').toThrow('INVALID_DEVICE_TYPE');
-        expect('platforms['+i+'].getDevices(3)').toThrow('INVALID_DEVICE_TYPE');
-        expect('platforms['+i+'].getDevices(5)').toThrow('INVALID_DEVICE_TYPE');
-        expect('platforms['+i+'].getDevices(9)').toThrow('INVALID_DEVICE_TYPE');
-        expect('platforms['+i+'].getDevices(null)').toThrow('INVALID_DEVICE_TYPE');
-        expect('platforms['+i+'].getDevices({})').toThrow('INVALID_DEVICE_TYPE');
-      }
-    });
-    
-  });
-
   //////////////////////////////////////////////////////////////////////////////
   //
   // Functionality -> createContext
@@ -367,7 +142,7 @@ describe("Functionality", function() {
   //
   // Functionality -> createContext (proposed simplified API)
   // 
-  describe("createContext (new)", function() {
+  describe("createContext", function() {
     
     it("createContext()", function() {
       ctx = createContextSimplified();
@@ -480,64 +255,6 @@ describe("Functionality", function() {
       defaultDevice = webcl.getPlatforms()[0].getDevices()[0];
       expect('createContextSimplified([defaultDevice, "foobar"])').toThrow();
       expect('createContextSimplified([defaultDevice, "foobar"])').toThrow('INVALID_DEVICE');
-    });
-
-  });
-
-  //////////////////////////////////////////////////////////////////////////////
-  //
-  // Functionality -> WebCLPlatform
-  // 
-  describe("WebCLPlatform", function() {
-
-    it("must support the standard getInfo queries", function() {
-      var plats = webcl.getPlatforms();
-      function checkInfo() {
-        for (var i=0; i < plats.length; i++) {
-          var name = plats[i].getInfo(WebCL.PLATFORM_NAME)
-          var vendor = plats[i].getInfo(WebCL.PLATFORM_VENDOR)
-          var version = plats[i].getInfo(WebCL.PLATFORM_VERSION)
-          var profile = plats[i].getInfo(WebCL.PLATFORM_PROFILE)
-          var extensions = plats[i].getInfo(WebCL.PLATFORM_EXTENSIONS)
-          expect(name.length).toBeGreaterThan(0);
-          expect(vendor.length).toBeGreaterThan(0);
-          expect(version.length).toBeGreaterThan(0);
-          expect(profile.length).toBeGreaterThan(0);
-          INFO("Platform["+i+"]:");
-          INFO("  " + name);
-          INFO("  " + vendor);
-          INFO("  " + version);
-          INFO("  " + profile);
-        }
-      };
-      expect(checkInfo).not.toThrow();
-    });
-
-  });
-
-  //////////////////////////////////////////////////////////////////////////////
-  //
-  // Functionality -> WebCLDevice
-  // 
-  describe("WebCLDevice", function() {
-
-    it("must support the standard getInfo queries", function() {
-      webcl.getPlatforms().forEach(function(plat, index) {
-        plat.getDevices().forEach(function(device) {
-          INFO(" ");
-          INFO("Platform["+index+"]:");
-          expect(checkInfo.bind(this, deviceInfoEnums, device)).not.toThrow();
-          expect(checkInfo.bind(this, removedDeviceInfoEnums, device)).toThrow();
-          function checkInfo(enumList, device) {
-            for (var enumName in enumList) {
-              var enumVal = enumList[enumName];
-              var property = device.getInfo(enumVal)
-              if (property === null) throw "getInfo(CL."+enumName+") returned null."
-              INFO("  " + enumName + ": " + property);
-            }
-          };
-        });
-      });
     });
 
   });
@@ -1411,33 +1128,13 @@ describe("Functionality", function() {
 
   });
 
-  //////////////////////////////////////////////////////////////
+  //////////////////////////////////////////////////////////////////////////////
 
-  beforeEach(function() {
-    this.addMatchers({
-      toEvalAs: function(result) {
-        return eval(this.actual) === eval(result);
-      },
-      toThrow: function(expected) {
-        var wrapper = new Function(this.actual);
-        try { 
-          wrapper.apply(this, arguments);
-          var not = this.isNot ? "" : ", although it was expected to";
-          DEBUG(this.actual + " did not throw an exception" + not);
-          return false;
-        } catch(e) {
-          var not = this.isNot ? "not " : "";
-          if (expected === undefined) {
-            DEBUG(this.actual + " threw exception " + e.name + "; " + not + "expecting any exception");
-            return true;
-          } else {
-            var not = this.isNot ? "no exception or any exception but " : "";
-            DEBUG(this.actual + " threw exception " + e.name + "; expecting " + not + expected);
-            return (e.name === expected);
-          }
-        }
-      },
-    });
+  beforeEach(addCustomMatchers);
+
+  afterEach(function() { 
+    testSuiteTrace(this);
+    releaseAll();
   });
 
 });

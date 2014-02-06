@@ -37,6 +37,11 @@
     DEVICE_INDEX = isNaN(+DEVICE) ? null : +DEVICE;
   })();
 
+  testSuiteTrace = function(testcase) {
+    var resultStr = testcase.results().passed() ? "pass" : "FAIL";
+    TRACE(resultStr + ": " + testSuiteAsString(testcase.suite) + " -> " + testcase.description);
+  };
+
   testSuiteAsString = function(suite) {
     if (suite.parentSuite === null) {
       return suite.description;
@@ -61,8 +66,21 @@
         return ctx;
       }
     } catch (e) {
-      ERROR("webcl-harness.js: createContext() failed");
-      ERROR("Catastrophic error, terminating test suite!");
+      ERROR("webcl-harness.js: Unrecoverable error: createContext() failed, terminating test suite.");
+      alert("webcl-harness.js: Unrecoverable error: createContext() failed, terminating test suite.");
+      jasmine.getEnv().specFilter = function(spec) {
+        return false;
+      };
+      throw e;
+    }
+  };
+
+  releaseAll = function() {
+    try { 
+      webcl.releaseAll();
+    } catch(e) { 
+      ERROR("webcl-harness.js: Unrecoverable error: webcl.releaseAll() failed, terminating test suite.");
+      alert("webcl-harness.js: Unrecoverable error: webcl.releaseAll() failed, terminating test suite.");
       jasmine.getEnv().specFilter = function(spec) {
         return false;
       };
@@ -87,6 +105,42 @@
       return webcl.createContext({ devices: arguments[0] });
     }
     throw "createContextSimplified: Invalid arguments " + arguments;
+  };
+
+  // ### addCustomMatchers ###
+  // 
+  addCustomMatchers = function() {
+    this.addMatchers({
+      toEvalAs: function(expected) {
+        //var f1 = new Function(this.actual);
+        //var f2 = new Function(expected);
+        //var result = f1.apply(this);
+        //var expected = f2.apply(this);
+        //return (result === expected);
+        var actualResult = eval(this.actual);
+        var expectedResult = eval(expected);
+        return (actualResult === expectedResult);
+      },
+      toThrow: function(expected) {
+        var wrapper = new Function(this.actual);
+        try {
+          wrapper.apply(this, arguments);
+          var not = this.isNot ? "" : ", although it was expected to";
+          DEBUG(this.actual + " did not throw an exception" + not);
+          return false;
+        } catch(e) {
+          var not = this.isNot ? "not " : "";
+          if (expected === undefined) {
+            DEBUG(this.actual + " threw exception " + e.name + "; " + not + "expecting any exception");
+            return true;
+          } else {
+            var not = this.isNot ? "no exception or any exception but " : "";
+            DEBUG(this.actual + " threw exception " + e.name + "; expecting " + not + expected);
+            return (e.name === expected);
+          }
+        }
+      },
+    });
   };
 
   // ### loadSource() ###
