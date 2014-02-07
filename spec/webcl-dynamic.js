@@ -16,6 +16,127 @@ describe("Functionality", function() {
 
   //////////////////////////////////////////////////////////////////////////////
   //
+  // Functionality -> createContext (proposed simplified API)
+  // 
+  describe("createContext", function() {
+    
+    it("createContext()", function() {
+      ctx = createContextSimplified();
+      expect('ctx instanceof WebCLContext').toEvalAs(true);
+    });
+
+    it("createContext(DEVICE_TYPE_DEFAULT)", function() {
+      ctx = createContextSimplified(WebCL.DEVICE_TYPE_DEFAULT);
+      expect('ctx instanceof WebCLContext').toEvalAs(true);
+    });
+
+    it("createContext(DEVICE_TYPE_CPU || DEVICE_TYPE_GPU)", function() {
+      ctx1 = createContextSimplified(WebCL.DEVICE_TYPE_CPU);
+      ctx2 = createContextSimplified(WebCL.DEVICE_TYPE_GPU);
+      expect(ctx1 instanceof WebCLContext || ctx2 instanceof WebCLContext).toBeTruthy();
+    });
+
+    it("createContext(aPlatform)", function() {
+      var defaultPlatform = webcl.getPlatforms()[0];
+      ctx = createContextSimplified(defaultPlatform);
+      expect('ctx instanceof WebCLContext').toEvalAs(true);
+    });
+
+    it("createContext(aPlatform, DEVICE_TYPE_CPU || DEVICE_TYPE_GPU)", function() {
+      var defaultPlatform = webcl.getPlatforms()[0];
+      ctx1 = createContextSimplified(defaultPlatform, WebCL.DEVICE_TYPE_CPU);
+      ctx2 = createContextSimplified(defaultPlatform, WebCL.DEVICE_TYPE_GPU);
+      expect(ctx1 instanceof WebCLContext || ctx2 instanceof WebCLContext).toBeTruthy();
+    });
+
+    it("createContext(aPlatform, DEVICE_TYPE_ALL)", function() {
+      defaultPlatform = webcl.getPlatforms()[0];
+      expect('createContextSimplified(defaultPlatform, WebCL.DEVICE_TYPE_ALL)').not.toThrow();
+    });
+
+    it("createContext(aDevice)", function() {
+      var defaultDevice = webcl.getPlatforms()[0].getDevices()[0];
+      ctx = createContextSimplified(defaultDevice);
+      expect('ctx instanceof WebCLContext').toEvalAs(true);
+    });
+
+    it("createContext([aDevice])", function() {
+      var defaultDevice = webcl.getPlatforms()[0].getDevices()[0];
+      ctx = createContextSimplified([defaultDevice]);
+      expect('ctx instanceof WebCLContext').toEvalAs(true);
+    });
+
+    it("throw on createContext(DEVICE_TYPE_ALL)", function() {
+      expect('createContextSimplified(WebCL.DEVICE_TYPE_ALL)').toThrow();
+      expect('createContextSimplified(WebCL.DEVICE_TYPE_ALL)').toThrow('INVALID_DEVICE_TYPE');
+    });
+
+    it("throw on createContext(DEVICE_TYPE_ACCELERATOR)", function() {
+      expect('createContextSimplified(WebCL.DEVICE_TYPE_ACCELERATOR)').toThrow();
+      expect('createContextSimplified(WebCL.DEVICE_TYPE_ACCELERATOR)').toThrow('DEVICE_NOT_FOUND');
+    });
+
+    it("throw on createContext(aPlatform, DEVICE_TYPE_ACCELERATOR)", function() {
+      defaultPlatform = webcl.getPlatforms()[0];
+      expect('createContextSimplified(defaultPlatform, WebCL.DEVICE_TYPE_ACCELERATOR)').toThrow();
+      expect('createContextSimplified(defaultPlatform, WebCL.DEVICE_TYPE_ACCELERATOR)').toThrow('DEVICE_NOT_FOUND');
+    });
+
+    it("throw on createContext(0)", function() {
+      expect('createContextSimplified(0)').toThrow();
+      expect('createContextSimplified(0)').toThrow('INVALID_DEVICE_TYPE');
+    });
+
+    it("throw on createContext(0x1234)", function() {
+      expect('createContextSimplified(0x1234)').toThrow();
+      expect('createContextSimplified(0x1234)').toThrow('INVALID_DEVICE_TYPE');
+    });
+
+    it("throw on createContext(null)", function() {
+      expect('createContextSimplified(null)').toThrow();
+    });
+
+    it("throw on createContext('foobar')", function() {
+      expect('createContextSimplified("foobar")').toThrow();
+    });
+
+    it("throw on createContext([])", function() {
+      expect('createContextSimplified([])').toThrow();
+      expect('createContextSimplified([])').toThrow('INVALID_VALUE');
+    });
+
+    it("throw on createContext([null])", function() {
+      expect('createContextSimplified([null])').toThrow();
+      expect('createContextSimplified([null])').toThrow('INVALID_DEVICE');
+    });
+
+    it("throw on createContext(['foobar'])", function() {
+      expect('createContextSimplified(["foobar"])').toThrow();
+      expect('createContextSimplified(["foobar"])').toThrow('INVALID_DEVICE');
+    });
+
+    it("throw on createContext([aDevice, undefined])", function() {
+      defaultDevice = webcl.getPlatforms()[0].getDevices()[0];
+      expect('createContextSimplified([defaultDevice, undefined])').toThrow();
+      expect('createContextSimplified([defaultDevice, undefined])').toThrow('INVALID_DEVICE');
+    });
+
+    it("throw on createContext([aDevice, null])", function() {
+      defaultDevice = webcl.getPlatforms()[0].getDevices()[0];
+      expect('createContextSimplified([defaultDevice, null])').toThrow();
+      expect('createContextSimplified([defaultDevice, null])').toThrow('INVALID_DEVICE');
+    });
+
+    it("throw on createContext([aDevice, 'foobar'])", function() {
+      defaultDevice = webcl.getPlatforms()[0].getDevices()[0];
+      expect('createContextSimplified([defaultDevice, "foobar"])').toThrow();
+      expect('createContextSimplified([defaultDevice, "foobar"])').toThrow('INVALID_DEVICE');
+    });
+
+  });
+
+  //////////////////////////////////////////////////////////////////////////////
+  //
   // Functionality -> createContext
   // 
   xdescribe("createContext (legacy)", function() {
@@ -134,127 +255,6 @@ describe("Functionality", function() {
     it("must throw if properties.devices === [device, null]", function() {
       defaultDevice = webcl.getPlatforms()[0].getDevices()[0];
       expect('webcl.createContext({ devices: [defaultDevice, null] });').toThrow();
-    });
-
-  });
-
-  //////////////////////////////////////////////////////////////////////////////
-  //
-  // Functionality -> createContext (proposed simplified API)
-  // 
-  describe("createContext", function() {
-    
-    it("createContext()", function() {
-      ctx = createContextSimplified();
-      expect('ctx instanceof WebCLContext').toEvalAs(true);
-    });
-
-    it("createContext(DEVICE_TYPE_DEFAULT)", function() {
-      ctx = createContextSimplified(WebCL.DEVICE_TYPE_DEFAULT);
-      expect('ctx instanceof WebCLContext').toEvalAs(true);
-    });
-
-    it("createContext(DEVICE_TYPE_CPU || DEVICE_TYPE_GPU)", function() {
-      ctx1 = createContextSimplified(WebCL.DEVICE_TYPE_CPU);
-      ctx2 = createContextSimplified(WebCL.DEVICE_TYPE_GPU);
-      expect(ctx1 instanceof WebCLContext || ctx2 instanceof WebCLContext).toBeTruthy();
-    });
-
-    it("createContext(aPlatform)", function() {
-      var defaultPlatform = webcl.getPlatforms()[0];
-      ctx = createContextSimplified(defaultPlatform);
-      expect('ctx instanceof WebCLContext').toEvalAs(true);
-    });
-
-    it("createContext(aPlatform, DEVICE_TYPE_CPU || DEVICE_TYPE_GPU)", function() {
-      var defaultPlatform = webcl.getPlatforms()[0];
-      ctx1 = createContextSimplified(defaultPlatform, WebCL.DEVICE_TYPE_CPU);
-      ctx2 = createContextSimplified(defaultPlatform, WebCL.DEVICE_TYPE_GPU);
-      expect(ctx1 instanceof WebCLContext || ctx2 instanceof WebCLContext).toBeTruthy();
-    });
-
-    it("createContext(aPlatform, DEVICE_TYPE_ALL)", function() {
-      defaultPlatform = webcl.getPlatforms()[0];
-      expect('createContextSimplified(defaultPlatform, WebCL.DEVICE_TYPE_ALL)').not.toThrow();
-    });
-
-    it("createContext(aDevice)", function() {
-      var defaultDevice = webcl.getPlatforms()[0].getDevices()[0];
-      ctx = createContextSimplified(defaultDevice);
-      expect('ctx instanceof WebCLContext').toEvalAs(true);
-    });
-
-    it("createContext([aDevice])", function() {
-      var defaultDevice = webcl.getPlatforms()[0].getDevices()[0];
-      ctx = createContextSimplified([defaultDevice]);
-      expect('ctx instanceof WebCLContext').toEvalAs(true);
-    });
-
-    it("throw on createContext(DEVICE_TYPE_ALL)", function() {
-      expect('createContextSimplified(WebCL.DEVICE_TYPE_ALL)').toThrow();
-      expect('createContextSimplified(WebCL.DEVICE_TYPE_ALL)').toThrow('INVALID_DEVICE_TYPE');
-    });
-
-    it("throw on createContext(DEVICE_TYPE_ACCELERATOR)", function() {
-      expect('createContextSimplified(WebCL.DEVICE_TYPE_ACCELERATOR)').toThrow();
-      expect('createContextSimplified(WebCL.DEVICE_TYPE_ACCELERATOR)').toThrow('DEVICE_NOT_FOUND');
-    });
-
-    it("throw on createContext(aPlatform, DEVICE_TYPE_ACCELERATOR)", function() {
-      defaultPlatform = webcl.getPlatforms()[0];
-      expect('createContextSimplified(defaultPlatform, WebCL.DEVICE_TYPE_ACCELERATOR)').toThrow();
-      expect('createContextSimplified(defaultPlatform, WebCL.DEVICE_TYPE_ACCELERATOR)').toThrow('DEVICE_NOT_FOUND');
-    });
-
-    it("throw on createContext(0)", function() {
-      expect('createContextSimplified(0)').toThrow();
-      expect('createContextSimplified(0)').toThrow('INVALID_DEVICE_TYPE');
-    });
-
-    it("throw on createContext(0x1234)", function() {
-      expect('createContextSimplified(0x1234)').toThrow();
-      expect('createContextSimplified(0x1234)').toThrow('INVALID_DEVICE_TYPE');
-    });
-
-    it("throw on createContext(null)", function() {
-      expect('createContextSimplified(null)').toThrow();
-    });
-
-    it("throw on createContext('foobar')", function() {
-      expect('createContextSimplified("foobar")').toThrow();
-    });
-
-    it("throw on createContext([])", function() {
-      expect('createContextSimplified([])').toThrow();
-      expect('createContextSimplified([])').toThrow('INVALID_VALUE');
-    });
-
-    it("throw on createContext([null])", function() {
-      expect('createContextSimplified([null])').toThrow();
-      expect('createContextSimplified([null])').toThrow('INVALID_DEVICE');
-    });
-
-    it("throw on createContext(['foobar'])", function() {
-      expect('createContextSimplified(["foobar"])').toThrow();
-      expect('createContextSimplified(["foobar"])').toThrow('INVALID_DEVICE');
-    });
-
-    it("throw on createContext([aDevice, undefined])", function() {
-      defaultDevice = webcl.getPlatforms()[0].getDevices()[0];
-      expect('createContextSimplified([defaultDevice, undefined])').toThrow();
-      expect('createContextSimplified([defaultDevice, undefined])').toThrow('INVALID_DEVICE');
-    });
-
-    it("throw on createContext([aDevice, null])", function() {
-      defaultDevice = webcl.getPlatforms()[0].getDevices()[0];
-      expect('createContextSimplified([defaultDevice, null])').toThrow();
-      expect('createContextSimplified([defaultDevice, null])').toThrow('INVALID_DEVICE');
-    });
-
-    it("throw on createContext([aDevice, 'foobar'])", function() {
-      defaultDevice = webcl.getPlatforms()[0].getDevices()[0];
-      expect('createContextSimplified([defaultDevice, "foobar"])').toThrow();
-      expect('createContextSimplified([defaultDevice, "foobar"])').toThrow('INVALID_DEVICE');
     });
 
   });
@@ -959,30 +959,36 @@ describe("Functionality", function() {
   // 
   describe("Kernel language", function() {
 
-    beforeEach(function() {
-      this.addMatchers({
-        toBuild: function() {
-          try {
-            var pathToSource = this.actual;
-            src = loadSource(pathToSource);
-            var ctx = createContext();
-            program = ctx.createProgram(src);
-            devices = ctx.getInfo(WebCL.CONTEXT_DEVICES);
-            device = devices[0];
-            program.build(devices);
-            DEBUG("Building '" + pathToSource + "' did not throw any exception");
-            return true;
-          } catch(e) {
-            DEBUG("Building '" + pathToSource + "' threw " + e.name);
+    var customMatchers = {
+      toBuild: function(util, customEqualityTesters) {
+        return {
+          compare: function(actual, expected) {
             try {
-              DEBUG("Build log: " + program.getBuildInfo(device, WebCL.BUILD_LOG));
-            } catch (e2) {
-              DEBUG("Failed to get BUILD_LOG: ", e2);
+              var pathToSource = actual;
+              src = loadSource(pathToSource);
+              var ctx = createContext();
+              program = ctx.createProgram(src);
+              devices = ctx.getInfo(WebCL.CONTEXT_DEVICES);
+              device = devices[0];
+              program.build(devices);
+              DEBUG("Building '" + pathToSource + "' did not throw any exception");
+              return { pass: true };
+            } catch(e) {
+              DEBUG("Building '" + pathToSource + "' threw " + e.name);
+              try {
+                DEBUG("Build log: " + program.getBuildInfo(device, WebCL.BUILD_LOG));
+              } catch (e2) {
+                DEBUG("Failed to get BUILD_LOG: ", e2);
+              }
+              return { pass: false };
             }
-            return false;
-          }
-        }
-      });
+          },
+        };
+      },
+    };
+
+    beforeEach(function() {
+      jasmine.addMatchers(customMatchers);
     });
 
     //////////////////////////////////////////////////////////////////////////////
@@ -1133,7 +1139,7 @@ describe("Functionality", function() {
   beforeEach(addCustomMatchers);
 
   afterEach(function() { 
-    testSuiteTrace(this);
+    //testSuiteTrace(this);
     releaseAll();
   });
 

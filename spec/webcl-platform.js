@@ -211,6 +211,18 @@ describe("Platform", function() {
       }
     });
 
+    xit("return values must be as specified", function() {
+      platform = webcl.getPlatforms()[0];
+      device = platform.getDevices()[0];
+      enumName = 'DEVICE_TYPE';
+      matcher = deviceInfoEnumMatchers[enumName];
+      value = device.getInfo(WebCL.DEVICE_TYPE);
+      expect(value).toPass(validator);
+      function validator() {
+        return (value === 2 || value === 4);
+      }
+    });
+
   });
 
   //////////////////////////////////////////////////////////////////////////////
@@ -286,7 +298,7 @@ describe("Platform", function() {
   beforeEach(addCustomMatchers);
 
   afterEach(function() { 
-    testSuiteTrace(this);
+    //testSuiteTrace(this);
     releaseAll();
   });
 

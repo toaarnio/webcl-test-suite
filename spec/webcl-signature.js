@@ -74,22 +74,35 @@ describe("Signature", function() {
 
   //////////////////////////////////////////////////////////////
 
+  var customMatchers = {
+    toHaveProperty: function(util, customEqualityTesters) {
+      return {
+        compare: function(actual, expected) {
+          var obj = typeof(actual) === "string" ? window[actual] : actual;
+          return { pass: (obj[name] !== undefined) };
+        }
+      };
+    },
+    toHaveFunction: function(util, customEqualityTesters) {
+      return {
+        compare: function(actual, expected) {
+          var obj = typeof(actual) === "string" ? window[actual] : actual;
+          var exists = obj && (typeof(obj[expected]) === 'function');
+          exists = exists || (obj && obj.prototype && typeof(obj.prototype[expected]) === 'function');
+          return { pass: exists };
+        }
+      };
+    },
+  };
+
   beforeEach(function() {
-    this.addMatchers({
-      toHaveProperty: function(name) {
-        var obj = typeof(this.actual) === "string" ? window[this.actual] : this.actual;
-        return (obj[name] !== undefined);
-      },
-      toHaveFunction: function(name) {
-        var obj = typeof(this.actual) === "string" ? window[this.actual] : this.actual;
-        var exists = obj && typeof(obj[name]) === 'function';
-        exists = exists || (obj && obj.prototype && typeof(obj.prototype[name]) === 'function');
-        return exists;
-      },
-    });
+    jasmine.addMatchers(customMatchers);
   });
 
-  afterEach(function() { testSuiteTrace(this); });
+  afterEach(function() { 
+    //console.log("afterEach jasmine.Suite(): ", jasmine);
+    //testSuiteTrace(this); 
+  });
 
   function checkSignature(className, checkExisting) {
     for (var funcName in expectedFunctions[className]) {

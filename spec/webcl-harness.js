@@ -107,42 +107,46 @@
     throw "createContextSimplified: Invalid arguments " + arguments;
   };
 
+  jasmine.getEnv().specFilter = function(spec) {
+    var queryString = getURLParameter('spec');
+    var specName = queryString && queryString.replace(/\+/g, " ");
+    return (!specName) || spec.getFullName().indexOf(queryString) === 0;
+  };
+
   // ### addCustomMatchers ###
   // 
   addCustomMatchers = function() {
-    this.addMatchers({
-      toEvalAs: function(expected) {
-        //var f1 = new Function(this.actual);
-        //var f2 = new Function(expected);
-        //var result = f1.apply(this);
-        //var expected = f2.apply(this);
-        //return (result === expected);
-        var actualResult = eval(this.actual);
-        var expectedResult = eval(expected);
-        return (actualResult === expectedResult);
-      },
-      toThrow: function(expected) {
-        var wrapper = new Function(this.actual);
-        try {
-          wrapper.apply(this, arguments);
-          var not = this.isNot ? "" : ", although it was expected to";
-          DEBUG(this.actual + " did not throw an exception" + not);
-          return false;
-        } catch(e) {
-          var not = this.isNot ? "not " : "";
-          if (expected === undefined) {
-            DEBUG(this.actual + " threw exception " + e.name + "; " + not + "expecting any exception");
-            return true;
-          } else {
-            var not = this.isNot ? "no exception or any exception but " : "";
-            DEBUG(this.actual + " threw exception " + e.name + "; expecting " + not + expected);
-            return (e.name === expected);
-          }
-        }
-      },
-    });
+    jasmine.addMatchers(jasmineCustomMatchers);
   };
 
+  var jasmineCustomMatchers = {
+
+    toEvalAs: function(util, customEqualityTesters) {
+      return {
+        compare: function(actual, expected) {
+          var actualResult = eval(actual);
+          var expectedResult = eval(expected);
+          return { pass: (actualResult === expectedResult) }
+        },
+      };
+    },
+
+    toThrow: function(util, customEqualityTesters) {
+      return {
+        compare: function(actual, expected) {
+          try {
+            var wrapper = new Function(actual);
+            wrapper.apply(this, arguments);
+            return { pass: false };
+          } catch(e) {
+            return { pass: (expected === undefined) || (e.name === expected) };
+          }
+        },
+      };
+    },
+
+  };
+    
   // ### loadSource() ###
   // 
   // Loads a kernel source code file from the given `uri` via http GET, with a random query string
