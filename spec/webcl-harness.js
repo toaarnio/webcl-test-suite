@@ -33,7 +33,7 @@
     ERROR = (getURLParameter('debug') === 'false') ? new Function() : console.error;
     DEBUG = (getURLParameter('debug') === 'false') ? new Function() : console.log;
     TRACE = (getURLParameter('trace') === 'true') ? console.log : new Function();
-    DEVICE = getURLParameter('device');
+    var DEVICE = getURLParameter('device');
     DEVICE_INDEX = isNaN(+DEVICE) ? null : +DEVICE;
   })();
 
@@ -121,16 +121,9 @@
 
   var jasmineCustomMatchers = {
 
-    toEvalAs: function(util, customEqualityTesters) {
-      return {
-        compare: function(actual, expected) {
-          var actualResult = eval(actual);
-          var expectedResult = eval(expected);
-          return { pass: (actualResult === expectedResult) }
-        },
-      };
-    },
-
+    // expect('myFunction(validArg)').not.toThrow();
+    // expect('myFunction(invalidArg)').toThrow('TypeError');
+    //
     toThrow: function(util, customEqualityTesters) {
       return {
         compare: function(actual, expected) {
@@ -141,6 +134,36 @@
           } catch(e) {
             return { pass: (expected === undefined) || (e.name === expected) };
           }
+        },
+      };
+    },
+
+    // expect(42).toPass(function(v) { return (v > 0 && v < 100); });
+    // expect("foo").toPass(function(v) { return typeof(v) === 'number' });
+    //
+    toPass: function(util, customEqualityTesters) {
+      return {
+        compare: function(actual, validator) {
+          var result = {};
+          result.pass = validator(eval(actual));
+          if (result.pass) {
+            result.message = "Expected '" + actual + "' not to be valid according to " + validator.toString().replace(/\n/g, "");
+          } else {
+            result.message = "Expected '" + actual + "' to be valid according to " + validator.toString().replace(/\n/g, "");
+          }
+          return result;
+        }
+      };
+    },
+
+    // expect('getElements() instanceof Array').toEvalAs(true);
+    //
+    toEvalAs: function(util, customEqualityTesters) {
+      return {
+        compare: function(actual, expected) {
+          var actualResult = eval(actual);
+          var expectedResult = eval(expected);
+          return { pass: (actualResult === expectedResult) }
         },
       };
     },
@@ -165,13 +188,15 @@
     }
   };
 
-  function getDeviceAtIndex(index) {
+  // ### getDeviceAtIndex() ###
+  // 
+  getDeviceAtIndex = function(index) {
     var devices = [];
     webcl.getPlatforms().forEach(function(plat) {
       Array.prototype.push.apply(devices, plat.getDevices());
     });
     return devices[index];
-  }
+  };
 
   var deviceVendors = {
     4098 : "AMD",

@@ -167,8 +167,17 @@ describe("Platform", function() {
   // Platform -> getInfo
   // 
   describe("getInfo", function() {
+    
+    beforeEach(function() {
+      try {
+        device = getDeviceAtIndex(DEVICE_INDEX);
+      } catch(e) {}
+      if (device === undefined) {
+        pending();
+      }
+    });
 
-    it("must work on all platforms", function() {
+    it("platform.getInfo(validArgument) must return the expected kind of value", function() {
       var plats = webcl.getPlatforms();
       function checkInfo() {
         for (var i=0; i < plats.length; i++) {
@@ -191,35 +200,41 @@ describe("Platform", function() {
       expect(checkInfo).not.toThrow();
     });
 
-    it("must work on all devices", function() {
-      platforms = webcl.getPlatforms();
-      for (var i=0; i < platforms.length; i++) {
-        devices = platforms[i].getDevices();
-        for (var j=0; j < devices.length; j++) {
-          device = devices[j];
-          for (enumName in deviceInfoEnums) {
-            validate = function(enumName) {
-              var matcher = deviceInfoEnumMatchers[enumName];
-              return matcher(device.getInfo(WebCL[enumName]));
-            };
-            enumValue = deviceInfoEnums[enumName];
-            expect('info = device.getInfo(WebCL.'+enumName+')').not.toThrow();
-            expect('validate("'+enumName+'")').toEvalAs('true');
-            INFO(enumName+': '+info);
-          }
-        }
+    it("device.getInfo(validArgument) must not throw", function() {
+      for (enumName in deviceInfoEnums) {
+        enumValue = deviceInfoEnums[enumName];
+        expect('device.getInfo(WebCL.'+enumName+')').not.toThrow();
       }
     });
 
-    xit("return values must be as specified", function() {
-      platform = webcl.getPlatforms()[0];
-      device = platform.getDevices()[0];
-      enumName = 'DEVICE_TYPE';
-      matcher = deviceInfoEnumMatchers[enumName];
-      value = device.getInfo(WebCL.DEVICE_TYPE);
-      expect(value).toPass(validator);
-      function validator() {
-        return (value === 2 || value === 4);
+    it("device.getInfo(validArgument) must return the expected kind of value", function() {
+      device = getDeviceAtIndex(DEVICE_INDEX);
+      for (enumName in deviceInfoEnums) {
+        matcher = deviceInfoEnumMatchers[enumName];
+        value = device.getInfo(WebCL[enumName]);
+        expect('device.getInfo(WebCL.'+enumName+') // ' + value).toPass(matcher);
+        INFO(enumName+ ': ' + device.getInfo(WebCL[enumName]));
+      }
+    });
+
+    it("device.getInfo(invalidArgument) must throw", function() {
+      device = getDeviceAtIndex(DEVICE_INDEX);
+      expect('device.getInfo(WebCL.PLATFORM_VENDOR)').toThrow('INVALID_VALUE');
+      expect('device.getInfo(WebCL.CONTEXT_PLATFORM)').toThrow('INVALID_VALUE');
+      expect('device.getInfo(WebCL.BUILD_ERROR)').toThrow('INVALID_VALUE');
+      expect('device.getInfo(0x101A)').toThrow('INVALID_VALUE'); // DEVICE_MIN_DATA_TYPE_ALIGN_SIZE
+      expect('device.getInfo(-1)').toThrow('INVALID_VALUE');
+      expect('device.getInfo(0)').toThrow('INVALID_VALUE');
+      expect('device.getInfo("foo")').toThrow('INVALID_VALUE');
+      expect('device.getInfo({})').toThrow('INVALID_VALUE');
+      expect('device.getInfo()').toThrow('INVALID_VALUE');
+    });
+
+    it("device.getInfo(nonEnabledExtensionArgument) must throw", function() {
+      device = getDeviceAtIndex(DEVICE_INDEX);
+      for (enumName in extensionEnums) {
+        enumValue = extensionEnums[enumName];
+        expect('device.getInfo(WebCL.'+enumName+')').toThrow('INVALID_VALUE');
       }
     });
 
