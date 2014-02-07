@@ -14,7 +14,14 @@
   <script type="text/javascript" src="lib/jasmine-2.0.0/jasmine-html.js"></script>
   <script type="text/javascript" src="lib/jasmine-2.0.0/boot.js"></script>
 
-  <!-- include spec files -->
+  <!-- customize Jasmine html reporter output (hide stack trace) -->
+  <style>
+    .stack-trace {
+      display: none;
+    }
+  </style>
+
+  <!-- include WebCL spec files -->
   <script type="text/javascript" src="spec/webcl-harness.js"></script>
   <script type="text/javascript" src="spec/webcl-includes.js"></script>
   <script type="text/javascript" src="spec/webcl-signature.js"></script>
