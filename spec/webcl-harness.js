@@ -53,7 +53,7 @@
   createContext = function() {
     try {
       if (DEVICE_INDEX === null) {
-        DEBUG("Selected device: DEFAULT");
+        DEBUG("Creating a Context for Device DEFAULT");
         return webcl.createContext();
       } else {
         var selected = getDeviceAtIndex(DEVICE_INDEX);
@@ -61,7 +61,7 @@
         var ctx = webcl.createContext(properties);
         var device = ctx.getInfo(WebCL.CONTEXT_DEVICES)[0];
         var vendorId = device.getInfo(WebCL.DEVICE_VENDOR_ID);
-        DEBUG("Selected device: " + deviceVendors[vendorId] + " (VENDOR_ID="+vendorId+")");
+        DEBUG("Creating a Context for Device " + deviceVendors[vendorId] + " (VENDOR_ID="+vendorId+")");
         ctx.vendor = deviceVendors[vendorId];
         return ctx;
       }
@@ -191,11 +191,17 @@
   // ### getDeviceAtIndex() ###
   // 
   getDeviceAtIndex = function(index) {
-    var devices = [];
-    webcl.getPlatforms().forEach(function(plat) {
-      Array.prototype.push.apply(devices, plat.getDevices());
-    });
-    return devices[index];
+    if (index === null) {
+      DEBUG("Selected device [0] (DEFAULT)");
+      return webcl.getPlatforms()[0].getDevices()[0];
+    } else {
+      var devices = [];
+      webcl.getPlatforms().forEach(function(plat) {
+        Array.prototype.push.apply(devices, plat.getDevices());
+      });
+      DEBUG("Selected device ["+index+"]");
+      return devices[index];
+    }
   };
 
   var deviceVendors = {
