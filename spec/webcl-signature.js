@@ -18,8 +18,11 @@
 // 
 describe("Signature", function() {
 
-  it("must have the singleton 'webcl' object", function() {
+  beforeEach(function() {
     expect(webcl).toBeDefined();
+  });
+
+  it("must have the singleton 'webcl' object", function() {
   });
 
   it("must have all the expected classes", function() {
