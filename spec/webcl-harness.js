@@ -132,7 +132,15 @@
             wrapper.apply(this, arguments);
             return { pass: false };
           } catch(e) {
-            return { pass: (expected === undefined) || (e.name === expected) };
+            DEBUG(e);
+            var result = {};
+            result.pass = (expected === undefined) || (e.name === expected);
+            if (expected === undefined) {
+              result.message = "Expected '" + actual + "' not to throw, but it threw " + e.name;
+            } else if (e.name !== expected) {
+              result.message = "Expected '" + actual + "' to throw " + expected + ", but it threw " + e.name;
+            }
+            return result;
           }
         },
       };

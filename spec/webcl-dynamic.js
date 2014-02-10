@@ -291,13 +291,11 @@ describe("Functionality", function() {
 
       it("must throw on getInfo(CONTEXT_PROPERTIES)", function() {
         expect('ctx instanceof WebCLContext').toEvalAs(true);
-        expect('ctx.getInfo(WebCL.CONTEXT_PROPERTIES)').toThrow();
         expect('ctx.getInfo(WebCL.CONTEXT_PROPERTIES)').toThrow('INVALID_VALUE');
       });
 
       it("must throw on getInfo(CONTEXT_REFERENCE_COUNT)", function() {
         expect('ctx instanceof WebCLContext').toEvalAs(true);
-        expect('ctx.getInfo(WebCL.CONTEXT_REFERENCE_COUNT)').toThrow();
         expect('ctx.getInfo(WebCL.CONTEXT_REFERENCE_COUNT)').toThrow('INVALID_VALUE');
       });
 
@@ -361,9 +359,6 @@ describe("Functionality", function() {
 
       it("must throw if device === <invalid>", function() {
         expect('ctx instanceof WebCLContext').toEvalAs(true);
-        expect('ctx.createCommandQueue("foobar")').toThrow();
-        expect('ctx.createCommandQueue([])').toThrow();
-        expect('ctx.createCommandQueue(ctx)').toThrow();
         expect('ctx.createCommandQueue("foobar")').toThrow('INVALID_DEVICE');
         expect('ctx.createCommandQueue([])').toThrow('INVALID_DEVICE');
         expect('ctx.createCommandQueue(ctx)').toThrow('INVALID_DEVICE');
@@ -371,9 +366,6 @@ describe("Functionality", function() {
 
       it("must throw if device === null, properties === <invalid>", function() {
         expect('ctx instanceof WebCLContext').toEvalAs(true);
-        expect('ctx.createCommandQueue(null, "foobar")').toThrow();
-        expect('ctx.createCommandQueue(null, [])').toThrow();
-        expect('ctx.createCommandQueue(null, 0x4)').toThrow();
         expect('ctx.createCommandQueue(null, "foobar")').toThrow('INVALID_VALUE');
         expect('ctx.createCommandQueue(null, [])').toThrow('INVALID_VALUE');
         expect('ctx.createCommandQueue(null, 0x4)').toThrow('INVALID_VALUE');
@@ -381,9 +373,6 @@ describe("Functionality", function() {
 
       it("must throw if device === aDevice, properties === <invalid>", function() {
         expect('ctx instanceof WebCLContext').toEvalAs(true);
-        expect('ctx.createCommandQueue(device, "foobar")').toThrow();
-        expect('ctx.createCommandQueue(device, [])').toThrow();
-        expect('ctx.createCommandQueue(device, 0x4)').toThrow();
         expect('ctx.createCommandQueue(device, "foobar")').toThrow('INVALID_VALUE');
         expect('ctx.createCommandQueue(device, [])').toThrow('INVALID_VALUE');
         expect('ctx.createCommandQueue(device, 0x4)').toThrow('INVALID_VALUE');
@@ -417,10 +406,10 @@ describe("Functionality", function() {
 
       it("must throw if source === ''/null/undefined/omitted", function() {
         expect('ctx instanceof WebCLContext').toEvalAs(true);
-        expect('ctx.createProgram("")').toThrow();
-        expect('ctx.createProgram(null)').toThrow();
-        expect('ctx.createProgram(undefined)').toThrow();
-        expect('ctx.createProgram()').toThrow();
+        expect('ctx.createProgram("")').toThrow('INVALID_VALUE');
+        expect('ctx.createProgram(null)').toThrow('INVALID_VALUE');
+        expect('ctx.createProgram(undefined)').toThrow('INVALID_VALUE');
+        expect('ctx.createProgram()').toThrow('INVALID_VALUE');
       });
 
     });
@@ -666,7 +655,7 @@ describe("Functionality", function() {
       it("must throw if devices === []", function() {
         program = ctx.createProgram(src);
         expect('program instanceof WebCLProgram').toEvalAs(true);
-        expect('program.build([])').toThrow();
+        expect('program.build([])').toThrow('INVALID_VALUE');
       });
 
       // This test is known to crash on Intel OpenCL / Win7 -- but
@@ -675,32 +664,29 @@ describe("Functionality", function() {
       xit("must throw if options === '-invalid-option'", function() {
         program = ctx.createProgram(src);
         expect('program instanceof WebCLProgram').toEvalAs(true);
-        expect('program.build(devices, "-invalid-option")').toThrow();
-        expect('program.build([], "-invalid-option")').toThrow();
-        expect('program.build(null, "-invalid-option")').toThrow();
-        expect('program.build(undefined, "-invalid-option")').toThrow();
+        expect('program.build(devices, "-invalid-option")').toThrow('INVALID_BUILD_OPTIONS');
+        expect('program.build(null, "-invalid-option")').toThrow('INVALID_BUILD_OPTIONS');
+        expect('program.build(undefined, "-invalid-option")').toThrow('INVALID_BUILD_OPTIONS');
       });
 
       it("must throw if kernel source is obviously invalid", function() {
         var src = "obviously invalid";
         program = ctx.createProgram(src);
         expect('program instanceof WebCLProgram').toEvalAs(true);
-        expect('program.build()').toThrow();
-        expect('program.build(null)').toThrow();
-        expect('program.build([])').toThrow();
-        expect('program.build(devices)').toThrow();
-        expect('program.build(devices, "-w")').toThrow();
+        expect('program.build()').toThrow('BUILD_PROGRAM_FAILURE');
+        expect('program.build(null)').toThrow('BUILD_PROGRAM_FAILURE');
+        expect('program.build(devices)').toThrow('BUILD_PROGRAM_FAILURE');
+        expect('program.build(devices, "-w")').toThrow('BUILD_PROGRAM_FAILURE');
       });
 
       it("must throw if kernel source is slightly invalid", function() {
         var src = "kernel int dummy() {}";
         program = ctx.createProgram(src);
         expect('program instanceof WebCLProgram').toEvalAs(true);
-        expect('program.build()').toThrow();
-        expect('program.build(null)').toThrow();
-        expect('program.build([])').toThrow();
-        expect('program.build(devices)').toThrow();
-        expect('program.build(devices, "-w")').toThrow();
+        expect('program.build()').toThrow('BUILD_PROGRAM_FAILURE');
+        expect('program.build(null)').toThrow('BUILD_PROGRAM_FAILURE');
+        expect('program.build(devices)').toThrow('BUILD_PROGRAM_FAILURE');
+        expect('program.build(devices, "-w")').toThrow('BUILD_PROGRAM_FAILURE');
       });
 
     });
@@ -775,26 +761,26 @@ describe("Functionality", function() {
       it("must throw if device === undefined/null/<invalid>", function() {
         program = ctx.createProgram(src);
         expect('program instanceof WebCLProgram').toEvalAs(true);
-        expect('program.getBuildInfo("foobar", WebCL.PROGRAM_BUILD_STATUS)').toThrow('INVALID_VALUE');
-        expect('program.getBuildInfo([], WebCL.PROGRAM_BUILD_STATUS)').toThrow();
-        expect('program.getBuildInfo(null, WebCL.PROGRAM_BUILD_STATUS)').toThrow();
-        expect('program.getBuildInfo(undefined, WebCL.PROGRAM_BUILD_STATUS)').toThrow();
-        expect('program.getBuildInfo(undefined, WebCL.PROGRAM_BUILD_STATUS)').toThrow();
+        expect('program.getBuildInfo("foobar", WebCL.PROGRAM_BUILD_STATUS)').toThrow('INVALID_DEVICE');
+        expect('program.getBuildInfo([], WebCL.PROGRAM_BUILD_STATUS)').toThrow('INVALID_DEVICE');
+        expect('program.getBuildInfo(null, WebCL.PROGRAM_BUILD_STATUS)').toThrow('INVALID_DEVICE');
+        expect('program.getBuildInfo(undefined, WebCL.PROGRAM_BUILD_STATUS)').toThrow('INVALID_DEVICE');
+        expect('program.getBuildInfo(undefined, WebCL.PROGRAM_BUILD_STATUS)').toThrow('INVALID_DEVICE');
       });
 
       it("must throw if name === omitted/undefined/null/<invalid>", function() {
         program = ctx.createProgram(src);
         expect('program instanceof WebCLProgram').toEvalAs(true);
-        expect('program.getBuildInfo(device)').toThrow();
-        expect('program.getBuildInfo(device, undefined)').toThrow();
-        expect('program.getBuildInfo(device, null)').toThrow();
-        expect('program.getBuildInfo(device, 0)').toThrow();
-        expect('program.getBuildInfo(device, -1)').toThrow();
-        expect('program.getBuildInfo(device, 0x1180)').toThrow();
-        expect('program.getBuildInfo(device, 0x1184)').toThrow();
-        expect('program.getBuildInfo(device, WebCL.PROGRAM_NUM_DEVICES)').toThrow();
-        expect('program.getBuildInfo(device, "foobar")').toThrow();
-        expect('program.getBuildInfo(device, device)').toThrow();
+        expect('program.getBuildInfo(device)').toThrow('INVALID_VALUE');
+        expect('program.getBuildInfo(device, undefined)').toThrow('INVALID_VALUE');
+        expect('program.getBuildInfo(device, null)').toThrow('INVALID_VALUE');
+        expect('program.getBuildInfo(device, 0)').toThrow('INVALID_VALUE');
+        expect('program.getBuildInfo(device, -1)').toThrow('INVALID_VALUE');
+        expect('program.getBuildInfo(device, 0x1180)').toThrow('INVALID_VALUE');
+        expect('program.getBuildInfo(device, 0x1184)').toThrow('INVALID_VALUE');
+        expect('program.getBuildInfo(device, WebCL.PROGRAM_NUM_DEVICES)').toThrow('INVALID_VALUE');
+        expect('program.getBuildInfo(device, "foobar")').toThrow('INVALID_VALUE');
+        expect('program.getBuildInfo(device, device)').toThrow('INVALID_VALUE');
       });
 
     });
@@ -924,33 +910,130 @@ describe("Functionality", function() {
 
       it("must throw if kernel is not a valid WebCLKernel", function() {
         expect('queue instanceof WebCLCommandQueue').toEvalAs(true);
-        expect('queue.enqueueNDRangeKernel("foo", 1, [0], [1], [1])').toThrow();
-        expect('queue.enqueueNDRangeKernel(ctx, 1, [0], [1], [1])').toThrow();
+        expect('queue.enqueueNDRangeKernel("foo", 1, [0], [1], [1])').toThrow('INVALID_KERNEL');
+        expect('queue.enqueueNDRangeKernel(ctx, 1, [0], [1], [1])').toThrow('INVALID_KERNEL');
       });
 
       it("must throw if workDim is not equal to 1, 2, or 3", function() {
         expect('queue instanceof WebCLCommandQueue').toEvalAs(true);
-        expect('queue.enqueueNDRangeKernel(kernel, 0, [0], [1], [1])').toThrow();
-        expect('queue.enqueueNDRangeKernel(kernel, 4, [0, 0, 0, 0], [1, 1, 1, 1], [1, 1, 1, 1])').toThrow();
+        expect('queue.enqueueNDRangeKernel(kernel, 0, [0], [1], [1])').toThrow('INVALID_WORK_DIMENSION')
+        expect('queue.enqueueNDRangeKernel(kernel, 4, [0, 0, 0, 0], [1, 1, 1, 1], [1, 1, 1, 1])').toThrow('INVALID_WORK_DIMENSION');
       });
 
       it("must throw if globalWorkSize.length != workDim", function() {
         expect('queue instanceof WebCLCommandQueue').toEvalAs(true);
-        expect('queue.enqueueNDRangeKernel(kernel, 1, [0], [1, 1], [1])').toThrow();
-        expect('queue.enqueueNDRangeKernel(kernel, 2, [0, 0], [1], [1, 1])').toThrow();
-        expect('queue.enqueueNDRangeKernel(kernel, 2, [0, 0], [1, 1, 1], [1, 1])').toThrow();
-        expect('queue.enqueueNDRangeKernel(kernel, 3, [0, 0, 0], [1, 1], [1, 1, 1])').toThrow();
-        expect('queue.enqueueNDRangeKernel(kernel, 3, [0, 0, 0], [1, 1, 1, 1], [1, 1, 1])').toThrow();
+        expect('queue.enqueueNDRangeKernel(kernel, 1, [0], [1, 1], [1])').toThrow('INVALID_GLOBAL_WORK_SIZE');
+        expect('queue.enqueueNDRangeKernel(kernel, 2, [0, 0], [1], [1, 1])').toThrow('INVALID_GLOBAL_WORK_SIZE');
+        expect('queue.enqueueNDRangeKernel(kernel, 2, [0, 0], [1, 1, 1], [1, 1])').toThrow('INVALID_GLOBAL_WORK_SIZE');
+        expect('queue.enqueueNDRangeKernel(kernel, 3, [0, 0, 0], [1, 1], [1, 1, 1])').toThrow('INVALID_GLOBAL_WORK_SIZE');
+        expect('queue.enqueueNDRangeKernel(kernel, 3, [0, 0, 0], [1, 1, 1, 1], [1, 1, 1])').toThrow('INVALID_GLOBAL_WORK_SIZE');
       });
 
       it("must throw if globalWorkSize[i] > 2^32-1", function() {
         expect('queue instanceof WebCLCommandQueue').toEvalAs(true);
-        expect('queue.enqueueNDRangeKernel(kernel, 1, [0], [0xffffffff+1], [1])').toThrow();
-        expect('queue.enqueueNDRangeKernel(kernel, 2, [0, 0], [1, 0xffffffff+1], [1, 1])').toThrow();
+        expect('queue.enqueueNDRangeKernel(kernel, 1, [0], [0xffffffff+1], [1])').toThrow('INVALID_GLOBAL_WORK_SIZE');
+        expect('queue.enqueueNDRangeKernel(kernel, 2, [0, 0], [1, 0xffffffff+1], [1, 1])').toThrow('INVALID_GLOBAL_WORK_SIZE');
       });
 
     });
 
+    //////////////////////////////////////////////////////////////////////////////
+    //
+    // Functionality -> WebCLCommandQueue -> enqueueReadImage
+    // 
+    describe("enqueueRead", function() {
+
+      beforeEach(function() {
+        try {
+          W = 64;
+          H = 64;
+          BPP = 4;
+          bytesPerRow = BPP*W;
+          ctx = createContext();
+          queue = ctx.createCommandQueue(null, 0);
+          descriptor = { width : W, height : H };
+          pixels = new Uint8Array(W*H*BPP);
+          image = ctx.createImage(WebCL.MEM_READ_WRITE, descriptor);
+          buffer = ctx.createBuffer(WebCL.MEM_READ_WRITE, W*H*BPP);
+          if (!image instanceof WebCLImage || !buffer instanceof WebCLBuffer)
+            throw { name: "TEST_SUITE_FAILURE", message: "beforeEach: Unable to create WebCL resources, all tests will fail!" };
+        } catch (e) {
+          ERROR("Functionality -> WebCLCommandQueue -> enqueueRead -> beforeEach: Unable to create WebCL resources, all tests will fail!");
+          throw e;
+        }
+      });
+
+      it("enqueueReadImage(<valid arguments>) must not throw", function() {
+        expect('queue.enqueueReadImage(image, true, [0,0], [W, H], 0, pixels)').not.toThrow();
+        expect('queue.enqueueReadImage(image, true, [0,0], [W, H], bytesPerRow, pixels)').not.toThrow();
+      });
+
+      it("enqueueReadImage(<invalid image>) must throw", function() {
+        expect('queue.enqueueReadImage(undefined, true, [0,0], [W, H], 0, pixels)').toThrow('INVALID_MEM_OBJECT');
+        expect('queue.enqueueReadImage(null, true, [0,0], [W, H], 0, pixels)').toThrow('INVALID_MEM_OBJECT');
+        expect('queue.enqueueReadImage({}, true, [0,0], [W, H], 0, pixels)').toThrow('INVALID_MEM_OBJECT');
+        expect('queue.enqueueReadImage([], true, [0,0], [W, H], 0, pixels)').toThrow('INVALID_MEM_OBJECT');
+        expect('queue.enqueueReadImage(ctx, true, [0,0], [W, H], 0, pixels)').toThrow('INVALID_MEM_OBJECT');
+        expect('queue.enqueueReadImage(queue, true, [0,0], [W, H], 0, pixels)').toThrow('INVALID_MEM_OBJECT');
+        expect('queue.enqueueReadImage(buffer, true, [0,0], [W, H], 0, pixels)').toThrow('INVALID_MEM_OBJECT');
+      });
+
+      it("enqueueReadImage(<image from another context>) must throw", function() {
+        ctx2 = createContext();
+        queue2 = ctx2.createCommandQueue(null, 0);
+        expect('queue2.enqueueReadImage(image, true, [0,0], [W, H], 0, pixels)').toThrow('INVALID_CONTEXT');
+      });
+
+      it("enqueueReadImage(<invalid blockingRead>) must throw", function() { // TODO what exception type?
+        expect('queue.enqueueReadImage(image, undefined, [0,0], [W, H], 0, pixels)').toThrow();
+        expect('queue.enqueueReadImage(image, null, [0,0], [W, H], 0, pixels)').toThrow();
+        expect('queue.enqueueReadImage(image, "foo", [0,0], [W, H], 0, pixels)').toThrow();
+        expect('queue.enqueueReadImage(image, 0, [0,0], [W, H], 0, pixels)').toThrow();
+      });
+
+      it("enqueueReadImage(<invalid origin>) must throw", function() {
+        expect('queue.enqueueReadImage(image, true, undefined, [W, H], 0, pixels)').toThrow('INVALID_VALUE');
+        expect('queue.enqueueReadImage(image, true, null, [W, H], 0, pixels)').toThrow('INVALID_VALUE');
+        expect('queue.enqueueReadImage(image, true, [], [W, H], 0, pixels)').toThrow('INVALID_VALUE');
+        expect('queue.enqueueReadImage(image, true, [0], [W, H], 0, pixels)').toThrow('INVALID_VALUE');
+        expect('queue.enqueueReadImage(image, true, [0, 0, 0], [W, H], 0, pixels)').toThrow('INVALID_VALUE');
+        expect('queue.enqueueReadImage(image, true, [0, null], [W, H], 0, pixels)').toThrow('INVALID_VALUE');
+        expect('queue.enqueueReadImage(image, true, [0, "foo"], [W, H], 0, pixels)').toThrow('INVALID_VALUE');
+        expect('queue.enqueueReadImage(image, true, [0, -1], [W, H], 0, pixels)').toThrow('INVALID_VALUE');
+      });
+
+      it("enqueueReadImage(<invalid region>) must throw", function() {
+        expect('queue.enqueueReadImage(image, true, [0,0], undefined, 0, pixels)').toThrow('INVALID_VALUE');
+        expect('queue.enqueueReadImage(image, true, [0,0], null, 0, pixels)').toThrow('INVALID_VALUE');
+        expect('queue.enqueueReadImage(image, true, [0,0], [], 0, pixels)').toThrow('INVALID_VALUE');
+        expect('queue.enqueueReadImage(image, true, [0,0], [W], 0, pixels)').toThrow('INVALID_VALUE');
+        expect('queue.enqueueReadImage(image, true, [0,0], [W, H, 1], 0, pixels)').toThrow('INVALID_VALUE');
+        expect('queue.enqueueReadImage(image, true, [0,0], [W, null], 0, pixels)').toThrow('INVALID_VALUE');
+        expect('queue.enqueueReadImage(image, true, [0,0], [W, "foo"], 0, pixels)').toThrow('INVALID_VALUE');
+        expect('queue.enqueueReadImage(image, true, [0,0], [W, -1], 0, pixels)').toThrow('INVALID_VALUE');
+      });
+
+      it("enqueueReadImage(<invalid hostRowPitch>) must throw", function() {
+        expect('queue.enqueueReadImage(image, true, [0,0], [W, H], -1, pixels)').toThrow('INVALID_VALUE');
+        expect('queue.enqueueReadImage(image, true, [0,0], [W, H], bytesPerRow-1, pixels)').toThrow('INVALID_VALUE');
+        expect('queue.enqueueReadImage(image, true, [0,0], [W, H], undefined, pixels)').toThrow('INVALID_VALUE');
+        expect('queue.enqueueReadImage(image, true, [0,0], [W, H], null, pixels)').toThrow('INVALID_VALUE');
+        expect('queue.enqueueReadImage(image, true, [0,0], [W, H], "foo", pixels)').toThrow('INVALID_VALUE');
+        expect('queue.enqueueReadImage(image, true, [0,0], [W, H], [], pixels)').toThrow('INVALID_VALUE');
+        expect('queue.enqueueReadImage(image, true, [0,0], [W, H], {}, pixels)').toThrow('INVALID_VALUE');
+      });
+
+      it("enqueueReadImage(<invalid hostPtr>) must throw", function() {
+      });
+
+      it("enqueueReadImage(<region out-of-bounds image>) must throw", function() {
+      });
+
+      it("enqueueReadImage(<region out-of-bounds hostPtr>) must throw", function() {
+      });
+
+    });
+      
   });
 
   //////////////////////////////////////////////////////////////////////////////
@@ -1117,7 +1200,7 @@ describe("Functionality", function() {
     it("must throw when trying to use an object that has been released", function() {
       ctx = createContext();
       ctx.release();
-      expect('ctx.getInfo(WebCL.CONTEXT_NUM_DEVICES)').toThrow();
+      expect('ctx.getInfo(WebCL.CONTEXT_NUM_DEVICES)').toThrow('WEBCL_IMPLEMENTATION_FAILURE');
     });
 
     // This test is known to crash on Intel OpenCL / Win7
@@ -1125,11 +1208,11 @@ describe("Functionality", function() {
     it("build() must throw if options === '-invalid-option'", function() {
       ctx = createContext();
       program = ctx.createProgram(src);
+      devices = ctx.getInfo(WebCL.CONTEXT_DEVICES);
       expect('program instanceof WebCLProgram').toEvalAs(true);
-      expect('program.build(devices, "-invalid-option")').toThrow();
-      expect('program.build([], "-invalid-option")').toThrow();
-      expect('program.build(null, "-invalid-option")').toThrow();
-      expect('program.build(undefined, "-invalid-option")').toThrow();
+      expect('program.build(devices, "-invalid-option")').toThrow('INVALID_BUILD_OPTIONS');
+      expect('program.build(null, "-invalid-option")').toThrow('INVALID_BUILD_OPTIONS');
+      expect('program.build(undefined, "-invalid-option")').toThrow('INVALID_BUILD_OPTIONS');
     });
 
   });
