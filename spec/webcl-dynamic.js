@@ -514,6 +514,42 @@ describe("Functionality", function() {
 
   //////////////////////////////////////////////////////////////////////////////
   //
+  // Functionality -> WebCLBuffer
+  // 
+  describe("WebCLBuffer", function() {
+    
+    beforeEach(function() {
+      try {
+        ctx = createContext();
+        devices = ctx.getInfo(WebCL.CONTEXT_DEVICES);
+        device = devices[0];
+      } catch (e) {
+        ERROR("Functionality -> WebCLBuffer -> beforeEach: Unable to create WebCLContext, all tests will fail!");
+        throw e;
+      }
+    });
+
+    //////////////////////////////////////////////////////////////////////////////
+    //
+    // Functionality -> WebCLImage -> getInfo
+    // 
+    describe("getInfo", function() {
+
+      it("must support all query enums", function() {
+        buffer = ctx.createBuffer(WebCL.MEM_READ_ONLY, 1024);
+        expect('buffer instanceof WebCLBuffer').toEvalAs(true);
+        expect('buffer.getInfo(WebCL.MEM_TYPE)').not.toThrow();
+        expect('buffer.getInfo(WebCL.MEM_FLAGS)').not.toThrow();
+        expect('buffer.getInfo(WebCL.MEM_CONTEXT)').not.toThrow();
+        expect('buffer.getInfo(WebCL.MEM_ASSOCIATED_MEMOBJECT)').not.toThrow();
+        expect('buffer.getInfo(WebCL.MEM_OFFSET)').not.toThrow();
+      });
+    });
+    
+  });
+
+  //////////////////////////////////////////////////////////////////////////////
+  //
   // Functionality -> WebCLImage
   // 
   describe("WebCLImage", function() {
@@ -1026,10 +1062,10 @@ describe("Functionality", function() {
       it("enqueueReadImage(<invalid hostPtr>) must throw", function() {
       });
 
-      it("enqueueReadImage(<region out-of-bounds image>) must throw", function() {
+      it("enqueueReadImage(<image region out-of-bounds>) must throw", function() {
       });
 
-      it("enqueueReadImage(<region out-of-bounds hostPtr>) must throw", function() {
+      it("enqueueReadImage(<hostPtr region out-of-bounds>) must throw", function() {
       });
 
     });
