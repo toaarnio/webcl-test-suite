@@ -254,7 +254,7 @@ describe("Platform", function() {
       expect('platform.name === "foo"').toEvalAs(true);
     });
     
-    it("getters must return the same object every time (CRITICAL)", function() {
+    it("getters must return the same object every time", function() {
       platform = webcl.getPlatforms()[0];
       expect('webcl.getPlatforms()[0] === webcl.getPlatforms()[0]').toEvalAs(true);
       expect('platform === platform.getDevices()[0].getInfo(WebCL.DEVICE_PLATFORM)').toEvalAs(true);

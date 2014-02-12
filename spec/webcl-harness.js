@@ -158,15 +158,18 @@
           try {
             var wrapper = new Function(actual);
             wrapper.apply(this, arguments);
-            return { pass: false };
+            return { 
+              pass: false,
+              message: "Expected '" + actual + "' to throw " + (expected || "any exception") + ", but it threw nothing.",
+            };
           } catch(e) {
             DEBUG(e);
             var result = {};
             result.pass = (expected === undefined) || (e.name === expected);
             if (expected === undefined) {
-              result.message = "Expected '" + actual + "' not to throw, but it threw " + e.name;
+              result.message = "Expected '" + actual + "' not to throw any exception, but it threw " + e.name + ".";
             } else if (e.name !== expected) {
-              result.message = "Expected '" + actual + "' to throw " + expected + ", but it threw " + e.name;
+              result.message = "Expected '" + actual + "' to throw " + expected + ", but it threw " + e.name + ".";
             }
             return result;
           }
