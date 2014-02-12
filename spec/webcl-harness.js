@@ -121,6 +121,34 @@
 
   var jasmineCustomMatchers = {
 
+    // expect('kernels/illegalKernel.cl').not.toBuild();
+    //
+    toBuild: function(util, customEqualityTesters) {
+      return {
+        compare: function(actual, expected) {
+          try {
+            var pathToSource = actual;
+            src = loadSource(pathToSource);
+            var ctx = createContext();
+            program = ctx.createProgram(src);
+            devices = ctx.getInfo(WebCL.CONTEXT_DEVICES);
+            device = devices[0];
+            program.build(devices);
+            DEBUG("Building '" + pathToSource + "' did not throw any exception");
+            return { pass: true };
+          } catch(e) {
+            DEBUG("Building '" + pathToSource + "' threw " + e.name);
+            try {
+              DEBUG("Build log: " + program.getBuildInfo(device, WebCL.BUILD_LOG));
+            } catch (e2) {
+              DEBUG("Failed to get BUILD_LOG: ", e2);
+            }
+            return { pass: false };
+          }
+        },
+      };
+    },
+
     // expect('myFunction(validArg)').not.toThrow();
     // expect('myFunction(invalidArg)').toThrow('TypeError');
     //

@@ -1078,38 +1078,6 @@ describe("Functionality", function() {
   // 
   describe("Kernel language", function() {
 
-    var customMatchers = {
-      toBuild: function(util, customEqualityTesters) {
-        return {
-          compare: function(actual, expected) {
-            try {
-              var pathToSource = actual;
-              src = loadSource(pathToSource);
-              var ctx = createContext();
-              program = ctx.createProgram(src);
-              devices = ctx.getInfo(WebCL.CONTEXT_DEVICES);
-              device = devices[0];
-              program.build(devices);
-              DEBUG("Building '" + pathToSource + "' did not throw any exception");
-              return { pass: true };
-            } catch(e) {
-              DEBUG("Building '" + pathToSource + "' threw " + e.name);
-              try {
-                DEBUG("Build log: " + program.getBuildInfo(device, WebCL.BUILD_LOG));
-              } catch (e2) {
-                DEBUG("Failed to get BUILD_LOG: ", e2);
-              }
-              return { pass: false };
-            }
-          },
-        };
-      },
-    };
-
-    beforeEach(function() {
-      jasmine.addMatchers(customMatchers);
-    });
-
     //////////////////////////////////////////////////////////////////////////////
     //
     // Functionality -> Kernel language -> Validator
@@ -1128,6 +1096,14 @@ describe("Functionality", function() {
         expect('kernels/kernel-to-kernel.cl').not.toBuild();
       });
 
+      it("must not allow CLK_ADDRESS_NONE", function() {
+        expect('kernels/illegalSampler1.cl').not.toBuild();
+      });
+
+      it("must not allow CLK_NORMALIZED_COORDS_FALSE | CLK_ADDRESS_MODE_REPEAT", function() {
+        expect('kernels/illegalSampler2.cl').not.toBuild();
+      });
+
       // Performs an out-of-bounds write to an int variable through a long
       // pointer. The WebCL validator should catch the illegal pointer cast
       // from int* to long*.
@@ -1142,7 +1118,22 @@ describe("Functionality", function() {
     //
     // Functionality -> Kernel language -> Compiler
     // 
-    describe("Compiler", function() {
+    describe("Compiler (OpenCL 1.1)", function() {
+
+      // Known failures as of 2014-02-12:
+      //  * <none>
+      //
+      it("must not allow 'memcpy'", function() {
+        expect('kernels/memcpy.cl').not.toBuild();
+      });
+
+      // Known failures as of 2014-02-12:
+      //  * Win7 / NVIDIA GPU driver
+      //  * Win7 / Intel CPU driver
+      //
+      it("must not allow 'extern'", function() {
+        expect('kernels/extern.cl').not.toBuild();
+      });
 
       // Known failures as of 2014-02-05:
       //  * Win7 / NVIDIA GPU driver
@@ -1205,17 +1196,16 @@ describe("Functionality", function() {
         expect('kernels/largeArrayPrivate.cl').not.toBuild();
       });
 
-      // Known failures as of 2014-02-05:
+      // Known failures as of 2014-02-12:
       //  * Win7 / NVIDIA GPU driver (crashes on second run)
-      //  * Win7 / Intel CPU driver (crashes on first run)
+      //  * Win7 / Intel CPU driver (freezes on first run)
       //
       xit("must not allow allocating 6 GB of 'local' memory", function() {
         expect('kernels/largeArrayLocal.cl').not.toBuild();
       });
 
-      // Known failures as of 2014-02-05:
-      //  * Win7 / NVIDIA GPU driver (crashes on second run)
-      //  * Win7 / Intel CPU driver (crashes on first run)
+      // Known failures as of 2014-02-12:
+      //  * <none>
       //
       it("must not allow allocating 6 GB of 'global' memory", function() {
         expect('kernels/largeArrayGlobal.cl').not.toBuild();
@@ -1253,6 +1243,14 @@ describe("Functionality", function() {
       expect('program.build(devices, "-invalid-option")').toThrow('INVALID_BUILD_OPTIONS');
       expect('program.build(null, "-invalid-option")').toThrow('INVALID_BUILD_OPTIONS');
       expect('program.build(undefined, "-invalid-option")').toThrow('INVALID_BUILD_OPTIONS');
+    });
+
+    // Known failures as of 2014-02-12:
+    //  * Win7 / NVIDIA GPU driver (crashes on second run)
+    //  * Win7 / Intel CPU driver (freezes on first run)
+    //
+    xit("must not allow allocating 6 GB of 'local' memory", function() {
+      expect('kernels/largeArrayLocal.cl').not.toBuild();
     });
 
   });
