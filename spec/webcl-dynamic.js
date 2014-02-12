@@ -1120,6 +1120,10 @@ describe("Functionality", function() {
         expect('kernels/goto.cl').not.toBuild();
       });
 
+      it("must not allow 'printf'", function() {
+        expect('kernels/printf.cl').not.toBuild();
+      });
+
       it("must not allow kernel-to-kernel calls", function() {
         expect('kernels/kernel-to-kernel.cl').not.toBuild();
       });
