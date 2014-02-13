@@ -521,8 +521,8 @@ describe("Functionality", function() {
     beforeEach(function() {
       try {
         ctx = createContext();
-        devices = ctx.getInfo(WebCL.CONTEXT_DEVICES);
-        device = devices[0];
+        buffer = ctx.createBuffer(WebCL.MEM_READ_WRITE, 123);
+        expect('buffer instanceof WebCLBuffer').toEvalAs(true);
       } catch (e) {
         ERROR("Functionality -> WebCLBuffer -> beforeEach: Unable to create WebCLContext, all tests will fail!");
         throw e;
@@ -535,15 +535,33 @@ describe("Functionality", function() {
     // 
     describe("getInfo", function() {
 
-      it("must support all query enums", function() {
-        buffer = ctx.createBuffer(WebCL.MEM_READ_ONLY, 1024);
-        expect('buffer instanceof WebCLBuffer').toEvalAs(true);
+      it("getInfo(<validEnum>) must not throw", function() {
         expect('buffer.getInfo(WebCL.MEM_TYPE)').not.toThrow();
         expect('buffer.getInfo(WebCL.MEM_FLAGS)').not.toThrow();
         expect('buffer.getInfo(WebCL.MEM_CONTEXT)').not.toThrow();
         expect('buffer.getInfo(WebCL.MEM_ASSOCIATED_MEMOBJECT)').not.toThrow();
         expect('buffer.getInfo(WebCL.MEM_OFFSET)').not.toThrow();
       });
+
+      it("getInfo(<validEnum>) must work", function() {
+        expect('buffer.getInfo(WebCL.MEM_TYPE)').toEvalAs('WebCL.MEM_OBJECT_BUFFER');
+        expect('buffer.getInfo(WebCL.MEM_FLAGS)').toEvalAs('WebCL.MEM_READ_WRITE');
+        expect('buffer.getInfo(WebCL.MEM_CONTEXT)').toEvalAs('ctx');
+        expect('buffer.getInfo(WebCL.MEM_ASSOCIATED_MEMOBJECT)').toEvalAs('null');
+        expect('buffer.getInfo(WebCL.MEM_OFFSET)').toEvalAs('0');
+      });
+
+      it("getInfo(<invalidEnum>) must throw", function() {
+        expect('buffer.getInfo(0)').toThrow('INVALID_VALUE');
+        expect('buffer.getInfo(1)').toThrow('INVALID_VALUE');
+        expect('buffer.getInfo(-1)').toThrow('INVALID_VALUE');
+        expect('buffer.getInfo(WebCL.MEM_OBJECT_BUFFER)').toThrow('INVALID_VALUE');
+        expect('buffer.getInfo(null)').toThrow('INVALID_VALUE');
+        expect('buffer.getInfo({})').toThrow('INVALID_VALUE');
+        expect('buffer.getInfo([])').toThrow('INVALID_VALUE');
+        expect('buffer.getInfo("foo")').toThrow('INVALID_VALUE');
+      });
+
     });
     
   });
@@ -557,8 +575,6 @@ describe("Functionality", function() {
     beforeEach(function() {
       try {
         ctx = createContext();
-        devices = ctx.getInfo(WebCL.CONTEXT_DEVICES);
-        device = devices[0];
         var descriptor = { width : 33, height : 17 };
         image = ctx.createImage(WebCL.MEM_READ_WRITE, descriptor);
         expect('image instanceof WebCLImage').toEvalAs(true);
