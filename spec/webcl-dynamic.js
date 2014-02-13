@@ -531,7 +531,7 @@ describe("Functionality", function() {
 
     //////////////////////////////////////////////////////////////////////////////
     //
-    // Functionality -> WebCLImage -> getInfo
+    // Functionality -> WebCLBuffer -> getInfo
     // 
     describe("getInfo", function() {
 
@@ -559,6 +559,9 @@ describe("Functionality", function() {
         ctx = createContext();
         devices = ctx.getInfo(WebCL.CONTEXT_DEVICES);
         device = devices[0];
+        var descriptor = { width : 33, height : 17 };
+        image = ctx.createImage(WebCL.MEM_READ_WRITE, descriptor);
+        expect('image instanceof WebCLImage').toEvalAs(true);
       } catch (e) {
         ERROR("Functionality -> WebCLImage -> beforeEach: Unable to create WebCLContext, all tests will fail!");
         throw e;
@@ -571,13 +574,45 @@ describe("Functionality", function() {
     // 
     describe("getInfo", function() {
 
-      it("must return a non-null object", function() {
-        var descriptor = { width : 64, height : 64 };
-        image = ctx.createImage(WebCL.MEM_READ_ONLY, descriptor);
-        expect('image instanceof WebCLImage').toEvalAs(true);
+      it("getInfo() must not throw", function() {
         expect('image.getInfo()').not.toThrow();
-        expect('image.getInfo() != null').toEvalAs(true);
       });
+
+      it("getInfo() must work", function() {
+        expect('image.getInfo().width').toEvalAs('33');
+        expect('image.getInfo().height').toEvalAs('17');
+        expect('image.getInfo().rowPitch').toEvalAs('33*4');
+        expect('image.getInfo().channelOrder').toEvalAs('WebCL.RGBA');
+        expect('image.getInfo().channelType').toEvalAs('WebCL.UNORM_INT8');
+      });
+
+      it("getInfo(<validEnum>) must not throw", function() {
+        expect('image.getInfo(WebCL.MEM_TYPE)').not.toThrow();
+        expect('image.getInfo(WebCL.MEM_FLAGS)').not.toThrow();
+        expect('image.getInfo(WebCL.MEM_CONTEXT)').not.toThrow();
+        expect('image.getInfo(WebCL.MEM_ASSOCIATED_MEMOBJECT)').not.toThrow();
+        expect('image.getInfo(WebCL.MEM_OFFSET)').not.toThrow();
+      });
+
+      it("getInfo(<validEnum>) must work", function() {
+        expect('image.getInfo(WebCL.MEM_TYPE)').toEvalAs('WebCL.MEM_OBJECT_IMAGE2D');
+        expect('image.getInfo(WebCL.MEM_FLAGS)').toEvalAs('WebCL.MEM_READ_WRITE');
+        expect('image.getInfo(WebCL.MEM_CONTEXT)').toEvalAs('ctx');
+        expect('image.getInfo(WebCL.MEM_ASSOCIATED_MEMOBJECT)').toEvalAs('null');
+        expect('image.getInfo(WebCL.MEM_OFFSET)').toEvalAs('0');
+      });
+
+      it("getInfo(<invalidEnum>) must throw", function() {
+        expect('image.getInfo(0)').toThrow('INVALID_VALUE');
+        expect('image.getInfo(1)').toThrow('INVALID_VALUE');
+        expect('image.getInfo(-1)').toThrow('INVALID_VALUE');
+        expect('image.getInfo(WebCL.MEM_OBJECT_IMAGE2D)').toThrow('INVALID_VALUE');
+        expect('image.getInfo(null)').toThrow('INVALID_VALUE');
+        expect('image.getInfo({})').toThrow('INVALID_VALUE');
+        expect('image.getInfo([])').toThrow('INVALID_VALUE');
+        expect('image.getInfo("foo")').toThrow('INVALID_VALUE');
+      });
+
     });
     
   });
@@ -1155,7 +1190,7 @@ describe("Functionality", function() {
 
     //////////////////////////////////////////////////////////////////////////////
     //
-    // Functionality -> WebCLCommandQueue -> enqueueReadImage
+    // Functionality -> WebCLCommandQueue -> enqueueRead
     // 
     describe("enqueueRead", function() {
 
@@ -1181,6 +1216,7 @@ describe("Functionality", function() {
 
       it("enqueueReadImage(<valid arguments>) must not throw", function() {
         expect('queue.enqueueReadImage(image, true, [0,0], [W, H], 0, pixels)').not.toThrow();
+        expect('queue.enqueueReadImage(image, true, [0,0], [W, H], bytesPerRow, pixels)').not.toThrow();
         expect('queue.enqueueReadImage(image, true, [0,0], [W, H], bytesPerRow, pixels)').not.toThrow();
       });
 
@@ -1232,6 +1268,7 @@ describe("Functionality", function() {
       it("enqueueReadImage(<invalid hostRowPitch>) must throw", function() {
         expect('queue.enqueueReadImage(image, true, [0,0], [W, H], -1, pixels)').toThrow('INVALID_VALUE');
         expect('queue.enqueueReadImage(image, true, [0,0], [W, H], bytesPerRow-1, pixels)').toThrow('INVALID_VALUE');
+        expect('queue.enqueueReadImage(image, true, [0,0], [W, H], bytesPerRow+1, new Uint16Array(2*W*H*BPP))').toThrow('INVALID_VALUE');
         expect('queue.enqueueReadImage(image, true, [0,0], [W, H], undefined, pixels)').toThrow('INVALID_VALUE');
         expect('queue.enqueueReadImage(image, true, [0,0], [W, H], null, pixels)').toThrow('INVALID_VALUE');
         expect('queue.enqueueReadImage(image, true, [0,0], [W, H], "foo", pixels)').toThrow('INVALID_VALUE');
@@ -1240,12 +1277,25 @@ describe("Functionality", function() {
       });
 
       it("enqueueReadImage(<invalid hostPtr>) must throw", function() {
+        expect('queue.enqueueReadImage(image, true, [0,0], [W, H], 0, undefined)').toThrow('INVALID_VALUE');
+        expect('queue.enqueueReadImage(image, true, [0,0], [W, H], 0, null)').toThrow('INVALID_VALUE');
+        expect('queue.enqueueReadImage(image, true, [0,0], [W, H], 0, [])').toThrow('INVALID_VALUE');
+        expect('queue.enqueueReadImage(image, true, [0,0], [W, H], 0, {})').toThrow('INVALID_VALUE');
+        expect('queue.enqueueReadImage(image, true, [0,0], [W, H], 0, new Uint8Array(2))').toThrow('INVALID_VALUE');
       });
 
       it("enqueueReadImage(<image region out-of-bounds>) must throw", function() {
+        expect('queue.enqueueReadImage(image, true, [0,0], [W+1, 1], 0, pixels)').toThrow('INVALID_VALUE');
+        expect('queue.enqueueReadImage(image, true, [0,0], [1, H+1], 0, pixels)').toThrow('INVALID_VALUE');
+        expect('queue.enqueueReadImage(image, true, [1,0], [W, 1], 0, pixels)').toThrow('INVALID_VALUE');
+        expect('queue.enqueueReadImage(image, true, [0,1], [1, H], 0, pixels)').toThrow('INVALID_VALUE');
+        expect('queue.enqueueReadImage(image, true, [W,0], [1, 1], 0, pixels)').toThrow('INVALID_VALUE');
+        expect('queue.enqueueReadImage(image, true, [0,H-1], [1, 2], 0, pixels)').toThrow('INVALID_VALUE');
       });
 
       it("enqueueReadImage(<hostPtr region out-of-bounds>) must throw", function() {
+        expect('queue.enqueueReadImage(image, true, [0,0], [W, H], 0, pixels.subarray(0,-2))').toThrow('INVALID_VALUE');
+        expect('queue.enqueueReadImage(image, true, [0,0], [1, 1], 0, pixels.subarray(0, 3))').toThrow('INVALID_VALUE');
       });
 
     });
