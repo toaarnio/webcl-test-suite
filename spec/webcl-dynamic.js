@@ -1415,7 +1415,7 @@ describe("Functionality", function() {
 
     // This test is known to crash on Intel OpenCL / Win7
     // --> moved to Crash tests until we have a fix or workaround
-    it("build() must throw if options === '-invalid-option'", function() {
+    xit("build() must throw if options === '-invalid-option'", function() {
       ctx = createContext();
       program = ctx.createProgram(src);
       devices = ctx.getInfo(WebCL.CONTEXT_DEVICES);
