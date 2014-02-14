@@ -57,8 +57,7 @@
         return webcl.createContext();
       } else {
         var selected = getDeviceAtIndex(DEVICE_INDEX);
-        var properties = selected ? { devices: [selected] } : null;
-        var ctx = webcl.createContext(properties);
+        var ctx = webcl.createContext(selected);
         var device = ctx.getInfo(WebCL.CONTEXT_DEVICES)[0];
         var vendorId = device.getInfo(WebCL.DEVICE_VENDOR_ID);
         DEBUG("Creating a Context for Device " + deviceVendors[vendorId] + " (VENDOR_ID="+vendorId+")");
@@ -86,25 +85,6 @@
       };
       throw e;
     }
-  };
-
-  createContextSimplified = function() {
-    if (arguments.length === 0) {
-      return webcl.createContext();
-    }
-    if (typeof(arguments[0]) === 'number') {
-      return webcl.createContext({ deviceType: arguments[0] });
-    }
-    if (arguments[0] instanceof WebCLPlatform) {
-      return webcl.createContext({ platform: arguments[0], deviceType: arguments[1] });
-    }
-    if (arguments[0] instanceof WebCLDevice) {
-      return webcl.createContext({ devices: [arguments[0]] });
-    }
-    if (Array.isArray(arguments[0]) && arguments[0].length > 0) {
-      return webcl.createContext({ devices: arguments[0] });
-    }
-    throw "createContextSimplified: Invalid arguments " + arguments;
   };
 
   jasmine.getEnv().specFilter = function(spec) {
