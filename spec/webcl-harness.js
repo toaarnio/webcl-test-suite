@@ -182,7 +182,12 @@
         compare: function(actual, expected) {
           var actualResult = eval(actual);
           var expectedResult = eval(expected);
-          return { pass: (actualResult === expectedResult) }
+          var result = {};
+          result.pass = (actualResult === expectedResult);
+          if (result.pass === false) {
+            result.message = "Expected '" + actual + "' to equal '" + expected + "' (" + expectedResult + "), but it was " + actualResult + ".";
+          }
+          return result;
         },
       };
     },

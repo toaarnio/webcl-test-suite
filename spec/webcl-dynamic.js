@@ -145,22 +145,53 @@ describe("Functionality", function() {
     // 
     describe("getInfo", function() {
 
-      it("must support getInfo(CONTEXT_NUM_DEVICES)", function() {
+      it("getInfo(<validEnum>) must work", function() {
+        expect('ctx.getInfo(WebCL.CONTEXT_NUM_DEVICES)').not.toThrow();
+        expect('ctx.getInfo(WebCL.CONTEXT_DEVICES)').not.toThrow();
         expect('ctx.getInfo(WebCL.CONTEXT_NUM_DEVICES) > 0').toEvalAs(true);
-      });
-
-      it("must support getInfo(CONTEXT_DEVICES)", function() {
         expect('ctx.getInfo(WebCL.CONTEXT_DEVICES) instanceof Array').toEvalAs(true);
       });
 
-      it("must throw on getInfo(CONTEXT_PROPERTIES)", function() {
-        expect('ctx instanceof WebCLContext').toEvalAs(true);
+      it("getInfo(<invalidEnum>) must throw", function() {
+        expect('ctx.getInfo(WebCL.CONTEXT_REFERENCE_COUNT)').toThrow('INVALID_VALUE');
         expect('ctx.getInfo(WebCL.CONTEXT_PROPERTIES)').toThrow('INVALID_VALUE');
       });
 
-      it("must throw on getInfo(CONTEXT_REFERENCE_COUNT)", function() {
-        expect('ctx instanceof WebCLContext').toEvalAs(true);
-        expect('ctx.getInfo(WebCL.CONTEXT_REFERENCE_COUNT)').toThrow('INVALID_VALUE');
+      it("getSupportedImageFormats(<validEnum>) must not throw", function() {
+        expect('ctx.getSupportedImageFormats()').not.toThrow();
+        expect('ctx.getSupportedImageFormats(WebCL.MEM_READ_WRITE)').not.toThrow();
+        expect('ctx.getSupportedImageFormats(WebCL.MEM_WRITE_ONLY)').not.toThrow();
+        expect('ctx.getSupportedImageFormats(WebCL.MEM_READ_ONLY)').not.toThrow();
+      });
+
+      it("getSupportedImageFormats(<validEnum>) must return the mandatory formats", function() {
+        function rgbaFilter(item) { return (item.channelOrder === WebCL.RGBA); }
+        rgbaFormatsReadWrite = ctx.getSupportedImageFormats(WebCL.MEM_READ_WRITE).filter(rgbaFilter);
+        rgbaFormatsReadWrite = ctx.getSupportedImageFormats(WebCL.MEM_READ_WRITE).filter(rgbaFilter);
+        rgbaFormatsWriteOnly = ctx.getSupportedImageFormats(WebCL.MEM_WRITE_ONLY).filter(rgbaFilter);
+        rgbaFormatsReadOnly = ctx.getSupportedImageFormats(WebCL.MEM_READ_ONLY).filter(rgbaFilter);
+        expect('rgbaFormatsReadWrite.length >= 10').toEvalAs(true);
+        expect('rgbaFormatsWriteOnly.length >= 10').toEvalAs(true);
+        expect('rgbaFormatsReadOnly.length >= 10').toEvalAs(true);
+      });
+
+      it("getSupportedImageFormats() must be equivalent to getSupportedImageFormats(MEM_READ_WRITE)", function() {
+        var formats = ctx.getSupportedImageFormats();
+        var formatsReadWrite = ctx.getSupportedImageFormats(WebCL.MEM_READ_WRITE);
+        expect(formats).toEqual(formatsReadWrite);
+      });
+
+      it("getSupportedImageFormats(<invalidEnum>) must throw", function() {
+        expect('ctx.getSupportedImageFormats(0)').toThrow('INVALID_VALUE');
+        expect('ctx.getSupportedImageFormats(3)').toThrow('INVALID_VALUE');
+        expect('ctx.getSupportedImageFormats(5)').toThrow('INVALID_VALUE');
+        expect('ctx.getSupportedImageFormats(6)').toThrow('INVALID_VALUE');
+        expect('ctx.getSupportedImageFormats(0x1001)').toThrow('INVALID_VALUE');
+        expect('ctx.getSupportedImageFormats(-1)').toThrow('INVALID_VALUE');
+        expect('ctx.getSupportedImageFormats("")').toThrow('INVALID_VALUE');
+        expect('ctx.getSupportedImageFormats([])').toThrow('INVALID_VALUE');
+        expect('ctx.getSupportedImageFormats({})').toThrow('INVALID_VALUE');
+        expect('ctx.getSupportedImageFormats(ctx)').toThrow('INVALID_VALUE');
       });
 
     });
@@ -464,6 +495,16 @@ describe("Functionality", function() {
         expect('image.getInfo().rowPitch').toEvalAs('33*4');
         expect('image.getInfo().channelOrder').toEvalAs('WebCL.RGBA');
         expect('image.getInfo().channelType').toEvalAs('WebCL.UNORM_INT8');
+      });
+
+      it("getInfo() must work with non-default channelOrder and channelType", function() {
+        descriptor = { width: 19, height: 11, channelOrder: WebCL.RGBA, channelType: WebCL.FLOAT };
+        expect('image1 = ctx.createImage(WebCL.MEM_READ_ONLY, descriptor)').not.toThrow();
+        expect('image1.getInfo().width').toEvalAs('19');
+        expect('image1.getInfo().height').toEvalAs('11');
+        expect('image1.getInfo().rowPitch').toEvalAs('19*4*4');
+        expect('image1.getInfo().channelOrder').toEvalAs('WebCL.RGBA');
+        expect('image1.getInfo().channelType').toEvalAs('WebCL.FLOAT');
       });
 
       it("getInfo(<validEnum>) must not throw", function() {
