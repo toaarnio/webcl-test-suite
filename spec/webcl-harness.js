@@ -110,9 +110,9 @@
             var pathToSource = actual;
             src = loadSource(pathToSource);
             var ctx = createContext();
-            program = ctx.createProgram(src);
-            devices = ctx.getInfo(WebCL.CONTEXT_DEVICES);
-            device = devices[0];
+            var program = ctx.createProgram(src);
+            var devices = ctx.getInfo(WebCL.CONTEXT_DEVICES);
+            var device = devices[0];
             program.build(devices);
             DEBUG("Building '" + pathToSource + "' did not throw any exception");
             return { pass: true };
@@ -124,6 +124,33 @@
               DEBUG("Failed to get BUILD_LOG: ", e2);
             }
             return { pass: false };
+          }
+        },
+        negativeCompare: function(actual, expected) {
+          try {
+            var pathToSource = actual;
+            src = loadSource(pathToSource);
+            var ctx = createContext();
+            var program = ctx.createProgram(src);
+            var devices = ctx.getInfo(WebCL.CONTEXT_DEVICES);
+            var device = devices[0];
+            program.build(devices);
+            DEBUG("Building '" + pathToSource + "' did not throw any exception");
+            return { pass: false };
+          } catch(e) {
+            if (program instanceof WebCLProgram) {
+              DEBUG("Building '" + pathToSource + "' threw " + e.name);
+              try {
+                DEBUG("Build log: " + program.getBuildInfo(device, WebCL.BUILD_LOG));
+              } catch (e2) {
+                DEBUG("Failed to get BUILD_LOG: ", e2);
+              }
+              return { pass: true };
+            }
+            return { 
+              pass: false,
+              message: "Test case setup failed.",
+            }
           }
         },
       };

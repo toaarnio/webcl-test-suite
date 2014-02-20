@@ -25,7 +25,6 @@ describe("Platform", function() {
     });
 
     it("getPlatforms() must return a WebCLPlatform array with length >= 1", function() {
-      expect('webcl.getPlatforms()').not.toThrow();
       expect('webcl.getPlatforms() instanceof Array').toEvalAs(true);
       expect('webcl.getPlatforms().length >= 1').toEvalAs(true);
       expect('webcl.getPlatforms()[0] instanceof WebCLPlatform').toEvalAs(true)
@@ -46,24 +45,30 @@ describe("Platform", function() {
   // 
   describe("getDevices", function() {
 
-    it("getDevices() must not throw", function() {
+    it("getDevices(ALL || DEFAULT) must not throw", function() {
       platforms = webcl.getPlatforms();
       for (i=0; i < platforms.length; i++) {
         expect('platforms['+i+'].getDevices()').not.toThrow();
-      }
-    });
-
-    it("getDevices(DEVICE_TYPE_ALL) must not throw", function() {
-      platforms = webcl.getPlatforms();
-      for (i=0; i < platforms.length; i++) {
+        expect('platforms['+i+'].getDevices(WebCL.DEVICE_TYPE_DEFAULT)').not.toThrow();
         expect('platforms['+i+'].getDevices(WebCL.DEVICE_TYPE_ALL)').not.toThrow();
       }
     });
 
-    it("getDevices(DEVICE_TYPE_DEFAULT) must not throw", function() {
+    it("getDevices(ALL || DEFAULT) must return a WebCLDevice array with length >= 1", function() {
       platforms = webcl.getPlatforms();
       for (i=0; i < platforms.length; i++) {
+        expect('platforms['+i+'].getDevices()').not.toThrow();
+        expect('platforms['+i+'].getDevices() instanceof Array').toEvalAs(true);
+        expect('platforms['+i+'].getDevices().length >= 1').toEvalAs(true);
+        expect('platforms['+i+'].getDevices()[0] instanceof WebCLDevice').toEvalAs(true);
         expect('platforms['+i+'].getDevices(WebCL.DEVICE_TYPE_ALL)').not.toThrow();
+        expect('platforms['+i+'].getDevices(WebCL.DEVICE_TYPE_ALL) instanceof Array').toEvalAs(true);
+        expect('platforms['+i+'].getDevices(WebCL.DEVICE_TYPE_ALL).length >= 1').toEvalAs(true);
+        expect('platforms['+i+'].getDevices(WebCL.DEVICE_TYPE_ALL)[0] instanceof WebCLDevice').toEvalAs(true);
+        expect('platforms['+i+'].getDevices(WebCL.DEVICE_TYPE_DEFAULT)').not.toThrow();
+        expect('platforms['+i+'].getDevices(WebCL.DEVICE_TYPE_DEFAULT) instanceof Array').toEvalAs(true);
+        expect('platforms['+i+'].getDevices(WebCL.DEVICE_TYPE_DEFAULT).length >= 1').toEvalAs(true);
+        expect('platforms['+i+'].getDevices(WebCL.DEVICE_TYPE_DEFAULT)[0] instanceof WebCLDevice').toEvalAs(true);
       }
     });
 
@@ -85,36 +90,6 @@ describe("Platform", function() {
         default:
           throw "Unrecognized device type (" + defaultDeviceType + ") on platform["+i+"]!";
         }
-      }
-    });
-
-    it("getDevices() must return a WebCLDevice array with length >= 1", function() {
-      platforms = webcl.getPlatforms();
-      for (i=0; i < platforms.length; i++) {
-        expect('platforms['+i+'].getDevices()').not.toThrow();
-        expect('platforms['+i+'].getDevices() instanceof Array').toEvalAs(true);
-        expect('platforms['+i+'].getDevices().length >= 1').toEvalAs(true);
-        expect('platforms['+i+'].getDevices()[0] instanceof WebCLDevice').toEvalAs(true);
-      }
-    });
-
-    it("getDevices(DEVICE_TYPE_ALL) must return a WebCLDevice array with length >= 1", function() {
-      platforms = webcl.getPlatforms();
-      for (i=0; i < platforms.length; i++) {
-        expect('platforms['+i+'].getDevices(WebCL.DEVICE_TYPE_ALL)').not.toThrow();
-        expect('platforms['+i+'].getDevices(WebCL.DEVICE_TYPE_ALL) instanceof Array').toEvalAs(true);
-        expect('platforms['+i+'].getDevices(WebCL.DEVICE_TYPE_ALL).length >= 1').toEvalAs(true);
-        expect('platforms['+i+'].getDevices(WebCL.DEVICE_TYPE_ALL)[0] instanceof WebCLDevice').toEvalAs(true);
-      }
-    });
-
-    it("getDevices(DEVICE_TYPE_DEFAULT) must return a WebCLDevice array with length >= 1", function() {
-      platforms = webcl.getPlatforms();
-      for (i=0; i < platforms.length; i++) {
-        expect('platforms['+i+'].getDevices(WebCL.DEVICE_TYPE_DEFAULT)').not.toThrow();
-        expect('platforms['+i+'].getDevices(WebCL.DEVICE_TYPE_DEFAULT) instanceof Array').toEvalAs(true);
-        expect('platforms['+i+'].getDevices(WebCL.DEVICE_TYPE_DEFAULT).length >= 1').toEvalAs(true);
-        expect('platforms['+i+'].getDevices(WebCL.DEVICE_TYPE_DEFAULT)[0] instanceof WebCLDevice').toEvalAs(true);
       }
     });
 
@@ -158,6 +133,7 @@ describe("Platform", function() {
         expect('platforms['+i+'].getDevices(9)').toThrow('INVALID_DEVICE_TYPE');
         expect('platforms['+i+'].getDevices(null)').toThrow('INVALID_DEVICE_TYPE');
         expect('platforms['+i+'].getDevices({})').toThrow('INVALID_DEVICE_TYPE');
+        expect('platforms['+i+'].getDevices(platforms[0])').toThrow('INVALID_DEVICE_TYPE');
       }
     });
   });
@@ -219,6 +195,7 @@ describe("Platform", function() {
 
     it("device.getInfo(invalidArgument) must throw", function() {
       device = getDeviceAtIndex(DEVICE_INDEX);
+      expect('device.getInfo(WebCL.DEVICE_VENDOR)').not.toThrow();
       expect('device.getInfo(WebCL.PLATFORM_VENDOR)').toThrow('INVALID_VALUE');
       expect('device.getInfo(WebCL.CONTEXT_PLATFORM)').toThrow('INVALID_VALUE');
       expect('device.getInfo(WebCL.BUILD_ERROR)').toThrow('INVALID_VALUE');
@@ -227,11 +204,13 @@ describe("Platform", function() {
       expect('device.getInfo(0)').toThrow('INVALID_VALUE');
       expect('device.getInfo("foo")').toThrow('INVALID_VALUE');
       expect('device.getInfo({})').toThrow('INVALID_VALUE');
+      expect('device.getInfo(device)').toThrow('INVALID_VALUE');
       expect('device.getInfo()').toThrow('INVALID_VALUE');
     });
 
     it("device.getInfo(nonEnabledExtensionArgument) must throw", function() {
       device = getDeviceAtIndex(DEVICE_INDEX);
+      expect('device.getInfo(WebCL.DEVICE_VENDOR)').not.toThrow();
       for (enumName in extensionEnums) {
         enumValue = extensionEnums[enumName];
         expect('device.getInfo(WebCL.'+enumName+')').toThrow('INVALID_VALUE');

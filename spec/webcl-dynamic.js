@@ -653,12 +653,17 @@ describe("Functionality", function() {
       // This test is known to crash on Intel OpenCL / Win7 -- but
       // not when run separately from the rest of the build() tests
       // --> moved to Crash tests until we have a fix or workaround
-      xit("must throw if options === '-invalid-option'", function() {
+      it("must throw if options === '-invalid-option'", function() {
         program = ctx.createProgram(src);
         expect('program instanceof WebCLProgram').toEvalAs(true);
+        expect('program.build(devices, "-D")').toThrow('INVALID_BUILD_OPTIONS');
         expect('program.build(devices, "-invalid-option")').toThrow('INVALID_BUILD_OPTIONS');
+        expect('program.build(devices, [])').toThrow('INVALID_BUILD_OPTIONS');
+        expect('program.build(devices, program)').toThrow('INVALID_BUILD_OPTIONS');
+        expect('program.build(null, "-D")').toThrow('INVALID_BUILD_OPTIONS');
         expect('program.build(null, "-invalid-option")').toThrow('INVALID_BUILD_OPTIONS');
-        expect('program.build(undefined, "-invalid-option")').toThrow('INVALID_BUILD_OPTIONS');
+        expect('program.build(null, [])').toThrow('INVALID_BUILD_OPTIONS');
+        expect('program.build(null, program)').toThrow('INVALID_BUILD_OPTIONS');
       });
 
       it("must throw if kernel source is obviously invalid", function() {
@@ -666,9 +671,7 @@ describe("Functionality", function() {
         program = ctx.createProgram(src);
         expect('program instanceof WebCLProgram').toEvalAs(true);
         expect('program.build()').toThrow('BUILD_PROGRAM_FAILURE');
-        expect('program.build(null)').toThrow('BUILD_PROGRAM_FAILURE');
-        expect('program.build(devices)').toThrow('BUILD_PROGRAM_FAILURE');
-        expect('program.build(devices, "-w")').toThrow('BUILD_PROGRAM_FAILURE');
+        expect('program.build(null, "-w")').toThrow('BUILD_PROGRAM_FAILURE');
       });
 
       it("must throw if kernel source is slightly invalid", function() {
@@ -676,9 +679,7 @@ describe("Functionality", function() {
         program = ctx.createProgram(src);
         expect('program instanceof WebCLProgram').toEvalAs(true);
         expect('program.build()').toThrow('BUILD_PROGRAM_FAILURE');
-        expect('program.build(null)').toThrow('BUILD_PROGRAM_FAILURE');
-        expect('program.build(devices)').toThrow('BUILD_PROGRAM_FAILURE');
-        expect('program.build(devices, "-w")').toThrow('BUILD_PROGRAM_FAILURE');
+        expect('program.build(null, "-w")').toThrow('BUILD_PROGRAM_FAILURE');
       });
 
     });
@@ -825,13 +826,10 @@ describe("Functionality", function() {
       
       beforeEach(function() {
         program = ctx.createProgram(src);
-        expect('program.build(devices)').not.toThrow();
+        program.build(devices);
         buffer = ctx.createBuffer(WebCL.MEM_READ_WRITE, 128);
-        expect('buffer instanceof WebCLBuffer').toEvalAs(true);
         image = ctx.createImage(WebCL.MEM_READ_WRITE, { width: 32, height: 32 });
-        expect('image instanceof WebCLImage').toEvalAs(true);
         sampler = ctx.createSampler(true, WebCL.ADDRESS_REPEAT, WebCL.FILTER_NEAREST);
-        expect('sampler instanceof WebCLSampler').toEvalAs(true);
       });
 
       it("setArg(index, clObject) must not throw if clObject matches the expected type", function() {
