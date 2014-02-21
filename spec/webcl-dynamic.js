@@ -650,36 +650,14 @@ describe("Functionality", function() {
         expect('program.build([])').toThrow('INVALID_VALUE');
       });
 
-      // This test is known to crash on Intel OpenCL / Win7 -- but
-      // not when run separately from the rest of the build() tests
-      // --> moved to Crash tests until we have a fix or workaround
-      it("must throw if options === '-invalid-option'", function() {
+      it("build(<invalidBuildOptions>) must throw", function() {
         program = ctx.createProgram(src);
         expect('program instanceof WebCLProgram').toEvalAs(true);
-        expect('program.build(devices, "-D")').toThrow('INVALID_BUILD_OPTIONS');
         expect('program.build(devices, "-invalid-option")').toThrow('INVALID_BUILD_OPTIONS');
+        expect('program.build(devices, "-I /usr/bin")').toThrow('INVALID_BUILD_OPTIONS');
+        expect('program.build(devices, "-D -D -invalid-option")').toThrow('INVALID_BUILD_OPTIONS');
         expect('program.build(devices, [])').toThrow('INVALID_BUILD_OPTIONS');
         expect('program.build(devices, program)').toThrow('INVALID_BUILD_OPTIONS');
-        expect('program.build(null, "-D")').toThrow('INVALID_BUILD_OPTIONS');
-        expect('program.build(null, "-invalid-option")').toThrow('INVALID_BUILD_OPTIONS');
-        expect('program.build(null, [])').toThrow('INVALID_BUILD_OPTIONS');
-        expect('program.build(null, program)').toThrow('INVALID_BUILD_OPTIONS');
-      });
-
-      it("must throw if kernel source is obviously invalid", function() {
-        var src = "obviously invalid";
-        program = ctx.createProgram(src);
-        expect('program instanceof WebCLProgram').toEvalAs(true);
-        expect('program.build()').toThrow('BUILD_PROGRAM_FAILURE');
-        expect('program.build(null, "-w")').toThrow('BUILD_PROGRAM_FAILURE');
-      });
-
-      it("must throw if kernel source is slightly invalid", function() {
-        var src = "kernel int dummy() {}";
-        program = ctx.createProgram(src);
-        expect('program instanceof WebCLProgram').toEvalAs(true);
-        expect('program.build()').toThrow('BUILD_PROGRAM_FAILURE');
-        expect('program.build(null, "-w")').toThrow('BUILD_PROGRAM_FAILURE');
       });
 
     });
@@ -1227,6 +1205,10 @@ describe("Functionality", function() {
   // 
   describe("Kernel language", function() {
 
+    beforeEach(function() {
+      ctx = createContext();
+    });
+
     //////////////////////////////////////////////////////////////////////////////
     //
     // Functionality -> Kernel language -> Validator
@@ -1268,6 +1250,22 @@ describe("Functionality", function() {
     // Functionality -> Kernel language -> Compiler
     // 
     describe("Compiler (OpenCL 1.1)", function() {
+
+      it("must not allow obviously invalid minimal kernel source", function() {
+        var src = "obviously invalid";
+        program = ctx.createProgram(src);
+        expect('program instanceof WebCLProgram').toEvalAs(true);
+        expect('program.build()').toThrow('BUILD_PROGRAM_FAILURE');
+        expect('program.build(null, "-w")').toThrow('BUILD_PROGRAM_FAILURE');
+      });
+
+      it("must not allow slightly invalid minimal kernel source", function() {
+        var src = "kernel int dummy() {}";
+        program = ctx.createProgram(src);
+        expect('program instanceof WebCLProgram').toEvalAs(true);
+        expect('program.build()').toThrow('BUILD_PROGRAM_FAILURE');
+        expect('program.build(null, "-w")').toThrow('BUILD_PROGRAM_FAILURE');
+      });
 
       // Known failures as of 2014-02-12:
       //  * <none>
@@ -1380,18 +1378,6 @@ describe("Functionality", function() {
       ctx = createContext();
       ctx.release();
       expect('ctx.getInfo(WebCL.CONTEXT_NUM_DEVICES)').toThrow('WEBCL_IMPLEMENTATION_FAILURE');
-    });
-
-    // This test is known to crash on Intel OpenCL / Win7
-    // --> moved to Crash tests until we have a fix or workaround
-    xit("build() must throw if options === '-invalid-option'", function() {
-      ctx = createContext();
-      program = ctx.createProgram(src);
-      devices = ctx.getInfo(WebCL.CONTEXT_DEVICES);
-      expect('program instanceof WebCLProgram').toEvalAs(true);
-      expect('program.build(devices, "-invalid-option")').toThrow('INVALID_BUILD_OPTIONS');
-      expect('program.build(null, "-invalid-option")').toThrow('INVALID_BUILD_OPTIONS');
-      expect('program.build(undefined, "-invalid-option")').toThrow('INVALID_BUILD_OPTIONS');
     });
 
     // Known failures as of 2014-02-12:

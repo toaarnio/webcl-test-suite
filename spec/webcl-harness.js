@@ -101,19 +101,18 @@
 
   var jasmineCustomMatchers = {
 
+    // expect('kernels/illegalKernel.cl').not.toBuild('-w');
     // expect('kernels/illegalKernel.cl').not.toBuild();
     //
     toBuild: function(util, customEqualityTesters) {
       return {
-        compare: function(actual, expected) {
+        compare: function(actual, buildOptions) {
           try {
             var pathToSource = actual;
             src = loadSource(pathToSource);
-            var ctx = createContext();
             var program = ctx.createProgram(src);
             var devices = ctx.getInfo(WebCL.CONTEXT_DEVICES);
-            var device = devices[0];
-            program.build(devices);
+            program.build(devices, buildOptions);
             DEBUG("Building '" + pathToSource + "' did not throw any exception");
             return { pass: true };
           } catch(e) {
@@ -126,15 +125,14 @@
             return { pass: false };
           }
         },
-        negativeCompare: function(actual, expected) {
+        negativeCompare: function(actual, buildOptions) {
           try {
             var pathToSource = actual;
             src = loadSource(pathToSource);
             var ctx = createContext();
             var program = ctx.createProgram(src);
             var devices = ctx.getInfo(WebCL.CONTEXT_DEVICES);
-            var device = devices[0];
-            program.build(devices);
+            program.build(devices, buildOptions);
             DEBUG("Building '" + pathToSource + "' did not throw any exception");
             return { pass: false };
           } catch(e) {
