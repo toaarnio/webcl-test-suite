@@ -644,10 +644,14 @@ describe("Functionality", function() {
         expect('program.build(devices, "-cl-opt-disable -Werror")').not.toThrow();
       });
 
-      it("must throw if devices === []", function() {
+      it("build(<invalidDeviceList>) must throw", function() {
         program = ctx.createProgram(src);
         expect('program instanceof WebCLProgram').toEvalAs(true);
         expect('program.build([])').toThrow('INVALID_VALUE');
+        expect('program.build({})').toThrow('INVALID_VALUE');
+        expect('program.build(program)').toThrow('INVALID_VALUE');
+        expect('program.build(device)').toThrow('INVALID_VALUE');
+        expect('program.build([program])').toThrow('INVALID_DEVICE');
       });
 
       it("build(<invalidBuildOptions>) must throw", function() {
@@ -655,7 +659,10 @@ describe("Functionality", function() {
         expect('program instanceof WebCLProgram').toEvalAs(true);
         expect('program.build(devices, "-invalid-option")').toThrow('INVALID_BUILD_OPTIONS');
         expect('program.build(devices, "-I /usr/bin")').toThrow('INVALID_BUILD_OPTIONS');
-        expect('program.build(devices, "-D -D -invalid-option")').toThrow('INVALID_BUILD_OPTIONS');
+        expect('program.build(devices, "-D -D foo")').toThrow('INVALID_BUILD_OPTIONS');
+        expect('program.build(devices, "-D foo=#include<file.h>")').toThrow('INVALID_BUILD_OPTIONS');
+        expect('program.build(devices, "-D foo=")').toThrow('INVALID_BUILD_OPTIONS');
+        expect('program.build(devices, "-D =bar")').toThrow('INVALID_BUILD_OPTIONS');
         expect('program.build(devices, [])').toThrow('INVALID_BUILD_OPTIONS');
         expect('program.build(devices, program)').toThrow('INVALID_BUILD_OPTIONS');
       });
