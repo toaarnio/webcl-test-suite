@@ -252,8 +252,7 @@ describe("Functionality", function() {
     describe("createProgram", function() {
 
       it("must work with dummy kernel source", function() {
-        var src = "kernel void dummy() {}";
-        program = ctx.createProgram(src);
+        program = ctx.createProgram("kernel void dummy() {}");
         expect('program instanceof WebCLProgram').toEvalAs(true);
       });
 
@@ -264,8 +263,7 @@ describe("Functionality", function() {
       });
 
       it("must not validate or build the source", function() {
-        var src = "foobar";
-        program = ctx.createProgram(src);
+        program = ctx.createProgram("foobar");
         expect('program instanceof WebCLProgram').toEvalAs(true);
       });
 
@@ -507,12 +505,11 @@ describe("Functionality", function() {
   // 
   describe("WebCLProgram", function() {
     
-    src = "kernel void dummy() {}";
 
     beforeEach(function() {
       try {
         ctx = createContext();
-        program = ctx.createProgram(src);
+        program = ctx.createProgram("kernel void dummy() {}");
         devices = ctx.getInfo(WebCL.CONTEXT_DEVICES);
         device = devices[0];
       } catch (e) {
@@ -536,7 +533,7 @@ describe("Functionality", function() {
         expect('program.getInfo(WebCL.PROGRAM_DEVICES).length === 1').toEvalAs(true);
         expect('program.getInfo(WebCL.PROGRAM_DEVICES)[0] === device').toEvalAs(true);
         expect('program.getInfo(WebCL.PROGRAM_CONTEXT) === ctx').toEvalAs(true);
-        expect('program.getInfo(WebCL.PROGRAM_SOURCE) === src').toEvalAs(true);
+        expect('program.getInfo(WebCL.PROGRAM_SOURCE) === "kernel void dummy() {}"').toEvalAs(true);
       });
 
       it("getInfo(<invalidEnum>) must throw", function() {
@@ -620,7 +617,7 @@ describe("Functionality", function() {
 
       it("must throw if kernels are already created", function() {
         expect('program.build(devices)').not.toThrow();
-        expect('program.createKernelsInProgram()').not.toThrow();
+        expect('program.createKernel("dummy")').not.toThrow();
         expect('program.build(devices)').toThrow('INVALID_OPERATION');
       });
 
@@ -706,8 +703,6 @@ describe("Functionality", function() {
   // 
   describe("WebCLKernel", function() {
     
-    src = "kernel void dummy() {}";
-
     beforeEach(function() {
       try {
         ctx = createContext();
@@ -726,7 +721,7 @@ describe("Functionality", function() {
     describe("getWorkGroupInfo", function() {
 
       it("must support KERNEL_WORK_GROUP_SIZE", function() {
-        program = ctx.createProgram(src);
+        program = ctx.createProgram("kernel void dummy() {}");
         program.build(devices);
         kernel = program.createKernelsInProgram()[0];
         expect('kernel.getWorkGroupInfo(device, WebCL.KERNEL_WORK_GROUP_SIZE)').not.toThrow();
@@ -741,7 +736,7 @@ describe("Functionality", function() {
     // 
     describe("setArg", function() {
 
-      src = loadSource('kernels/argtypes.cl');
+      var src = loadSource('kernels/argtypes.cl');
       
       beforeEach(function() {
         program = ctx.createProgram(src);
@@ -970,8 +965,7 @@ describe("Functionality", function() {
         try {
           ctx = createContext();
           queue = ctx.createCommandQueue(null, 0);
-          src = "kernel void dummy() {}";
-          program = ctx.createProgram(src);
+          program = ctx.createProgram("kernel void dummy() {}");
           devices = ctx.getInfo(WebCL.CONTEXT_DEVICES);
           program.build(devices);
           kernel = program.createKernelsInProgram()[0];
@@ -1211,16 +1205,14 @@ describe("Functionality", function() {
     describe("Compiler (OpenCL 1.1)", function() {
 
       it("must not allow obviously invalid minimal kernel source", function() {
-        var src = "obviously invalid";
-        program = ctx.createProgram(src);
+        program = ctx.createProgram("obviously invalid");
         expect('program instanceof WebCLProgram').toEvalAs(true);
         expect('program.build()').toThrow('BUILD_PROGRAM_FAILURE');
         expect('program.build(null, "-w")').toThrow('BUILD_PROGRAM_FAILURE');
       });
 
       it("must not allow slightly invalid minimal kernel source", function() {
-        var src = "kernel int dummy() {}";
-        program = ctx.createProgram(src);
+        program = ctx.createProgram("kernel int dummy() {}");
         expect('program instanceof WebCLProgram').toEvalAs(true);
         expect('program.build()').toThrow('BUILD_PROGRAM_FAILURE');
         expect('program.build(null, "-w")').toThrow('BUILD_PROGRAM_FAILURE');
