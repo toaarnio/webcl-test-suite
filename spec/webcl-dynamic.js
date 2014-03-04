@@ -132,7 +132,7 @@ describe("Functionality", function() {
     beforeEach(function() {
       try {
         ctx = createContext();
-        device = ctx.getInfo(WebCL.CONTEXT_DEVICES)[0];
+        aDevice = ctx.getInfo(WebCL.CONTEXT_DEVICES)[0];
       } catch (e) {
         ERROR("Functionality -> WebCLContext -> beforeEach: Unable to create WebCLContext, all tests will fail!");
         throw e;
@@ -202,75 +202,45 @@ describe("Functionality", function() {
     // 
     describe("createCommandQueue", function() {
 
-      it("must work with an empty argument list", function() {
-        queue = ctx.createCommandQueue();
-        expect('queue instanceof WebCLCommandQueue').toEvalAs(true);
-      });
-      
-      it("must work if device === null", function() {
-        queue = ctx.createCommandQueue(null);
-        expect('queue instanceof WebCLCommandQueue').toEvalAs(true);
-      });
-
-      it("must work if device === null, properties === 0", function() {
-        queue = ctx.createCommandQueue(null, 0);
-        expect('queue instanceof WebCLCommandQueue').toEvalAs(true);
+      it("createCommandQueue(<validDevice>) must not throw", function() {
+        expect('ctx.createCommandQueue()').not.toThrow();
+        expect('ctx.createCommandQueue(undefined)').not.toThrow();
+        expect('ctx.createCommandQueue(null)').not.toThrow();
+        expect('ctx.createCommandQueue(aDevice)').not.toThrow();
+        expect('ctx.createCommandQueue(undefined, 0)').not.toThrow();
+        expect('ctx.createCommandQueue(null, 0)').not.toThrow();
+        expect('ctx.createCommandQueue(aDevice, 0)').not.toThrow();
       });
 
-      it("must work if device === aDevice", function() {
-        queue = ctx.createCommandQueue(device);
-        expect('queue instanceof WebCLCommandQueue').toEvalAs(true);
+      it("createCommandQueue(<validDevice>, <supportedProperties>) must not throw", function() {
+        supportedProperties = aDevice.getInfo(WebCL.DEVICE_QUEUE_PROPERTIES);
+        expect('ctx.createCommandQueue(aDevice, supportedProperties)').not.toThrow();
       });
 
-      it("must work if device === aDevice, properties === 0", function() {
-        queue = ctx.createCommandQueue(device, 0);
-        expect('queue instanceof WebCLCommandQueue').toEvalAs(true);
-      });
-      
-      it("must work if device === undefined, properties === QUEUE_PROFILING_ENABLE", function() {
-        queue = ctx.createCommandQueue(undefined, WebCL.QUEUE_PROFILING_ENABLE);
-        expect('queue instanceof WebCLCommandQueue').toEvalAs(true);
-      });
-      
-      it("must work if device === null, properties === QUEUE_PROFILING_ENABLE", function() {
-        queue = ctx.createCommandQueue(null, WebCL.QUEUE_PROFILING_ENABLE);
-        expect('queue instanceof WebCLCommandQueue').toEvalAs(true);
-      });
-      
-      it("must work if device === aDevice, properties === QUEUE_PROFILING_ENABLE", function() {
-        queue = ctx.createCommandQueue(device, WebCL.QUEUE_PROFILING_ENABLE);
-        expect('queue instanceof WebCLCommandQueue').toEvalAs(true);
-      });
-      
-      it("must work if device === aDevice, properties === QUEUE_OUT_OF_ORDER_EXEC_MODE_ENABLE", function() {
-        queue = ctx.createCommandQueue(device, WebCL.QUEUE_OUT_OF_ORDER_EXEC_MODE_ENABLE);
-        expect('queue instanceof WebCLCommandQueue').toEvalAs(true);
+      it("createCommandQueue(<validDevice>, <invalidProperties>) must throw", function() {
+        expect('ctx.createCommandQueue(null, "foobar")').toThrow('INVALID_VALUE');
+        expect('ctx.createCommandQueue(null, "")').toThrow('INVALID_VALUE');
+        expect('ctx.createCommandQueue(null, [])').toThrow('INVALID_VALUE');
+        expect('ctx.createCommandQueue(null, 0x4)').toThrow('INVALID_VALUE');
+        expect('ctx.createCommandQueue(aDevice, "foobar")').toThrow('INVALID_VALUE');
+        expect('ctx.createCommandQueue(aDevice, "")').toThrow('INVALID_VALUE');
+        expect('ctx.createCommandQueue(aDevice, [])').toThrow('INVALID_VALUE');
+        expect('ctx.createCommandQueue(aDevice, 0x4)').toThrow('INVALID_VALUE');
       });
 
-      it("must work if device === aDevice, properties === PROFILING | OUT_OF_ORDER", function() {
-        queue = ctx.createCommandQueue(device, WebCL.QUEUE_PROFILING_ENABLE | WebCL.QUEUE_OUT_OF_ORDER_EXEC_MODE_ENABLE);
-        expect('queue instanceof WebCLCommandQueue').toEvalAs(true);
+      it("createCommandQueue(<validDevice>, <unsupportedProperties>) must throw", function() {
+        allProperties = WebCL.QUEUE_PROFILING_ENABLE | WebCL.QUEUE_OUT_OF_ORDER_EXEC_MODE_ENABLE;
+        supportedProperties = aDevice.getInfo(WebCL.DEVICE_QUEUE_PROPERTIES);
+        if (allProperties !== supportedProperties)
+          expect('ctx.createCommandQueue(aDevice, allProperties)').toThrow('INVALID_QUEUE_PROPERTIES');
+        else 
+          expect('ctx.createCommandQueue(aDevice, allProperties)').not.toThrow();
       });
 
-      it("must throw if device === <invalid>", function() {
-        expect('ctx instanceof WebCLContext').toEvalAs(true);
+      it("createCommandQueue(<invalidDevice>) must throw", function() {
         expect('ctx.createCommandQueue("foobar")').toThrow('INVALID_DEVICE');
         expect('ctx.createCommandQueue([])').toThrow('INVALID_DEVICE');
         expect('ctx.createCommandQueue(ctx)').toThrow('INVALID_DEVICE');
-      });
-
-      it("must throw if device === null, properties === <invalid>", function() {
-        expect('ctx instanceof WebCLContext').toEvalAs(true);
-        expect('ctx.createCommandQueue(null, "foobar")').toThrow('INVALID_VALUE');
-        expect('ctx.createCommandQueue(null, [])').toThrow('INVALID_VALUE');
-        expect('ctx.createCommandQueue(null, 0x4)').toThrow('INVALID_VALUE');
-      });
-
-      it("must throw if device === aDevice, properties === <invalid>", function() {
-        expect('ctx instanceof WebCLContext').toEvalAs(true);
-        expect('ctx.createCommandQueue(device, "foobar")').toThrow('INVALID_VALUE');
-        expect('ctx.createCommandQueue(device, [])').toThrow('INVALID_VALUE');
-        expect('ctx.createCommandQueue(device, 0x4)').toThrow('INVALID_VALUE');
       });
 
     });
