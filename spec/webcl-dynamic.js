@@ -132,7 +132,7 @@ describe("Functionality", function() {
     beforeEach(function() {
       try {
         ctx = createContext();
-        aDevice = ctx.getInfo(WebCL.CONTEXT_DEVICES)[0];
+        device = ctx.getInfo(WebCL.CONTEXT_DEVICES)[0];
       } catch (e) {
         ERROR("Functionality -> WebCLContext -> beforeEach: Unable to create WebCLContext, all tests will fail!");
         throw e;
@@ -148,8 +148,8 @@ describe("Functionality", function() {
       it("getInfo(<validEnum>) must work", function() {
         expect('ctx.getInfo(WebCL.CONTEXT_NUM_DEVICES)').not.toThrow();
         expect('ctx.getInfo(WebCL.CONTEXT_DEVICES)').not.toThrow();
-        expect('ctx.getInfo(WebCL.CONTEXT_NUM_DEVICES) > 0').toEvalAs(true);
-        expect('ctx.getInfo(WebCL.CONTEXT_DEVICES) instanceof Array').toEvalAs(true);
+        expect('ctx.getInfo(WebCL.CONTEXT_NUM_DEVICES) === 1').toEvalAs(true);
+        expect('ctx.getInfo(WebCL.CONTEXT_DEVICES).length === 1').toEvalAs(true);
       });
 
       it("getInfo(<invalidEnum>) must throw", function() {
@@ -206,15 +206,15 @@ describe("Functionality", function() {
         expect('ctx.createCommandQueue()').not.toThrow();
         expect('ctx.createCommandQueue(undefined)').not.toThrow();
         expect('ctx.createCommandQueue(null)').not.toThrow();
-        expect('ctx.createCommandQueue(aDevice)').not.toThrow();
+        expect('ctx.createCommandQueue(device)').not.toThrow();
         expect('ctx.createCommandQueue(undefined, 0)').not.toThrow();
         expect('ctx.createCommandQueue(null, 0)').not.toThrow();
-        expect('ctx.createCommandQueue(aDevice, 0)').not.toThrow();
+        expect('ctx.createCommandQueue(device, 0)').not.toThrow();
       });
 
       it("createCommandQueue(<validDevice>, <supportedProperties>) must not throw", function() {
-        supportedProperties = aDevice.getInfo(WebCL.DEVICE_QUEUE_PROPERTIES);
-        expect('ctx.createCommandQueue(aDevice, supportedProperties)').not.toThrow();
+        supportedProperties = device.getInfo(WebCL.DEVICE_QUEUE_PROPERTIES);
+        expect('ctx.createCommandQueue(device, supportedProperties)').not.toThrow();
       });
 
       it("createCommandQueue(<validDevice>, <invalidProperties>) must throw", function() {
@@ -222,19 +222,19 @@ describe("Functionality", function() {
         expect('ctx.createCommandQueue(null, "")').toThrow('INVALID_VALUE');
         expect('ctx.createCommandQueue(null, [])').toThrow('INVALID_VALUE');
         expect('ctx.createCommandQueue(null, 0x4)').toThrow('INVALID_VALUE');
-        expect('ctx.createCommandQueue(aDevice, "foobar")').toThrow('INVALID_VALUE');
-        expect('ctx.createCommandQueue(aDevice, "")').toThrow('INVALID_VALUE');
-        expect('ctx.createCommandQueue(aDevice, [])').toThrow('INVALID_VALUE');
-        expect('ctx.createCommandQueue(aDevice, 0x4)').toThrow('INVALID_VALUE');
+        expect('ctx.createCommandQueue(device, "foobar")').toThrow('INVALID_VALUE');
+        expect('ctx.createCommandQueue(device, "")').toThrow('INVALID_VALUE');
+        expect('ctx.createCommandQueue(device, [])').toThrow('INVALID_VALUE');
+        expect('ctx.createCommandQueue(device, 0x4)').toThrow('INVALID_VALUE');
       });
 
       it("createCommandQueue(<validDevice>, <unsupportedProperties>) must throw", function() {
         allProperties = WebCL.QUEUE_PROFILING_ENABLE | WebCL.QUEUE_OUT_OF_ORDER_EXEC_MODE_ENABLE;
-        supportedProperties = aDevice.getInfo(WebCL.DEVICE_QUEUE_PROPERTIES);
+        supportedProperties = device.getInfo(WebCL.DEVICE_QUEUE_PROPERTIES);
         if (allProperties !== supportedProperties)
-          expect('ctx.createCommandQueue(aDevice, allProperties)').toThrow('INVALID_QUEUE_PROPERTIES');
+          expect('ctx.createCommandQueue(device, allProperties)').toThrow('INVALID_QUEUE_PROPERTIES');
         else 
-          expect('ctx.createCommandQueue(aDevice, allProperties)').not.toThrow();
+          expect('ctx.createCommandQueue(device, allProperties)').not.toThrow();
       });
 
       it("createCommandQueue(<invalidDevice>) must throw", function() {
@@ -400,20 +400,17 @@ describe("Functionality", function() {
     // 
     describe("getInfo", function() {
 
-      it("getInfo(<validEnum>) must not throw", function() {
+      it("getInfo(<validEnum>) must work", function() {
         expect('buffer.getInfo(WebCL.MEM_TYPE)').not.toThrow();
         expect('buffer.getInfo(WebCL.MEM_FLAGS)').not.toThrow();
         expect('buffer.getInfo(WebCL.MEM_CONTEXT)').not.toThrow();
         expect('buffer.getInfo(WebCL.MEM_ASSOCIATED_MEMOBJECT)').not.toThrow();
         expect('buffer.getInfo(WebCL.MEM_OFFSET)').not.toThrow();
-      });
-
-      it("getInfo(<validEnum>) must work", function() {
-        expect('buffer.getInfo(WebCL.MEM_TYPE)').toEvalAs('WebCL.MEM_OBJECT_BUFFER');
-        expect('buffer.getInfo(WebCL.MEM_FLAGS)').toEvalAs('WebCL.MEM_READ_WRITE');
-        expect('buffer.getInfo(WebCL.MEM_CONTEXT)').toEvalAs('ctx');
-        expect('buffer.getInfo(WebCL.MEM_ASSOCIATED_MEMOBJECT)').toEvalAs('null');
-        expect('buffer.getInfo(WebCL.MEM_OFFSET)').toEvalAs('0');
+        expect('buffer.getInfo(WebCL.MEM_TYPE) === WebCL.MEM_OBJECT_BUFFER').toEvalAs(true);
+        expect('buffer.getInfo(WebCL.MEM_FLAGS) === WebCL.MEM_READ_WRITE').toEvalAs(true);
+        expect('buffer.getInfo(WebCL.MEM_CONTEXT) === ctx').toEvalAs(true);
+        expect('buffer.getInfo(WebCL.MEM_ASSOCIATED_MEMOBJECT) === null').toEvalAs(true);
+        expect('buffer.getInfo(WebCL.MEM_OFFSET) === 0').toEvalAs(true);
       });
 
       it("getInfo(<invalidEnum>) must throw", function() {
@@ -424,6 +421,7 @@ describe("Functionality", function() {
         expect('buffer.getInfo(null)').toThrow('INVALID_VALUE');
         expect('buffer.getInfo({})').toThrow('INVALID_VALUE');
         expect('buffer.getInfo([])').toThrow('INVALID_VALUE');
+        expect('buffer.getInfo("")').toThrow('INVALID_VALUE');
         expect('buffer.getInfo("foo")').toThrow('INVALID_VALUE');
       });
 
@@ -455,11 +453,8 @@ describe("Functionality", function() {
     // 
     describe("getInfo", function() {
 
-      it("getInfo() must not throw", function() {
-        expect('image.getInfo()').not.toThrow();
-      });
-
       it("getInfo() must work", function() {
+        expect('image.getInfo()').not.toThrow();
         expect('image.getInfo().width').toEvalAs('33');
         expect('image.getInfo().height').toEvalAs('17');
         expect('image.getInfo().rowPitch').toEvalAs('33*4');
@@ -467,7 +462,7 @@ describe("Functionality", function() {
         expect('image.getInfo().channelType').toEvalAs('WebCL.UNORM_INT8');
       });
 
-      it("getInfo() must work with non-default channelOrder and channelType", function() {
+      it("getInfo() must work with non-default channelType", function() {
         descriptor = { width: 19, height: 11, channelOrder: WebCL.RGBA, channelType: WebCL.FLOAT };
         expect('image1 = ctx.createImage(WebCL.MEM_READ_ONLY, descriptor)').not.toThrow();
         expect('image1.getInfo().width').toEvalAs('19');
@@ -477,20 +472,17 @@ describe("Functionality", function() {
         expect('image1.getInfo().channelType').toEvalAs('WebCL.FLOAT');
       });
 
-      it("getInfo(<validEnum>) must not throw", function() {
+      it("getInfo(<validEnum>) must work", function() {
         expect('image.getInfo(WebCL.MEM_TYPE)').not.toThrow();
         expect('image.getInfo(WebCL.MEM_FLAGS)').not.toThrow();
         expect('image.getInfo(WebCL.MEM_CONTEXT)').not.toThrow();
         expect('image.getInfo(WebCL.MEM_ASSOCIATED_MEMOBJECT)').not.toThrow();
         expect('image.getInfo(WebCL.MEM_OFFSET)').not.toThrow();
-      });
-
-      it("getInfo(<validEnum>) must work", function() {
         expect('image.getInfo(WebCL.MEM_TYPE)').toEvalAs('WebCL.MEM_OBJECT_IMAGE2D');
         expect('image.getInfo(WebCL.MEM_FLAGS)').toEvalAs('WebCL.MEM_READ_WRITE');
-        expect('image.getInfo(WebCL.MEM_CONTEXT)').toEvalAs('ctx');
-        expect('image.getInfo(WebCL.MEM_ASSOCIATED_MEMOBJECT)').toEvalAs('null');
-        expect('image.getInfo(WebCL.MEM_OFFSET)').toEvalAs('0');
+        expect('image.getInfo(WebCL.MEM_CONTEXT) === ctx').toEvalAs(true);
+        expect('image.getInfo(WebCL.MEM_ASSOCIATED_MEMOBJECT) === null').toEvalAs(true);
+        expect('image.getInfo(WebCL.MEM_OFFSET) === 0').toEvalAs(true);
       });
 
       it("getInfo(<invalidEnum>) must throw", function() {
@@ -501,6 +493,7 @@ describe("Functionality", function() {
         expect('image.getInfo(null)').toThrow('INVALID_VALUE');
         expect('image.getInfo({})').toThrow('INVALID_VALUE');
         expect('image.getInfo([])').toThrow('INVALID_VALUE');
+        expect('image.getInfo("")').toThrow('INVALID_VALUE');
         expect('image.getInfo("foo")').toThrow('INVALID_VALUE');
       });
 
@@ -519,10 +512,11 @@ describe("Functionality", function() {
     beforeEach(function() {
       try {
         ctx = createContext();
+        program = ctx.createProgram(src);
         devices = ctx.getInfo(WebCL.CONTEXT_DEVICES);
         device = devices[0];
       } catch (e) {
-        ERROR("Functionality -> WebCLProgram -> beforeEach: Unable to create WebCLContext, all tests will fail!");
+        ERROR("Functionality -> WebCLProgram -> beforeEach: Unable to create WebCL resources, all tests will fail!");
         throw e;
       }
     });
@@ -533,28 +527,28 @@ describe("Functionality", function() {
     // 
     describe("getInfo", function() {
 
-      it("must support getInfo(PROGRAM_NUM_DEVICES)", function() {
-        var program = ctx.createProgram(src);
-        var ndevices = program.getInfo(WebCL.PROGRAM_NUM_DEVICES);
-        expect(typeof ndevices).toEqual('number');
-      });
-
-      it("must support getInfo(PROGRAM_DEVICES)", function() {
-        program = ctx.createProgram(src);
-        expect('program.getInfo(WebCL.PROGRAM_DEVICES) instanceof Array').toEvalAs(true);
-      });
-
-      // This test is known to crash on Win7
-      // --> moved to Crash tests until we have a fix or workaround
-      it("must support getInfo(PROGRAM_CONTEXT)", function() {
-        program = ctx.createProgram(src);
-        ctxQueriedFromProgram = program.getInfo(WebCL.PROGRAM_CONTEXT);
-        expect('ctxQueriedFromProgram instanceof WebCLContext').toEvalAs(true);
-      });
-
-      it("must support getInfo(PROGRAM_SOURCE)", function() {
-        program = ctx.createProgram(src);
+      it("getInfo(<validEnum>) must work", function() {
+        expect('program.getInfo(WebCL.PROGRAM_NUM_DEVICES)').not.toThrow();
+        expect('program.getInfo(WebCL.PROGRAM_DEVICES)').not.toThrow();
+        expect('program.getInfo(WebCL.PROGRAM_CONTEXT)').not.toThrow();
+        expect('program.getInfo(WebCL.PROGRAM_SOURCE)').not.toThrow();
+        expect('program.getInfo(WebCL.PROGRAM_NUM_DEVICES) === 1').toEvalAs(true);
+        expect('program.getInfo(WebCL.PROGRAM_DEVICES).length === 1').toEvalAs(true);
+        expect('program.getInfo(WebCL.PROGRAM_DEVICES)[0] === device').toEvalAs(true);
+        expect('program.getInfo(WebCL.PROGRAM_CONTEXT) === ctx').toEvalAs(true);
         expect('program.getInfo(WebCL.PROGRAM_SOURCE) === src').toEvalAs(true);
+      });
+
+      it("getInfo(<invalidEnum>) must throw", function() {
+        expect('program.getInfo(0)').toThrow('INVALID_VALUE');
+        expect('program.getInfo(1)').toThrow('INVALID_VALUE');
+        expect('program.getInfo(-1)').toThrow('INVALID_VALUE');
+        expect('program.getInfo(WebCL.PROGRAM_BUILD_STATUS)').toThrow('INVALID_VALUE');
+        expect('program.getInfo(null)').toThrow('INVALID_VALUE');
+        expect('program.getInfo({})').toThrow('INVALID_VALUE');
+        expect('program.getInfo([])').toThrow('INVALID_VALUE');
+        expect('program.getInfo("")').toThrow('INVALID_VALUE');
+        expect('program.getInfo("foo")').toThrow('INVALID_VALUE');
       });
 
     });
@@ -565,34 +559,16 @@ describe("Functionality", function() {
     // 
     describe("build", function() {
 
-      it("must work with an empty argument list", function() {
-        program = ctx.createProgram(src);
+      it("build(<validDeviceArray>) must not throw", function() {
         expect('program.build()').not.toThrow();
-      });
-
-      it("must work if devices === null", function() {
-        program = ctx.createProgram(src);
         expect('program.build(null)').not.toThrow();
-      });
-
-      it("must work if devices === [ aDevice ]", function() {
-        program = ctx.createProgram(src);
         expect('program.build(devices)').not.toThrow();
       });
 
-      it("must work if devices === [ aDevice ], options = null", function() {
-        program = ctx.createProgram(src);
+      it("build(<validDeviceArray>, <validBuildOption>) must not throw", function() {
         expect('program.build(devices, null)').not.toThrow();
-      });
-
-      it("must work if devices === [ aDevice ], options = ''", function() {
-        program = ctx.createProgram(src);
-        expect('program.build(devices, "")').not.toThrow();
-      });
-
-      it("must work if devices = [ aDevice ], options === '-valid-option'", function() {
-        program = ctx.createProgram(src);
-        [ '-D foo',
+        [ '',
+          '-D foo',
           '-D foo=0xdeadbeef',
           '-cl-opt-disable',
           '-cl-single-precision-constant',
@@ -609,24 +585,20 @@ describe("Functionality", function() {
         });
       });
 
-      it("must work if devices = [ aDevice ],  options === '-cl-opt-disable -Werror'", function() {
-        program = ctx.createProgram(src);
+      it("build(<validDeviceArray>, <multipleValidBuildOptions>) must not throw", function() {
         expect('program.build(devices, "-cl-opt-disable -Werror")').not.toThrow();
       });
 
-      it("build(<invalidDeviceList>) must throw", function() {
-        program = ctx.createProgram(src);
-        expect('program instanceof WebCLProgram').toEvalAs(true);
+      it("build(<invalidDeviceArray>) must throw", function() {
         expect('program.build([])').toThrow('INVALID_VALUE');
         expect('program.build({})').toThrow('INVALID_VALUE');
+        expect('program.build("")').toThrow('INVALID_VALUE');
         expect('program.build(program)').toThrow('INVALID_VALUE');
         expect('program.build(device)').toThrow('INVALID_VALUE');
         expect('program.build([program])').toThrow('INVALID_DEVICE');
       });
 
       it("build(<invalidBuildOptions>) must throw", function() {
-        program = ctx.createProgram(src);
-        expect('program instanceof WebCLProgram').toEvalAs(true);
         expect('program.build(devices, "-cl-std=CL1.1")').toThrow('INVALID_BUILD_OPTIONS');
         expect('program.build(devices, "-cl-std=CL1.2")').toThrow('INVALID_BUILD_OPTIONS');
         expect('program.build(devices, "-cl-kernel-arg-info")').toThrow('INVALID_BUILD_OPTIONS');
@@ -641,6 +613,25 @@ describe("Functionality", function() {
         expect('program.build(devices, program)').toThrow('INVALID_BUILD_OPTIONS');
       });
 
+      it("must throw if program source is invalid", function() {
+        program = ctx.createProgram("obviously invalid");
+        expect('program.build(devices)').toThrow('BUILD_PROGRAM_FAILURE');
+      });
+
+      it("must throw if kernels are already created", function() {
+        expect('program.build(devices)').not.toThrow();
+        expect('program.createKernelsInProgram()').not.toThrow();
+        expect('program.build(devices)').toThrow('INVALID_OPERATION');
+      });
+
+      it("must throw if called synchronously from a WebCLCallback", function() {
+        pending();
+      });
+
+      it("must throw if a previous build has not completed", function() {
+        pending();
+      });
+
     });
 
     //////////////////////////////////////////////////////////////////////////////
@@ -649,83 +640,26 @@ describe("Functionality", function() {
     // 
     describe("getBuildInfo", function() {
 
-      it("must support PROGRAM_BUILD_STATUS", function() {
-        program = ctx.createProgram(src);
+      it("getBuildInfo(<validDevice>, <validEnum>) must not throw", function() {
         expect('program.getBuildInfo(device, WebCL.PROGRAM_BUILD_STATUS)').not.toThrow();
-      });
-
-      it("must support PROGRAM_BUILD_STATUS === BUILD_NONE", function() {
-        program = ctx.createProgram(src);
-        expect('program.getBuildInfo(device, WebCL.PROGRAM_BUILD_STATUS) === WebCL.BUILD_NONE').toEvalAs(true);
-      });
-
-      it("must support PROGRAM_BUILD_STATUS === BUILD_SUCCESS", function() {
-        program = ctx.createProgram(src);
-        expect('program.build(devices)').not.toThrow();
-        expect('program.getBuildInfo(device, WebCL.PROGRAM_BUILD_STATUS) === WebCL.BUILD_SUCCESS').toEvalAs(true);
-      });
-
-      it("must support PROGRAM_BUILD_STATUS === BUILD_ERROR", function() {
-        var src = "obviously invalid";
-        program = ctx.createProgram(src);
-        expect('program.build(devices)').toThrow();
-        expect('program.getBuildInfo(device, WebCL.PROGRAM_BUILD_STATUS) === WebCL.BUILD_ERROR').toEvalAs(true);
-      });
-
-      it("must support PROGRAM_BUILD_LOG before build()", function() {
-        program = ctx.createProgram(src);
-        expect('program.getBuildInfo(device, WebCL.PROGRAM_BUILD_LOG)').not.toThrow();
-        expect('typeof program.getBuildInfo(device, WebCL.PROGRAM_BUILD_LOG) === "string"').toEvalAs(true);
-        expect('program.getBuildInfo(device, WebCL.PROGRAM_BUILD_LOG).length === 0').toEvalAs(true);
-      });
-
-      it("must support PROGRAM_BUILD_LOG after build()", function() {
-        program = ctx.createProgram(src);
-        expect('program.build(devices)').not.toThrow();
-        expect('program.getBuildInfo(device, WebCL.PROGRAM_BUILD_LOG)').not.toThrow();
-        expect('typeof program.getBuildInfo(device, WebCL.PROGRAM_BUILD_LOG) === "string"').toEvalAs(true);
-      });
-
-      it("must report errors in PROGRAM_BUILD_LOG", function() {
-        var src = "obviously invalid";
-        program = ctx.createProgram(src);
-        expect('program.build(devices)').toThrow();
-        expect('program.getBuildInfo(device, WebCL.PROGRAM_BUILD_LOG)').not.toThrow();
-        expect('program.getBuildInfo(device, WebCL.PROGRAM_BUILD_LOG).length > 0').toEvalAs(true);
-        expect('program.getBuildInfo(device, WebCL.PROGRAM_BUILD_LOG).indexOf("error") !== -1').toEvalAs(true);
-      });
-        
-      it("must support PROGRAM_BUILD_OPTIONS with empty options", function() {
-        program = ctx.createProgram(src);
-        expect('program.build(devices)').not.toThrow();
         expect('program.getBuildInfo(device, WebCL.PROGRAM_BUILD_OPTIONS)').not.toThrow();
-        expect('typeof program.getBuildInfo(device, WebCL.PROGRAM_BUILD_OPTIONS) === "string"').toEvalAs(true);
-        expect('program.getBuildInfo(device, WebCL.PROGRAM_BUILD_OPTIONS).length === 0').toEvalAs(true);
+        expect('program.getBuildInfo(device, WebCL.PROGRAM_BUILD_LOG)').not.toThrow();
       });
 
-      it("must support PROGRAM_BUILD_OPTIONS with non-empty options", function() {
-        program = ctx.createProgram(src);
-        expect('program.build(devices, "-w -D foo=0xdeadbeef")').not.toThrow();
-        expect('program.getBuildInfo(device, WebCL.PROGRAM_BUILD_OPTIONS)').not.toThrow();
-        expect('program.getBuildInfo(device, WebCL.PROGRAM_BUILD_OPTIONS) === "-w -D foo=0xdeadbeef"').toEvalAs(true);
-      });
-
-      it("must throw if device === undefined/null/<invalid>", function() {
-        program = ctx.createProgram(src);
-        expect('program instanceof WebCLProgram').toEvalAs(true);
+      it("getBuildInfo(<invalidDevice>, <validEnum>) must throw", function() {
         expect('program.getBuildInfo("foobar", WebCL.PROGRAM_BUILD_STATUS)').toThrow('INVALID_DEVICE');
+        expect('program.getBuildInfo("", WebCL.PROGRAM_BUILD_STATUS)').toThrow('INVALID_DEVICE');
         expect('program.getBuildInfo([], WebCL.PROGRAM_BUILD_STATUS)').toThrow('INVALID_DEVICE');
         expect('program.getBuildInfo(null, WebCL.PROGRAM_BUILD_STATUS)').toThrow('INVALID_DEVICE');
         expect('program.getBuildInfo(undefined, WebCL.PROGRAM_BUILD_STATUS)').toThrow('INVALID_DEVICE');
-        expect('program.getBuildInfo(undefined, WebCL.PROGRAM_BUILD_STATUS)').toThrow('INVALID_DEVICE');
+        expect('program.getBuildInfo(program, WebCL.PROGRAM_BUILD_STATUS)').toThrow('INVALID_DEVICE');
       });
 
-      it("must throw if name === omitted/undefined/null/<invalid>", function() {
-        program = ctx.createProgram(src);
-        expect('program instanceof WebCLProgram').toEvalAs(true);
+      it("getBuildInfo(<validDevice>, <invalidEnum>) must throw", function() {
         expect('program.getBuildInfo(device)').toThrow('INVALID_VALUE');
         expect('program.getBuildInfo(device, undefined)').toThrow('INVALID_VALUE');
         expect('program.getBuildInfo(device, null)').toThrow('INVALID_VALUE');
+        expect('program.getBuildInfo(device, "")').toThrow('INVALID_VALUE');
         expect('program.getBuildInfo(device, 0)').toThrow('INVALID_VALUE');
         expect('program.getBuildInfo(device, -1)').toThrow('INVALID_VALUE');
         expect('program.getBuildInfo(device, 0x1180)').toThrow('INVALID_VALUE');
@@ -735,6 +669,32 @@ describe("Functionality", function() {
         expect('program.getBuildInfo(device, device)').toThrow('INVALID_VALUE');
       });
 
+      it("getBuildInfo(PROGRAM_BUILD_STATUS) must work", function() {
+        expect('program.getBuildInfo(device, WebCL.PROGRAM_BUILD_STATUS)').toEvalAs('WebCL.BUILD_NONE');
+        expect('program.build(devices)').not.toThrow();
+        expect('program.getBuildInfo(device, WebCL.PROGRAM_BUILD_STATUS)').toEvalAs('WebCL.BUILD_SUCCESS');
+        program = ctx.createProgram("obviously invalid");
+        expect('program.build(devices)').toThrow();
+        expect('program.getBuildInfo(device, WebCL.PROGRAM_BUILD_STATUS)').toEvalAs('WebCL.BUILD_ERROR');
+      });
+
+      it("getBuildInfo(PROGRAM_BUILD_OPTIONS) must work", function() {
+        expect('program.build(devices)').not.toThrow();
+        expect('program.getBuildInfo(device, WebCL.PROGRAM_BUILD_OPTIONS)').not.toThrow();
+        expect('typeof program.getBuildInfo(device, WebCL.PROGRAM_BUILD_OPTIONS) === "string"').toEvalAs(true);
+        expect('program.getBuildInfo(device, WebCL.PROGRAM_BUILD_OPTIONS).length === 0').toEvalAs(true);
+        expect('program.build(devices, "-w -D foo=0xdeadbeef")').not.toThrow();
+        expect('program.getBuildInfo(device, WebCL.PROGRAM_BUILD_OPTIONS)').not.toThrow();
+        expect('program.getBuildInfo(device, WebCL.PROGRAM_BUILD_OPTIONS) === "-w -D foo=0xdeadbeef"').toEvalAs(true);
+      });
+
+      it("getBuildInfo(PROGRAM_BUILD_LOG) must actually report errors", function() {
+        program = ctx.createProgram("obviously invalid");
+        expect('program.build(devices)').toThrow();
+        expect('program.getBuildInfo(device, WebCL.PROGRAM_BUILD_LOG).length > 0').toEvalAs(true);
+        expect('program.getBuildInfo(device, WebCL.PROGRAM_BUILD_LOG).indexOf("error") !== -1').toEvalAs(true);
+      });
+        
     });
     
   });
@@ -959,27 +919,45 @@ describe("Functionality", function() {
   // Functionality -> WebCLCommandQueue
   // 
   describe("WebCLCommandQueue", function() {
+
+    beforeEach(function() {
+      try {
+        ctx = createContext();
+        device = ctx.getInfo(WebCL.CONTEXT_DEVICES)[0];
+        queue = ctx.createCommandQueue(device, 0);
+      } catch (e) {
+        ERROR("Functionality -> WebCLCommandQueue -> beforeEach: Unable to create WebCL resources, all tests will fail!");
+        throw e;
+      }
+    });
     
-    // This test is known to crash on Win7
-    // --> moved to Crash tests until we have a fix or workaround
-    it("must support getInfo(QUEUE_CONTEXT)", function() {
-      var ctx = createContext();
-      queue = ctx.createCommandQueue(null, 0);
-      ctxQueriedFromQueue = queue.getInfo(WebCL.QUEUE_CONTEXT);
-      expect('ctxQueriedFromQueue instanceof WebCLContext').toEvalAs(true);
-    });
+    //////////////////////////////////////////////////////////////////////////////
+    //
+    // Functionality -> WebCLCommandQueue -> getInfo
+    // 
+    describe("getInfo", function() {
 
-    it("must support getInfo(QUEUE_DEVICE)", function() {
-      var ctx = createContext();
-      queue = ctx.createCommandQueue(null, 0);
-      expect('queue.getInfo(WebCL.QUEUE_DEVICE) instanceof WebCLDevice').toEvalAs(true);
-    });
+      it("getInfo(<validEnum>) must work", function() {
+        expect('queue.getInfo(WebCL.QUEUE_CONTEXT)').not.toThrow();
+        expect('queue.getInfo(WebCL.QUEUE_DEVICE)').not.toThrow();
+        expect('queue.getInfo(WebCL.QUEUE_PROPERTIES)').not.toThrow();
+        expect('queue.getInfo(WebCL.QUEUE_CONTEXT) === ctx').toEvalAs(true);
+        expect('queue.getInfo(WebCL.QUEUE_DEVICE) === device').toEvalAs(true);
+        expect('queue.getInfo(WebCL.QUEUE_PROPERTIES) === 0').toEvalAs(true);
+      });
 
-    it("must support getInfo(QUEUE_PROPERTIES)", function() {
-      var ctx = createContext();
-      queue = ctx.createCommandQueue(null, 0);
-      maxValidEnum = WebCL.QUEUE_OUT_OF_ORDER_EXEC_MODE_ENABLE | WebCL.QUEUE_PROFILING_ENABLE;
-      expect('queue.getInfo(WebCL.QUEUE_PROPERTIES) <= maxValidEnum').toEvalAs(true);
+      it("getInfo(<invalidEnum>) must throw", function() {
+        expect('queue.getInfo(0)').toThrow('INVALID_VALUE');
+        expect('queue.getInfo(1)').toThrow('INVALID_VALUE');
+        expect('queue.getInfo(-1)').toThrow('INVALID_VALUE');
+        expect('queue.getInfo(WebCL.QUEUE_PROFILING_ENABLE)').toThrow('INVALID_VALUE');
+        expect('queue.getInfo(null)').toThrow('INVALID_VALUE');
+        expect('queue.getInfo({})').toThrow('INVALID_VALUE');
+        expect('queue.getInfo([])').toThrow('INVALID_VALUE');
+        expect('queue.getInfo("")').toThrow('INVALID_VALUE');
+        expect('queue.getInfo("foo")').toThrow('INVALID_VALUE');
+      });
+
     });
 
     //////////////////////////////////////////////////////////////////////////////
