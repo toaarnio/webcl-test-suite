@@ -627,6 +627,10 @@ describe("Functionality", function() {
       it("build(<invalidBuildOptions>) must throw", function() {
         program = ctx.createProgram(src);
         expect('program instanceof WebCLProgram').toEvalAs(true);
+        expect('program.build(devices, "-cl-std=CL1.1")').toThrow('INVALID_BUILD_OPTIONS');
+        expect('program.build(devices, "-cl-std=CL1.2")').toThrow('INVALID_BUILD_OPTIONS');
+        expect('program.build(devices, "-cl-kernel-arg-info")').toThrow('INVALID_BUILD_OPTIONS');
+        expect('program.build(devices, "-cl-fp32-correctly-rounded-divide-sqrt")').toThrow('INVALID_BUILD_OPTIONS');
         expect('program.build(devices, "-invalid-option")').toThrow('INVALID_BUILD_OPTIONS');
         expect('program.build(devices, "-I /usr/bin")').toThrow('INVALID_BUILD_OPTIONS');
         expect('program.build(devices, "-D -D foo")').toThrow('INVALID_BUILD_OPTIONS');

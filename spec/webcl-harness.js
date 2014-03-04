@@ -254,9 +254,13 @@
   };
 
   var deviceVendors = {
-    4098 : "AMD",
-    4318 : "NVIDIA",
-    32902 : "Intel",
+    999 : "Qualcomm - Android",
+    4098 : "AMD - Windows",
+    4318 : "NVIDIA - Windows",
+    32902 : "Intel - Windows",
+    16918016 : "NVIDIA Discrete GPU - Apple",
+    33695232 : "NVIDIA Integrated GPU - Apple",
+    0xffffffff : "Intel CPU - Apple",
   };
 
   // [PRIVATE] Loads the given `uri` via http GET. Uses async XHR if a `callback` function is given.
