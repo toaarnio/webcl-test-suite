@@ -37,12 +37,12 @@ describe("Robustness", function() {
   // Known failures as of 2014-03-05:
   //  * Mac OSX Mavericks (crashes)
   //
-  it("createKernelsInProgram() must not crash if there are no kernels", function() {
+  it("createKernelsInProgram() must not crash", function() {
     ctx = createContext();
-    program = ctx.createProgram("foobar");
-    expect('program.createKernelsInProgram()').toThrow('INVALID_PROGRAM_EXECUTABLE');
-    expect('program.build()').toThrow('BUILD_PROGRAM_FAILURE');
-    expect('program.createKernelsInProgram()').toThrow('INVALID_PROGRAM_EXECUTABLE');
+    src = loadSource('kernels/rng.cl');
+    program = ctx.createProgram(src);
+    expect('program.build()').not.toThrow();
+    expect('program.createKernelsInProgram()').not.toThrow();
   });
 
   beforeEach(addCustomMatchers);
