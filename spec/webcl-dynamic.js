@@ -251,27 +251,17 @@ describe("Functionality", function() {
     // 
     describe("createProgram", function() {
 
-      it("must work with dummy kernel source", function() {
-        program = ctx.createProgram("kernel void dummy() {}");
-        expect('program instanceof WebCLProgram').toEvalAs(true);
+      it("createProgram(<validString>) must not throw", function() {
+        expect('ctx.createProgram("foobar")').not.toThrow();
       });
 
-      it("must work with real kernel source", function() {
-        var src = loadSource('kernels/rng.cl');
-        program = ctx.createProgram(src);
-        expect('program instanceof WebCLProgram').toEvalAs(true);
-      });
-
-      it("must not validate or build the source", function() {
-        program = ctx.createProgram("foobar");
-        expect('program instanceof WebCLProgram').toEvalAs(true);
-      });
-
-      it("must throw if source === ''/null/undefined/omitted", function() {
+      it("createProgram(<invalidString>) must throw", function() {
         expect('ctx instanceof WebCLContext').toEvalAs(true);
         expect('ctx.createProgram("")').toThrow('INVALID_VALUE');
         expect('ctx.createProgram(null)').toThrow('INVALID_VALUE');
         expect('ctx.createProgram(undefined)').toThrow('INVALID_VALUE');
+        expect('ctx.createProgram(ctx)').toThrow('INVALID_VALUE');
+        expect('ctx.createProgram([])').toThrow('INVALID_VALUE');
         expect('ctx.createProgram()').toThrow('INVALID_VALUE');
       });
 
@@ -283,19 +273,19 @@ describe("Functionality", function() {
     // 
     describe("createBuffer", function() {
 
-      it("must work if flags = MEM_READ_ONLY", function() {
-        buffer = ctx.createBuffer(WebCL.MEM_READ_ONLY, 1024);
-        expect('buffer instanceof WebCLBuffer').toEvalAs(true);
+      it("createBuffer(<validMemFlags>) must not throw", function() {
+        expect('ctx.createBuffer(WebCL.MEM_READ_ONLY, 1024)').not.toThrow();
+        expect('ctx.createBuffer(WebCL.MEM_WRITE_ONLY, 1024)').not.toThrow();
+        expect('ctx.createBuffer(WebCL.MEM_READ_WRITE, 1024)').not.toThrow();
       });
 
-      it("must work if flags = MEM_WRITE_ONLY", function() {
-        buffer = ctx.createBuffer(WebCL.MEM_WRITE_ONLY, 1024);
-        expect('buffer instanceof WebCLBuffer').toEvalAs(true);
-      });
-
-      it("must work if flags = MEM_READ_WRITE", function() {
-        buffer = ctx.createBuffer(WebCL.MEM_READ_WRITE, 1024);
-        expect('buffer instanceof WebCLBuffer').toEvalAs(true);
+      it("createBuffer(<invalidMemFlags>) must throw", function() {
+        expect('ctx.createBuffer(0, 1024)').toThrow('INVALID_VALUE');
+        expect('ctx.createBuffer(-1, 1024)').toThrow('INVALID_VALUE');
+        expect('ctx.createBuffer("", 1024)').toThrow('INVALID_VALUE');
+        expect('ctx.createBuffer([], 1024)').toThrow('INVALID_VALUE');
+        expect('ctx.createBuffer(ctx, 1024)').toThrow('INVALID_VALUE');
+        expect('ctx.createBuffer(WebCL.RGBA, 1024)').toThrow('INVALID_VALUE');
       });
 
     });
@@ -306,69 +296,92 @@ describe("Functionality", function() {
     // 
     describe("createImage", function() {
 
-      it("must work with a minimal WebCLImageDescriptor and flags = MEM_READ_ONLY", function() {
-        var descriptor = { width : 64, height : 64 };
-        image = ctx.createImage(WebCL.MEM_READ_ONLY, descriptor);
-        expect('image instanceof WebCLImage').toEvalAs(true);
+      it("createImage(<validMemFlags>) must not throw", function() {
+        expect('ctx.createImage(WebCL.MEM_READ_ONLY, { width: 64, height: 64 })').not.toThrow();
+        expect('ctx.createImage(WebCL.MEM_WRITE_ONLY, { width: 64, height: 64 })').not.toThrow();
+        expect('ctx.createImage(WebCL.MEM_READ_WRITE, { width: 64, height: 64 })').not.toThrow();
       });
 
-      it("must work with a minimal WebCLImageDescriptor and flags = MEM_WRITE_ONLY", function() {
-        var descriptor = { width : 64, height : 64 };
-        image = ctx.createImage(WebCL.MEM_WRITE_ONLY, descriptor);
-        expect('image instanceof WebCLImage').toEvalAs(true);
+      it("createImage(<validDimensions>) must not throw", function() {
+        expect('ctx.createImage(WebCL.MEM_READ_ONLY, { width: 37, height: 1 })').not.toThrow();
+        expect('ctx.createImage(WebCL.MEM_WRITE_ONLY, { width: 1, height: 1025 })').not.toThrow();
+        expect('ctx.createImage(WebCL.MEM_READ_WRITE, { width: 19, height: 11 })').not.toThrow();
       });
 
-      it("must work with a minimal WebCLImageDescriptor and flags = MEM_READ_WRITE", function() {
-        var descriptor = { width : 64, height : 64 };
-        image = ctx.createImage(WebCL.MEM_READ_WRITE, descriptor);
-        expect('image instanceof WebCLImage').toEvalAs(true);
+      it("createImage(<validRowPitch>) must not throw", function() {
+        expect('ctx.createImage(WebCL.MEM_READ_ONLY, { width: 11, height: 17, rowPitch: 0 }, new Uint8Array(11*17*4))').not.toThrow();
+        expect('ctx.createImage(WebCL.MEM_READ_ONLY, { width: 11, height: 17, rowPitch: 11*4 }, new Uint8Array(11*17*4))').not.toThrow();
       });
 
-      it("must work with a fully specified WebCLImageDescriptor and all flags", function() {
-        var descriptor = { 
-          channelOrder : WebCL.RGBA,
-          channelType : WebCL.UNSIGNED_INT8,
-          width : 64, 
-          height : 64,
-          rowPitch : 0,
-        };
-        imageReadOnly = ctx.createImage(WebCL.MEM_READ_ONLY, descriptor);
-        imageWriteOnly = ctx.createImage(WebCL.MEM_WRITE_ONLY, descriptor);
-        imageReadWrite = ctx.createImage(WebCL.MEM_READ_WRITE, descriptor);
-        expect('imageReadOnly instanceof WebCLImage').toEvalAs(true);
-        expect('imageWriteOnly instanceof WebCLImage').toEvalAs(true);
-        expect('imageReadWrite instanceof WebCLImage').toEvalAs(true);
+      it("createImage(<invalidMemFlags>) must throw", function() {
+        descriptor = { width: 64, height: 64 };
+        expect('ctx.createImage()').toThrow('INVALID_VALUE');
+        expect('ctx.createImage(0, descriptor)').toThrow('INVALID_VALUE');
+        expect('ctx.createImage(-1, descriptor)').toThrow('INVALID_VALUE');
+        expect('ctx.createImage("", descriptor)').toThrow('INVALID_VALUE');
+        expect('ctx.createImage([], descriptor)').toThrow('INVALID_VALUE');
+        expect('ctx.createImage(ctx, descriptor)').toThrow('INVALID_VALUE');
+        expect('ctx.createImage(WebCL.RGBA, descriptor)').toThrow('INVALID_VALUE');
       });
 
-      it("must work with width=1024, height=1", function() {
-        var descriptor = { 
-          channelOrder : WebCL.RGBA,
-          channelType : WebCL.UNSIGNED_INT8,
-          width : 1024, 
-          height : 1,
-          rowPitch : 0,
-        };
-        imageReadOnly = ctx.createImage(WebCL.MEM_READ_ONLY, descriptor);
-        imageWriteOnly = ctx.createImage(WebCL.MEM_WRITE_ONLY, descriptor);
-        imageReadWrite = ctx.createImage(WebCL.MEM_READ_WRITE, descriptor);
-        expect('imageReadOnly instanceof WebCLImage').toEvalAs(true);
-        expect('imageWriteOnly instanceof WebCLImage').toEvalAs(true);
-        expect('imageReadWrite instanceof WebCLImage').toEvalAs(true);
+      it("createImage(<missingDescriptor>) must throw", function() {
+        expect('ctx.createImage(WebCL.MEM_READ_ONLY)').toThrow('INVALID_IMAGE_FORMAT_DESCRIPTOR');
+        expect('ctx.createImage(WebCL.MEM_READ_ONLY, null)').toThrow('INVALID_IMAGE_FORMAT_DESCRIPTOR');
+        expect('ctx.createImage(WebCL.MEM_READ_ONLY, {})').toThrow('INVALID_IMAGE_FORMAT_DESCRIPTOR');
+        expect('ctx.createImage(WebCL.MEM_READ_ONLY, [])').toThrow('INVALID_IMAGE_FORMAT_DESCRIPTOR');
+        expect('ctx.createImage(WebCL.MEM_READ_ONLY, "")').toThrow('INVALID_IMAGE_FORMAT_DESCRIPTOR');
+        expect('ctx.createImage(WebCL.MEM_READ_ONLY, ctx)').toThrow('INVALID_IMAGE_FORMAT_DESCRIPTOR');
       });
 
-      it("must throw if rowPitch !== 0 and hostPtr === null/undefined", function() {
-        descriptorFail = { width : 64, height : 64, rowPitch : 1 };
-        descriptorPass = { width : 64, height : 64, rowPitch : 0 };
-        expect('ctx.createImage(WebCL.MEM_READ_ONLY, descriptorFail)').toThrow('INVALID_IMAGE_SIZE');
-        expect('ctx.createImage(WebCL.MEM_READ_ONLY, descriptorPass)').not.toThrow();
+      it("createImage(<invalidDimensions>) must throw", function() {
+        expect('ctx.createImage(WebCL.MEM_READ_ONLY, { width: 4 })').toThrow('INVALID_IMAGE_FORMAT_DESCRIPTOR');
+        expect('ctx.createImage(WebCL.MEM_READ_ONLY, { width: 4, height: [] })').toThrow('INVALID_IMAGE_FORMAT_DESCRIPTOR');
+        expect('ctx.createImage(WebCL.MEM_READ_ONLY, { width: 4, height: "" })').toThrow('INVALID_IMAGE_FORMAT_DESCRIPTOR');
+        expect('ctx.createImage(WebCL.MEM_READ_ONLY, { width: 4, height: {} })').toThrow('INVALID_IMAGE_FORMAT_DESCRIPTOR');
+        expect('ctx.createImage(WebCL.MEM_READ_ONLY, { width: 4, height: ctx })').toThrow('INVALID_IMAGE_FORMAT_DESCRIPTOR');
+        expect('ctx.createImage(WebCL.MEM_READ_ONLY, { width: 4, height: 0 })').toThrow('INVALID_IMAGE_SIZE');
+        expect('ctx.createImage(WebCL.MEM_READ_ONLY, { width: 1024*1024, height: 1 })').toThrow('INVALID_IMAGE_SIZE');
       });
 
-      it("must throw if 0 < rowPitch < widthInBytes and hostPtr === <valid>", function() {
-        descriptorFail = { width : 64, height : 64, rowPitch : 100 };
-        descriptorPass = { width : 64, height : 64, rowPitch : 0 };
-        hostPtr = new Uint8Array(64*64*4);
-        expect('ctx.createImage(WebCL.MEM_READ_ONLY, descriptorFail, hostPtr)').toThrow('INVALID_IMAGE_SIZE');
-        expect('ctx.createImage(WebCL.MEM_READ_ONLY, descriptorPass, hostPtr)').not.toThrow();
+      it("createImage(<invalidRowPitch>) must throw", function() {
+        expect('ctx.createImage(WebCL.MEM_READ_ONLY, { width: 4, height: 4, rowPitch: 0 })').not.toThrow();
+        expect('ctx.createImage(WebCL.MEM_READ_ONLY, { width: 4, height: 4, rowPitch: -1 })').toThrow('INVALID_IMAGE_SIZE');
+        expect('ctx.createImage(WebCL.MEM_READ_ONLY, { width: 4, height: 4, rowPitch: 1 })').toThrow('INVALID_IMAGE_SIZE');
+        expect('ctx.createImage(WebCL.MEM_READ_ONLY, { width: 4, height: 4, rowPitch: "" })').toThrow('INVALID_IMAGE_FORMAT_DESCRIPTOR');
+        expect('ctx.createImage(WebCL.MEM_READ_ONLY, { width: 4, height: 4, rowPitch: ctx })').toThrow('INVALID_IMAGE_FORMAT_DESCRIPTOR');
+        expect('ctx.createImage(WebCL.MEM_READ_ONLY, { width: 4, height: 4, rowPitch: [] })').toThrow('INVALID_IMAGE_FORMAT_DESCRIPTOR');
+        expect('ctx.createImage(WebCL.MEM_READ_ONLY, { width: 4, height: 4, rowPitch: 15 }, new Uint8Array(4*4*4))').toThrow('INVALID_IMAGE_SIZE');
+      });
+
+      it("createImage(<invalidHostPtr>) must throw", function() {
+        expect('ctx.createImage(WebCL.MEM_READ_ONLY, { width: 4, height: 4, rowPitch: 0 }, new Uint8Array(4*4*4-1))').toThrow('INVALID_HOST_PTR');
+        expect('ctx.createImage(WebCL.MEM_READ_ONLY, { width: 4, height: 4, rowPitch: 100 }, new Uint8Array(4*4*4-1))').toThrow('INVALID_HOST_PTR');
+        expect('ctx.createImage(WebCL.MEM_READ_ONLY, { width: 4, height: 4, rowPitch: 0 }, new Uint8Array(4*4*4-1))').toThrow('INVALID_HOST_PTR');
+        expect('ctx.createImage(WebCL.MEM_READ_ONLY, { width: 4, height: 4 }, new Uint8Array(0))').toThrow('INVALID_HOST_PTR');
+        expect('ctx.createImage(WebCL.MEM_READ_ONLY, { width: 4, height: 4 }, [])').toThrow('INVALID_HOST_PTR');
+        expect('ctx.createImage(WebCL.MEM_READ_ONLY, { width: 4, height: 4 }, ctx)').toThrow('INVALID_HOST_PTR');
+        expect('ctx.createImage(WebCL.MEM_READ_ONLY, { width: 4, height: 4 }, 1024)').toThrow('INVALID_HOST_PTR');
+        expect('ctx.createImage(WebCL.MEM_READ_ONLY, { width: 4, height: 4 }, 0)').toThrow('INVALID_HOST_PTR');
+      });
+
+      it("createImage(<invalidChannelOrder>) must throw", function() {
+        expect('ctx.createImage(WebCL.MEM_READ_ONLY, { width: 4, height: 4, channelOrder: WebCL.RGBA })').not.toThrow();
+        expect('ctx.createImage(WebCL.MEM_READ_ONLY, { width: 4, height: 4, channelOrder: WebCL.FLOAT })').toThrow('INVALID_IMAGE_FORMAT_DESCRIPTOR');
+        expect('ctx.createImage(WebCL.MEM_READ_ONLY, { width: 4, height: 4, channelOrder: 0 })').toThrow('INVALID_IMAGE_FORMAT_DESCRIPTOR');
+        expect('ctx.createImage(WebCL.MEM_READ_ONLY, { width: 4, height: 4, channelOrder: -1 })').toThrow('INVALID_IMAGE_FORMAT_DESCRIPTOR');
+        expect('ctx.createImage(WebCL.MEM_READ_ONLY, { width: 4, height: 4, channelOrder: "" })').toThrow('INVALID_IMAGE_FORMAT_DESCRIPTOR');
+      });
+
+      it("createImage(<invalidChannelType>) must throw", function() {
+        expect('ctx.createImage(WebCL.MEM_READ_ONLY, { width: 4, height: 4, channelType: WebCL.FLOAT })').not.toThrow();
+        expect('ctx.createImage(WebCL.MEM_READ_ONLY, { width: 4, height: 4, channelType: WebCL.RGBA })').toThrow('INVALID_IMAGE_FORMAT_DESCRIPTOR');
+        expect('ctx.createImage(WebCL.MEM_READ_ONLY, { width: 4, height: 4, channelType: 0 })').toThrow('INVALID_IMAGE_FORMAT_DESCRIPTOR');
+        expect('ctx.createImage(WebCL.MEM_READ_ONLY, { width: 4, height: 4, channelType: -1 })').toThrow('INVALID_IMAGE_FORMAT_DESCRIPTOR');
+        expect('ctx.createImage(WebCL.MEM_READ_ONLY, { width: 4, height: 4, channelType: "" })').toThrow('INVALID_IMAGE_FORMAT_DESCRIPTOR');
+      });
+
+      it("createImage(<unsupportedImageFormat>) must throw", function() {
+        pending();
       });
 
     });
@@ -509,7 +522,7 @@ describe("Functionality", function() {
     beforeEach(function() {
       try {
         ctx = createContext();
-        program = ctx.createProgram("kernel void dummy() {}");
+        program = ctx.createProgram("kernel void dummy(global uint* buf) { buf[0]=0xdeadbeef; }");
         devices = ctx.getInfo(WebCL.CONTEXT_DEVICES);
         device = devices[0];
       } catch (e) {
@@ -533,7 +546,7 @@ describe("Functionality", function() {
         expect('program.getInfo(WebCL.PROGRAM_DEVICES).length === 1').toEvalAs(true);
         expect('program.getInfo(WebCL.PROGRAM_DEVICES)[0] === device').toEvalAs(true);
         expect('program.getInfo(WebCL.PROGRAM_CONTEXT) === ctx').toEvalAs(true);
-        expect('program.getInfo(WebCL.PROGRAM_SOURCE) === "kernel void dummy() {}"').toEvalAs(true);
+        expect('program.getInfo(WebCL.PROGRAM_SOURCE)').toEvalTo("kernel void dummy(global uint* buf) { buf[0]=0xdeadbeef; }");
       });
 
       it("getInfo(<invalidEnum>) must throw", function() {
@@ -721,9 +734,9 @@ describe("Functionality", function() {
     describe("getWorkGroupInfo", function() {
 
       it("must support KERNEL_WORK_GROUP_SIZE", function() {
-        program = ctx.createProgram("kernel void dummy() {}");
+        program = ctx.createProgram("kernel void dummy(global uint* buf) { buf[0]=0xdeadbeef; }");
         program.build(devices);
-        kernel = program.createKernelsInProgram()[0];
+        kernel = program.createKernel("dummy");
         expect('kernel.getWorkGroupInfo(device, WebCL.KERNEL_WORK_GROUP_SIZE)').not.toThrow();
         expect('kernel.getWorkGroupInfo(device, WebCL.KERNEL_WORK_GROUP_SIZE) >= 1').toEvalAs(true);
       });
@@ -965,10 +978,12 @@ describe("Functionality", function() {
         try {
           ctx = createContext();
           queue = ctx.createCommandQueue(null, 0);
-          program = ctx.createProgram("kernel void dummy() {}");
+          buffer = ctx.createBuffer(WebCL.MEM_READ_ONLY, 16);
+          program = ctx.createProgram("kernel void dummy(global uint* buf) { buf[0]=0xdeadbeef; }");
           devices = ctx.getInfo(WebCL.CONTEXT_DEVICES);
           program.build(devices);
           kernel = program.createKernelsInProgram()[0];
+          kernel.setArg(0, buffer);
         } catch (e) {
           ERROR("Functionality -> WebCLCommandQueue -> enqueueNDRangeKernel -> beforeEach: Unable to create WebCLContext, all tests will fail!");
           throw e;
@@ -1212,7 +1227,7 @@ describe("Functionality", function() {
       });
 
       it("must not allow slightly invalid minimal kernel source", function() {
-        program = ctx.createProgram("kernel int dummy() {}");
+        program = ctx.createProgram("kernel int dummy(global uint* buf) { buf[0]=0xdeadbeef; }");
         expect('program instanceof WebCLProgram').toEvalAs(true);
         expect('program.build()').toThrow('BUILD_PROGRAM_FAILURE');
         expect('program.build(null, "-w")').toThrow('BUILD_PROGRAM_FAILURE');
@@ -1314,40 +1329,8 @@ describe("Functionality", function() {
   });
 
   //////////////////////////////////////////////////////////////////////////////
-  //
-  // Functionality -> Robustness
-  // 
-  describe("Robustness", function() {
-
-    it("must not crash or throw when calling release() more than once (CRITICAL)", function()  {
-      ctx = createContext();
-      ctx.release();
-      expect('ctx.release()').not.toThrow();
-    });
-
-    it("must throw when trying to use an object that has been released", function() {
-      ctx = createContext();
-      ctx.release();
-      expect('ctx.getInfo(WebCL.CONTEXT_NUM_DEVICES)').toThrow('WEBCL_IMPLEMENTATION_FAILURE');
-    });
-
-    // Known failures as of 2014-02-12:
-    //  * Win7 / NVIDIA GPU driver (crashes on second run)
-    //  * Win7 / Intel CPU driver (freezes on first run)
-    //
-    xit("must not allow allocating 6 GB of 'local' memory", function() {
-      expect('kernels/largeArrayLocal.cl').not.toBuild();
-    });
-
-  });
-
-  //////////////////////////////////////////////////////////////////////////////
 
   beforeEach(addCustomMatchers);
-
-  afterEach(function() { 
-    //testSuiteTrace(this);
-    releaseAll();
-  });
+  afterEach(releaseAll);
 
 });

@@ -217,6 +217,23 @@
       };
     },
 
+    // expect('program.getInfo(WebCL.PROGRAM_SOURCE)').toEvalTo('kernel void dummy() {}');
+    //
+    toEvalTo: function(util, customEqualityTesters) {
+      return {
+        compare: function(actual, expected) {
+          var actualResult = eval(actual);
+          var expectedResult = expected;
+          var result = {};
+          result.pass = (actualResult === expectedResult);
+          if (result.pass === false) {
+            result.message = "Expected '" + actual + "' to evaluate to '" + expected + "', but it was '" + actualResult + "'.";
+          }
+          return result;
+        },
+      };
+    },
+
   };
     
   // ### loadSource() ###
