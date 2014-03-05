@@ -628,12 +628,6 @@ describe("Functionality", function() {
         expect('program.build(devices)').toThrow('BUILD_PROGRAM_FAILURE');
       });
 
-      it("must throw if kernels are already created", function() {
-        expect('program.build(devices)').not.toThrow();
-        expect('program.createKernel("dummy")').not.toThrow();
-        expect('program.build(devices)').toThrow('INVALID_OPERATION');
-      });
-
       it("must throw if called synchronously from a WebCLCallback", function() {
         pending();
       });
@@ -706,7 +700,41 @@ describe("Functionality", function() {
       });
         
     });
-    
+
+    //////////////////////////////////////////////////////////////////////////////
+    //
+    // Functionality -> WebCLProgram -> createKernel
+    // 
+    describe("createKernel", function() {
+
+      it("createKernel(<validName>) must work", function() {
+        expect('program.build()').not.toThrow();
+        expect('program.createKernel("dummy")').not.toThrow();
+      });
+
+      it("createKernel(<invalidName>) must throw", function() {
+        expect('program.build()').not.toThrow();
+        expect('program.createKernel("foobar")').toThrow('INVALID_KERNEL_NAME');
+        expect('program.createKernel()').toThrow('INVALID_KERNEL_NAME');
+        expect('program.createKernel("")').toThrow('INVALID_KERNEL_NAME');
+        expect('program.createKernel({})').toThrow('INVALID_KERNEL_NAME');
+        expect('program.createKernel(program)').toThrow('INVALID_KERNEL_NAME');
+      });
+
+      it("createKernelsInProgram() must work", function() {
+        expect('program.build()').not.toThrow();
+        expect('program.createKernelsInProgram()').not.toThrow();
+        expect('program.createKernelsInProgram().length === 1').toEvalAs(true);
+      });
+
+      it("build() must throw if kernels are already created", function() {
+        expect('program.build(devices)').not.toThrow();
+        expect('program.createKernel("dummy")').not.toThrow();
+        expect('program.build(devices)').toThrow('INVALID_OPERATION');
+      });
+
+    });
+
   });
 
 
