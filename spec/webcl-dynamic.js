@@ -153,6 +153,7 @@ describe("Functionality", function() {
       });
 
       it("getInfo(<invalidEnum>) must throw", function() {
+        expect('ctx.getInfo()').toThrow('INVALID_VALUE');
         expect('ctx.getInfo(WebCL.CONTEXT_REFERENCE_COUNT)').toThrow('INVALID_VALUE');
         expect('ctx.getInfo(WebCL.CONTEXT_PROPERTIES)').toThrow('INVALID_VALUE');
       });
@@ -425,6 +426,7 @@ describe("Functionality", function() {
       });
 
       it("getInfo(<invalidEnum>) must throw", function() {
+        expect('buffer.getInfo()').toThrow('INVALID_VALUE');
         expect('buffer.getInfo(0)').toThrow('INVALID_VALUE');
         expect('buffer.getInfo(1)').toThrow('INVALID_VALUE');
         expect('buffer.getInfo(-1)').toThrow('INVALID_VALUE');
@@ -550,6 +552,7 @@ describe("Functionality", function() {
       });
 
       it("getInfo(<invalidEnum>) must throw", function() {
+        expect('program.getInfo()').toThrow('INVALID_VALUE');
         expect('program.getInfo(0)').toThrow('INVALID_VALUE');
         expect('program.getInfo(1)').toThrow('INVALID_VALUE');
         expect('program.getInfo(-1)').toThrow('INVALID_VALUE');
@@ -983,6 +986,7 @@ describe("Functionality", function() {
       });
 
       it("getInfo(<invalidEnum>) must throw", function() {
+        expect('queue.getInfo()').toThrow('INVALID_VALUE');
         expect('queue.getInfo(0)').toThrow('INVALID_VALUE');
         expect('queue.getInfo(1)').toThrow('INVALID_VALUE');
         expect('queue.getInfo(-1)').toThrow('INVALID_VALUE');

@@ -153,7 +153,7 @@ describe("Platform", function() {
       }
     });
 
-    it("platform.getInfo(validArgument) must return the expected kind of value", function() {
+    it("platform.getInfo(<validEnum>) must return the expected kind of value", function() {
       var plats = webcl.getPlatforms();
       function checkInfo() {
         for (var i=0; i < plats.length; i++) {
@@ -176,14 +176,29 @@ describe("Platform", function() {
       expect(checkInfo).not.toThrow();
     });
 
-    it("device.getInfo(validArgument) must not throw", function() {
+    it("platform.getInfo(<invalidEnum>) must throw", function() {
+      platform = webcl.getPlatforms()[0];
+      expect('platform.getInfo(WebCL.PLATFORM_VENDOR)').not.toThrow();
+      expect('platform.getInfo(WebCL.DEVICE_VENDOR)').toThrow('INVALID_VALUE');
+      expect('platform.getInfo(WebCL.CONTEXT_PLATFORM)').toThrow('INVALID_VALUE');
+      expect('platform.getInfo(WebCL.BUILD_ERROR)').toThrow('INVALID_VALUE');
+      expect('platform.getInfo(0x101A)').toThrow('INVALID_VALUE'); // DEVICE_MIN_DATA_TYPE_ALIGN_SIZE
+      expect('platform.getInfo(-1)').toThrow('INVALID_VALUE');
+      expect('platform.getInfo(0)').toThrow('INVALID_VALUE');
+      expect('platform.getInfo("foo")').toThrow('INVALID_VALUE');
+      expect('platform.getInfo({})').toThrow('INVALID_VALUE');
+      expect('platform.getInfo(device)').toThrow('INVALID_VALUE');
+      expect('platform.getInfo()').toThrow('INVALID_VALUE');
+    });
+
+    it("device.getInfo(<validEnum>) must not throw", function() {
       for (enumName in deviceInfoEnums) {
         enumValue = deviceInfoEnums[enumName];
         expect('device.getInfo(WebCL.'+enumName+')').not.toThrow();
       }
     });
 
-    it("device.getInfo(validArgument) must return the expected kind of value", function() {
+    it("device.getInfo(<validEnum>) must return the expected kind of value", function() {
       device = getDeviceAtIndex(DEVICE_INDEX);
       for (enumName in deviceInfoEnums) {
         matcher = deviceInfoEnumMatchers[enumName];
@@ -193,7 +208,7 @@ describe("Platform", function() {
       }
     });
 
-    it("device.getInfo(invalidArgument) must throw", function() {
+    it("device.getInfo(<invalidEnum>) must throw", function() {
       device = getDeviceAtIndex(DEVICE_INDEX);
       expect('device.getInfo(WebCL.DEVICE_VENDOR)').not.toThrow();
       expect('device.getInfo(WebCL.PLATFORM_VENDOR)').toThrow('INVALID_VALUE');
@@ -208,7 +223,7 @@ describe("Platform", function() {
       expect('device.getInfo()').toThrow('INVALID_VALUE');
     });
 
-    it("device.getInfo(nonEnabledExtensionArgument) must throw", function() {
+    it("device.getInfo(<nonEnabledExtensionEnum>) must throw", function() {
       device = getDeviceAtIndex(DEVICE_INDEX);
       expect('device.getInfo(WebCL.DEVICE_VENDOR)').not.toThrow();
       for (enumName in extensionEnums) {
@@ -233,10 +248,22 @@ describe("Platform", function() {
       expect('platform.name === "foo"').toEvalAs(true);
     });
     
-    it("getters must return the same object every time", function() {
+    it("platform getters must return the same object every time", function() {
       platform = webcl.getPlatforms()[0];
-      expect('webcl.getPlatforms()[0] === webcl.getPlatforms()[0]').toEvalAs(true);
-      expect('platform === platform.getDevices()[0].getInfo(WebCL.DEVICE_PLATFORM)').toEvalAs(true);
+      device = platform.getDevices()[0];
+      expect('platform === webcl.getPlatforms()[0]').toEvalAs(true);
+      expect('device === platform.getDevices()[0]').toEvalAs(true);
+      expect('platform === device.getInfo(WebCL.DEVICE_PLATFORM)').toEvalAs(true);
+    });
+
+    it("dynamic getters must return the same object every time", function() {
+      context = webcl.createContext();
+      queue = context.createCommandQueue();
+      platform = webcl.getPlatforms()[0];
+      device = platform.getDevices()[0];
+      expect('device === context.getInfo(WebCL.CONTEXT_DEVICES)[0]').toEvalAs(true);
+      expect('context === queue.getInfo(WebCL.QUEUE_CONTEXT)').toEvalAs(true);
+      expect('device === queue.getInfo(WebCL.QUEUE_DEVICE)').toEvalAs(true);
     });
 
   });
