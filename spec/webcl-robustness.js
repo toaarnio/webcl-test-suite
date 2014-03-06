@@ -30,7 +30,7 @@ describe("Robustness", function() {
   //  * Win7 / NVIDIA GPU driver (crashes on second run)
   //  * Win7 / Intel CPU driver (freezes on first run)
   //
-  xit("must not allow allocating 6 GB of 'local' memory", function() {
+  it("must not allow allocating 6 GB of 'local' memory", function() {
     expect('kernels/largeArrayLocal.cl').not.toBuild();
   });
 
@@ -43,6 +43,32 @@ describe("Robustness", function() {
     program = ctx.createProgram(src);
     expect('program.build()').not.toThrow();
     expect('program.createKernelsInProgram()').not.toThrow();
+  });
+
+  // Known failures as of 2014-03-05:
+  //  * Win7 / NVIDIA GPU driver (crashes)
+  //
+  it("setArg(<invalidArgument>) must not crash", function() {
+    ctx = createContext();
+    src = loadSource('kernels/rng.cl');
+    expect('program = ctx.createProgram(src)').not.toThrow();
+    expect('program.build()').not.toThrow();
+    expect('kernel = program.createKernelsInProgram()[0]').not.toThrow();
+    expect('kernel.setArg(0, new Uint32Array([10]))').toThrow();
+  });
+
+  // Known failures as of 2014-03-05:
+  //  * Win7 / NVIDIA GPU driver (crashes)
+  //  * Win7 / Intel CPU driver (crashes)
+  //
+  it("build(<callback>) must not crash", function() {
+    buildCallback = function() {
+      console.log("Callback invoked!");
+    }
+    ctx = createContext();
+    src = loadSource('kernels/rng.cl');
+    expect('program = ctx.createProgram(src)').not.toThrow();
+    expect('program.build(null, null, buildCallback)').not.toThrow();
   });
 
   beforeEach(addCustomMatchers);
