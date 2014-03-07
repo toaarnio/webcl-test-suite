@@ -1328,16 +1328,18 @@ describe("Functionality", function() {
 
     beforeEach(function() {
       try {
-        ctx = createContext();
-        if (self.preconditions === undefined) {
-          DEBUG("Asserting preconditions for the current describe() block...");
-          mustBuild = ctx.createProgram("kernel void dummy(global uint* buf) { buf[0]=0xdeadbeef; }");
-          mustBuild.build();
+        if (self.preconditions !== false) {
+          ctx = createContext();
+          if (self.preconditions === undefined) {
+            DEBUG("Asserting preconditions for the current describe() block...");
+            mustBuild = ctx.createProgram("kernel void dummy(global uint* buf) { buf[0]=0xdeadbeef; }");
+            mustBuild.build();
+          }
+          self.preconditions = true;
         }
-        self.preconditions = true;
       } catch (e) {
-        DEBUG(e);
-        DEBUG("Preconditions of the describe() block failed: Not executing any tests, marking them as 'pending' instead.");
+        ERROR("Kernel language -> beforeEach: Caught exception " + e);
+        ERROR("Kernel language -> beforeEach: Preconditions of the describe() block failed: Skipping all tests.");
         self.preconditions = false;
       }
     });
