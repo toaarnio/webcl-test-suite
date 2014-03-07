@@ -103,20 +103,23 @@
 
     // expect('kernels/illegalKernel.cl').not.toBuild('-w');
     // expect('kernels/illegalKernel.cl').not.toBuild();
+    // expect(myProgram).not.toBuild();
     //
     toBuild: function(util, customEqualityTesters) {
       return {
         compare: function(actual, buildOptions) {
           try {
-            var pathToSource = actual;
-            src = loadSource(pathToSource);
-            var program = ctx.createProgram(src);
+            var program = actual;
+            if (typeof(actual) === 'string') {
+              var src = loadSource(actual);
+              program = ctx.createProgram(src);
+            }
             var devices = ctx.getInfo(WebCL.CONTEXT_DEVICES);
             program.build(devices, buildOptions);
-            DEBUG("Building '" + pathToSource + "' did not throw any exception");
+            DEBUG("Building '" + actual + "' did not throw any exceptions");
             return { pass: true };
           } catch(e) {
-            DEBUG("Building '" + pathToSource + "' threw " + e.name);
+            DEBUG("Building '" + actual + "' threw " + e.name);
             try {
               DEBUG("Build log: " + program.getBuildInfo(devices[0], WebCL.PROGRAM_BUILD_LOG));
             } catch (e2) {
@@ -127,16 +130,18 @@
         },
         negativeCompare: function(actual, buildOptions) {
           try {
-            var pathToSource = actual;
-            src = loadSource(pathToSource);
-            var program = ctx.createProgram(src);
+            var program = actual;
+            if (typeof(actual) === 'string') {
+              var src = loadSource(actual);
+              program = ctx.createProgram(src);
+            }
             var devices = ctx.getInfo(WebCL.CONTEXT_DEVICES);
             program.build(devices, buildOptions);
-            DEBUG("Building '" + pathToSource + "' did not throw any exception");
+            DEBUG("Building '" + actual + "' did not throw any exceptions");
             return { pass: false };
           } catch(e) {
             if (program instanceof WebCLProgram) {
-              DEBUG("Building '" + pathToSource + "' threw " + e.name);
+              DEBUG("Building '" + actual + "' threw " + e.name);
               try {
                 DEBUG("Build log: " + program.getBuildInfo(devices[0], WebCL.PROGRAM_BUILD_LOG));
               } catch (e2) {

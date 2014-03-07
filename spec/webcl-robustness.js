@@ -43,6 +43,7 @@ describe("Robustness", function() {
     program = ctx.createProgram(src);
     expect('program.build()').not.toThrow();
     expect('program.createKernelsInProgram()').not.toThrow();
+    DEBUG("Build log: " + program.getBuildInfo(ctx.getInfo(WebCL.CONTEXT_DEVICES)[0], WebCL.PROGRAM_BUILD_LOG));
   });
 
   // Known failures as of 2014-03-05:
@@ -62,9 +63,9 @@ describe("Robustness", function() {
   //  * Win7 / NVIDIA GPU driver (crashes)
   //  * Win7 / Intel CPU driver (crashes)
   //
-  xit("build(<callback>) must not crash", function() {
+  it("build(<callback>) must not crash", function() {
     buildCallback = function() {
-      console.log("Callback invoked!");
+      DEBUG("Callback invoked!");
     }
     ctx = createContext();
     src = loadSource('kernels/rng.cl');

@@ -129,13 +129,17 @@ describe("Functionality", function() {
   // 
   describe("WebCLContext", function() {
 
+    var self = {};
+
     beforeEach(function() {
       try {
         ctx = createContext();
         device = ctx.getInfo(WebCL.CONTEXT_DEVICES)[0];
+        self.preconditions = true;
       } catch (e) {
-        ERROR("Functionality -> WebCLContext -> beforeEach: Unable to create WebCLContext, all tests will fail!");
-        throw e;
+        ERROR("WebCLContext -> beforeEach: Caught exception " + e);
+        ERROR("WebCLContext -> beforeEach: Preconditions of the describe() block failed: Skipping all tests.");
+        self.preconditions = false;
       }
     });
 
@@ -146,6 +150,7 @@ describe("Functionality", function() {
     describe("getInfo", function() {
 
       it("getInfo(<validEnum>) must work", function() {
+        if (!self.preconditions) pending();
         expect('ctx.getInfo(WebCL.CONTEXT_NUM_DEVICES)').not.toThrow();
         expect('ctx.getInfo(WebCL.CONTEXT_DEVICES)').not.toThrow();
         expect('ctx.getInfo(WebCL.CONTEXT_NUM_DEVICES) === 1').toEvalAs(true);
@@ -153,12 +158,14 @@ describe("Functionality", function() {
       });
 
       it("getInfo(<invalidEnum>) must throw", function() {
+        if (!self.preconditions) pending();
         expect('ctx.getInfo()').toThrow('INVALID_VALUE');
         expect('ctx.getInfo(WebCL.CONTEXT_REFERENCE_COUNT)').toThrow('INVALID_VALUE');
         expect('ctx.getInfo(WebCL.CONTEXT_PROPERTIES)').toThrow('INVALID_VALUE');
       });
 
       it("getSupportedImageFormats(<validEnum>) must not throw", function() {
+        if (!self.preconditions) pending();
         expect('ctx.getSupportedImageFormats()').not.toThrow();
         expect('ctx.getSupportedImageFormats(WebCL.MEM_READ_WRITE)').not.toThrow();
         expect('ctx.getSupportedImageFormats(WebCL.MEM_WRITE_ONLY)').not.toThrow();
@@ -166,6 +173,7 @@ describe("Functionality", function() {
       });
 
       it("getSupportedImageFormats(<validEnum>) must return the mandatory formats", function() {
+        if (!self.preconditions) pending();
         function rgbaFilter(item) { return (item.channelOrder === WebCL.RGBA); }
         rgbaFormatsReadWrite = ctx.getSupportedImageFormats(WebCL.MEM_READ_WRITE).filter(rgbaFilter);
         rgbaFormatsReadWrite = ctx.getSupportedImageFormats(WebCL.MEM_READ_WRITE).filter(rgbaFilter);
@@ -177,12 +185,14 @@ describe("Functionality", function() {
       });
 
       it("getSupportedImageFormats() must be equivalent to getSupportedImageFormats(MEM_READ_WRITE)", function() {
+        if (!self.preconditions) pending();
         var formats = ctx.getSupportedImageFormats();
         var formatsReadWrite = ctx.getSupportedImageFormats(WebCL.MEM_READ_WRITE);
         expect(formats).toEqual(formatsReadWrite);
       });
 
       it("getSupportedImageFormats(<invalidEnum>) must throw", function() {
+        if (!self.preconditions) pending();
         expect('ctx.getSupportedImageFormats(0)').toThrow('INVALID_VALUE');
         expect('ctx.getSupportedImageFormats(3)').toThrow('INVALID_VALUE');
         expect('ctx.getSupportedImageFormats(5)').toThrow('INVALID_VALUE');
@@ -204,6 +214,7 @@ describe("Functionality", function() {
     describe("createCommandQueue", function() {
 
       it("createCommandQueue(<validDevice>) must not throw", function() {
+        if (!self.preconditions) pending();
         expect('ctx.createCommandQueue()').not.toThrow();
         expect('ctx.createCommandQueue(undefined)').not.toThrow();
         expect('ctx.createCommandQueue(null)').not.toThrow();
@@ -214,11 +225,13 @@ describe("Functionality", function() {
       });
 
       it("createCommandQueue(<validDevice>, <supportedProperties>) must not throw", function() {
+        if (!self.preconditions) pending();
         supportedProperties = device.getInfo(WebCL.DEVICE_QUEUE_PROPERTIES);
         expect('ctx.createCommandQueue(device, supportedProperties)').not.toThrow();
       });
 
       it("createCommandQueue(<validDevice>, <invalidProperties>) must throw", function() {
+        if (!self.preconditions) pending();
         expect('ctx.createCommandQueue(null, "foobar")').toThrow('INVALID_VALUE');
         expect('ctx.createCommandQueue(null, "")').toThrow('INVALID_VALUE');
         expect('ctx.createCommandQueue(null, [])').toThrow('INVALID_VALUE');
@@ -230,6 +243,7 @@ describe("Functionality", function() {
       });
 
       it("createCommandQueue(<validDevice>, <unsupportedProperties>) must throw", function() {
+        if (!self.preconditions) pending();
         allProperties = WebCL.QUEUE_PROFILING_ENABLE | WebCL.QUEUE_OUT_OF_ORDER_EXEC_MODE_ENABLE;
         supportedProperties = device.getInfo(WebCL.DEVICE_QUEUE_PROPERTIES);
         if (allProperties !== supportedProperties)
@@ -239,6 +253,7 @@ describe("Functionality", function() {
       });
 
       it("createCommandQueue(<invalidDevice>) must throw", function() {
+        if (!self.preconditions) pending();
         expect('ctx.createCommandQueue("foobar")').toThrow('INVALID_DEVICE');
         expect('ctx.createCommandQueue([])').toThrow('INVALID_DEVICE');
         expect('ctx.createCommandQueue(ctx)').toThrow('INVALID_DEVICE');
@@ -253,10 +268,12 @@ describe("Functionality", function() {
     describe("createProgram", function() {
 
       it("createProgram(<validString>) must not throw", function() {
+        if (!self.preconditions) pending();
         expect('ctx.createProgram("foobar")').not.toThrow();
       });
 
       it("createProgram(<invalidString>) must throw", function() {
+        if (!self.preconditions) pending();
         expect('ctx instanceof WebCLContext').toEvalAs(true);
         expect('ctx.createProgram("")').toThrow('INVALID_VALUE');
         expect('ctx.createProgram(null)').toThrow('INVALID_VALUE');
@@ -275,12 +292,14 @@ describe("Functionality", function() {
     describe("createBuffer", function() {
 
       it("createBuffer(<validMemFlags>) must not throw", function() {
+        if (!self.preconditions) pending();
         expect('ctx.createBuffer(WebCL.MEM_READ_ONLY, 1024)').not.toThrow();
         expect('ctx.createBuffer(WebCL.MEM_WRITE_ONLY, 1024)').not.toThrow();
         expect('ctx.createBuffer(WebCL.MEM_READ_WRITE, 1024)').not.toThrow();
       });
 
       it("createBuffer(<invalidMemFlags>) must throw", function() {
+        if (!self.preconditions) pending();
         expect('ctx.createBuffer(0, 1024)').toThrow('INVALID_VALUE');
         expect('ctx.createBuffer(-1, 1024)').toThrow('INVALID_VALUE');
         expect('ctx.createBuffer("", 1024)').toThrow('INVALID_VALUE');
@@ -298,23 +317,27 @@ describe("Functionality", function() {
     describe("createImage", function() {
 
       it("createImage(<validMemFlags>) must not throw", function() {
+        if (!self.preconditions) pending();
         expect('ctx.createImage(WebCL.MEM_READ_ONLY, { width: 64, height: 64 })').not.toThrow();
         expect('ctx.createImage(WebCL.MEM_WRITE_ONLY, { width: 64, height: 64 })').not.toThrow();
         expect('ctx.createImage(WebCL.MEM_READ_WRITE, { width: 64, height: 64 })').not.toThrow();
       });
 
       it("createImage(<validDimensions>) must not throw", function() {
+        if (!self.preconditions) pending();
         expect('ctx.createImage(WebCL.MEM_READ_ONLY, { width: 37, height: 1 })').not.toThrow();
         expect('ctx.createImage(WebCL.MEM_WRITE_ONLY, { width: 1, height: 1025 })').not.toThrow();
         expect('ctx.createImage(WebCL.MEM_READ_WRITE, { width: 19, height: 11 })').not.toThrow();
       });
 
       it("createImage(<validRowPitch>) must not throw", function() {
+        if (!self.preconditions) pending();
         expect('ctx.createImage(WebCL.MEM_READ_ONLY, { width: 11, height: 17, rowPitch: 0 }, new Uint8Array(11*17*4))').not.toThrow();
         expect('ctx.createImage(WebCL.MEM_READ_ONLY, { width: 11, height: 17, rowPitch: 11*4 }, new Uint8Array(11*17*4))').not.toThrow();
       });
 
       it("createImage(<invalidMemFlags>) must throw", function() {
+        if (!self.preconditions) pending();
         descriptor = { width: 64, height: 64 };
         expect('ctx.createImage()').toThrow('INVALID_VALUE');
         expect('ctx.createImage(0, descriptor)').toThrow('INVALID_VALUE');
@@ -326,6 +349,7 @@ describe("Functionality", function() {
       });
 
       it("createImage(<missingDescriptor>) must throw", function() {
+        if (!self.preconditions) pending();
         expect('ctx.createImage(WebCL.MEM_READ_ONLY)').toThrow('INVALID_IMAGE_FORMAT_DESCRIPTOR');
         expect('ctx.createImage(WebCL.MEM_READ_ONLY, null)').toThrow('INVALID_IMAGE_FORMAT_DESCRIPTOR');
         expect('ctx.createImage(WebCL.MEM_READ_ONLY, {})').toThrow('INVALID_IMAGE_FORMAT_DESCRIPTOR');
@@ -335,6 +359,7 @@ describe("Functionality", function() {
       });
 
       it("createImage(<invalidDimensions>) must throw", function() {
+        if (!self.preconditions) pending();
         expect('ctx.createImage(WebCL.MEM_READ_ONLY, { width: 4 })').toThrow('INVALID_IMAGE_FORMAT_DESCRIPTOR');
         expect('ctx.createImage(WebCL.MEM_READ_ONLY, { width: 4, height: [] })').toThrow('INVALID_IMAGE_FORMAT_DESCRIPTOR');
         expect('ctx.createImage(WebCL.MEM_READ_ONLY, { width: 4, height: "" })').toThrow('INVALID_IMAGE_FORMAT_DESCRIPTOR');
@@ -345,6 +370,7 @@ describe("Functionality", function() {
       });
 
       it("createImage(<invalidRowPitch>) must throw", function() {
+        if (!self.preconditions) pending();
         expect('ctx.createImage(WebCL.MEM_READ_ONLY, { width: 4, height: 4, rowPitch: 0 })').not.toThrow();
         expect('ctx.createImage(WebCL.MEM_READ_ONLY, { width: 4, height: 4, rowPitch: -1 })').toThrow('INVALID_IMAGE_SIZE');
         expect('ctx.createImage(WebCL.MEM_READ_ONLY, { width: 4, height: 4, rowPitch: 1 })').toThrow('INVALID_IMAGE_SIZE');
@@ -355,6 +381,7 @@ describe("Functionality", function() {
       });
 
       it("createImage(<invalidHostPtr>) must throw", function() {
+        if (!self.preconditions) pending();
         expect('ctx.createImage(WebCL.MEM_READ_ONLY, { width: 4, height: 4, rowPitch: 0 }, new Uint8Array(4*4*4-1))').toThrow('INVALID_HOST_PTR');
         expect('ctx.createImage(WebCL.MEM_READ_ONLY, { width: 4, height: 4, rowPitch: 100 }, new Uint8Array(4*4*4-1))').toThrow('INVALID_HOST_PTR');
         expect('ctx.createImage(WebCL.MEM_READ_ONLY, { width: 4, height: 4, rowPitch: 0 }, new Uint8Array(4*4*4-1))').toThrow('INVALID_HOST_PTR');
@@ -366,6 +393,7 @@ describe("Functionality", function() {
       });
 
       it("createImage(<invalidChannelOrder>) must throw", function() {
+        if (!self.preconditions) pending();
         expect('ctx.createImage(WebCL.MEM_READ_ONLY, { width: 4, height: 4, channelOrder: WebCL.RGBA })').not.toThrow();
         expect('ctx.createImage(WebCL.MEM_READ_ONLY, { width: 4, height: 4, channelOrder: WebCL.FLOAT })').toThrow('INVALID_IMAGE_FORMAT_DESCRIPTOR');
         expect('ctx.createImage(WebCL.MEM_READ_ONLY, { width: 4, height: 4, channelOrder: 0 })').toThrow('INVALID_IMAGE_FORMAT_DESCRIPTOR');
@@ -374,6 +402,7 @@ describe("Functionality", function() {
       });
 
       it("createImage(<invalidChannelType>) must throw", function() {
+        if (!self.preconditions) pending();
         expect('ctx.createImage(WebCL.MEM_READ_ONLY, { width: 4, height: 4, channelType: WebCL.FLOAT })').not.toThrow();
         expect('ctx.createImage(WebCL.MEM_READ_ONLY, { width: 4, height: 4, channelType: WebCL.RGBA })').toThrow('INVALID_IMAGE_FORMAT_DESCRIPTOR');
         expect('ctx.createImage(WebCL.MEM_READ_ONLY, { width: 4, height: 4, channelType: 0 })').toThrow('INVALID_IMAGE_FORMAT_DESCRIPTOR');
@@ -395,14 +424,17 @@ describe("Functionality", function() {
   // 
   describe("WebCLBuffer", function() {
     
+    var self = {};
+
     beforeEach(function() {
       try {
         ctx = createContext();
         buffer = ctx.createBuffer(WebCL.MEM_READ_WRITE, 123);
-        expect('buffer instanceof WebCLBuffer').toEvalAs(true);
+        self.preconditions = true;
       } catch (e) {
-        ERROR("Functionality -> WebCLBuffer -> beforeEach: Unable to create WebCLContext, all tests will fail!");
-        throw e;
+        ERROR("WebCLBuffer -> beforeEach: Caught exception " + e);
+        ERROR("WebCLBuffer -> beforeEach: Preconditions of the describe() block failed: Skipping all tests.");
+        self.preconditions = false;
       }
     });
 
@@ -413,6 +445,7 @@ describe("Functionality", function() {
     describe("getInfo", function() {
 
       it("getInfo(<validEnum>) must work", function() {
+        if (!self.preconditions) pending();
         expect('buffer.getInfo(WebCL.MEM_TYPE)').not.toThrow();
         expect('buffer.getInfo(WebCL.MEM_FLAGS)').not.toThrow();
         expect('buffer.getInfo(WebCL.MEM_CONTEXT)').not.toThrow();
@@ -426,6 +459,7 @@ describe("Functionality", function() {
       });
 
       it("getInfo(<invalidEnum>) must throw", function() {
+        if (!self.preconditions) pending();
         expect('buffer.getInfo()').toThrow('INVALID_VALUE');
         expect('buffer.getInfo(0)').toThrow('INVALID_VALUE');
         expect('buffer.getInfo(1)').toThrow('INVALID_VALUE');
@@ -448,15 +482,18 @@ describe("Functionality", function() {
   // 
   describe("WebCLImage", function() {
     
+    var self = {};
+
     beforeEach(function() {
       try {
         ctx = createContext();
         var descriptor = { width : 33, height : 17 };
         image = ctx.createImage(WebCL.MEM_READ_WRITE, descriptor);
-        expect('image instanceof WebCLImage').toEvalAs(true);
+        self.preconditions = true;
       } catch (e) {
-        ERROR("Functionality -> WebCLImage -> beforeEach: Unable to create WebCLContext, all tests will fail!");
-        throw e;
+        ERROR("WebCLImage -> beforeEach: Caught exception " + e);
+        ERROR("WebCLImage -> beforeEach: Preconditions of the describe() block failed: Skipping all tests.");
+        self.preconditions = false;
       }
     });
 
@@ -467,6 +504,7 @@ describe("Functionality", function() {
     describe("getInfo", function() {
 
       it("getInfo() must work", function() {
+        if (!self.preconditions) pending();
         expect('image.getInfo()').not.toThrow();
         expect('image.getInfo().width').toEvalAs('33');
         expect('image.getInfo().height').toEvalAs('17');
@@ -476,6 +514,7 @@ describe("Functionality", function() {
       });
 
       it("getInfo() must work with non-default channelType", function() {
+        if (!self.preconditions) pending();
         descriptor = { width: 19, height: 11, channelOrder: WebCL.RGBA, channelType: WebCL.FLOAT };
         expect('image1 = ctx.createImage(WebCL.MEM_READ_ONLY, descriptor)').not.toThrow();
         expect('image1.getInfo().width').toEvalAs('19');
@@ -486,6 +525,7 @@ describe("Functionality", function() {
       });
 
       it("getInfo(<validEnum>) must work", function() {
+        if (!self.preconditions) pending();
         expect('image.getInfo(WebCL.MEM_TYPE)').not.toThrow();
         expect('image.getInfo(WebCL.MEM_FLAGS)').not.toThrow();
         expect('image.getInfo(WebCL.MEM_CONTEXT)').not.toThrow();
@@ -499,6 +539,7 @@ describe("Functionality", function() {
       });
 
       it("getInfo(<invalidEnum>) must throw", function() {
+        if (!self.preconditions) pending();
         expect('image.getInfo(0)').toThrow('INVALID_VALUE');
         expect('image.getInfo(1)').toThrow('INVALID_VALUE');
         expect('image.getInfo(-1)').toThrow('INVALID_VALUE');
@@ -520,6 +561,7 @@ describe("Functionality", function() {
   // 
   describe("WebCLProgram", function() {
     
+    var self = {};
 
     beforeEach(function() {
       try {
@@ -527,9 +569,11 @@ describe("Functionality", function() {
         program = ctx.createProgram("kernel void dummy(global uint* buf) { buf[0]=0xdeadbeef; }");
         devices = ctx.getInfo(WebCL.CONTEXT_DEVICES);
         device = devices[0];
+        self.preconditions = true;
       } catch (e) {
-        ERROR("Functionality -> WebCLProgram -> beforeEach: Unable to create WebCL resources, all tests will fail!");
-        throw e;
+        ERROR("WebCLProgram -> beforeEach: Caught exception " + e);
+        ERROR("WebCLProgram -> beforeEach: Preconditions of the describe() block failed: Skipping all tests.");
+        self.preconditions = false;
       }
     });
 
@@ -540,6 +584,7 @@ describe("Functionality", function() {
     describe("getInfo", function() {
 
       it("getInfo(<validEnum>) must work", function() {
+        if (!self.preconditions) pending();
         expect('program.getInfo(WebCL.PROGRAM_NUM_DEVICES)').not.toThrow();
         expect('program.getInfo(WebCL.PROGRAM_DEVICES)').not.toThrow();
         expect('program.getInfo(WebCL.PROGRAM_CONTEXT)').not.toThrow();
@@ -552,6 +597,7 @@ describe("Functionality", function() {
       });
 
       it("getInfo(<invalidEnum>) must throw", function() {
+        if (!self.preconditions) pending();
         expect('program.getInfo()').toThrow('INVALID_VALUE');
         expect('program.getInfo(0)').toThrow('INVALID_VALUE');
         expect('program.getInfo(1)').toThrow('INVALID_VALUE');
@@ -573,12 +619,14 @@ describe("Functionality", function() {
     describe("build", function() {
 
       it("build(<validDeviceArray>) must not throw", function() {
+        if (!self.preconditions) pending();
         expect('program.build()').not.toThrow();
         expect('program.build(null)').not.toThrow();
         expect('program.build(devices)').not.toThrow();
       });
 
       it("build(<validDeviceArray>, <validBuildOption>) must not throw", function() {
+        if (!self.preconditions) pending();
         expect('program.build(devices, null)').not.toThrow();
         [ '',
           '-D foo',
@@ -599,10 +647,12 @@ describe("Functionality", function() {
       });
 
       it("build(<validDeviceArray>, <multipleValidBuildOptions>) must not throw", function() {
+        if (!self.preconditions) pending();
         expect('program.build(devices, "-cl-opt-disable -Werror")').not.toThrow();
       });
 
       it("build(<invalidDeviceArray>) must throw", function() {
+        if (!self.preconditions) pending();
         expect('program.build([])').toThrow('INVALID_VALUE');
         expect('program.build({})').toThrow('INVALID_VALUE');
         expect('program.build("")').toThrow('INVALID_VALUE');
@@ -612,6 +662,7 @@ describe("Functionality", function() {
       });
 
       it("build(<invalidBuildOptions>) must throw", function() {
+        if (!self.preconditions) pending();
         expect('program.build(devices, "-cl-std=CL1.1")').toThrow('INVALID_BUILD_OPTIONS');
         expect('program.build(devices, "-cl-std=CL1.2")').toThrow('INVALID_BUILD_OPTIONS');
         expect('program.build(devices, "-cl-kernel-arg-info")').toThrow('INVALID_BUILD_OPTIONS');
@@ -627,6 +678,7 @@ describe("Functionality", function() {
       });
 
       it("must throw if program source is invalid", function() {
+        if (!self.preconditions) pending();
         program = ctx.createProgram("obviously invalid");
         expect('program.build(devices)').toThrow('BUILD_PROGRAM_FAILURE');
       });
@@ -648,12 +700,14 @@ describe("Functionality", function() {
     describe("getBuildInfo", function() {
 
       it("getBuildInfo(<validDevice>, <validEnum>) must not throw", function() {
+        if (!self.preconditions) pending();
         expect('program.getBuildInfo(device, WebCL.PROGRAM_BUILD_STATUS)').not.toThrow();
         expect('program.getBuildInfo(device, WebCL.PROGRAM_BUILD_OPTIONS)').not.toThrow();
         expect('program.getBuildInfo(device, WebCL.PROGRAM_BUILD_LOG)').not.toThrow();
       });
 
       it("getBuildInfo(<invalidDevice>, <validEnum>) must throw", function() {
+        if (!self.preconditions) pending();
         expect('program.getBuildInfo("foobar", WebCL.PROGRAM_BUILD_STATUS)').toThrow('INVALID_DEVICE');
         expect('program.getBuildInfo("", WebCL.PROGRAM_BUILD_STATUS)').toThrow('INVALID_DEVICE');
         expect('program.getBuildInfo([], WebCL.PROGRAM_BUILD_STATUS)').toThrow('INVALID_DEVICE');
@@ -663,6 +717,7 @@ describe("Functionality", function() {
       });
 
       it("getBuildInfo(<validDevice>, <invalidEnum>) must throw", function() {
+        if (!self.preconditions) pending();
         expect('program.getBuildInfo(device)').toThrow('INVALID_VALUE');
         expect('program.getBuildInfo(device, undefined)').toThrow('INVALID_VALUE');
         expect('program.getBuildInfo(device, null)').toThrow('INVALID_VALUE');
@@ -677,6 +732,7 @@ describe("Functionality", function() {
       });
 
       it("getBuildInfo(PROGRAM_BUILD_STATUS) must work", function() {
+        if (!self.preconditions) pending();
         expect('program.getBuildInfo(device, WebCL.PROGRAM_BUILD_STATUS)').toEvalAs('WebCL.BUILD_NONE');
         expect('program.build(devices)').not.toThrow();
         expect('program.getBuildInfo(device, WebCL.PROGRAM_BUILD_STATUS)').toEvalAs('WebCL.BUILD_SUCCESS');
@@ -686,6 +742,7 @@ describe("Functionality", function() {
       });
 
       it("getBuildInfo(PROGRAM_BUILD_OPTIONS) must work", function() {
+        if (!self.preconditions) pending();
         expect('program.build(devices)').not.toThrow();
         expect('program.getBuildInfo(device, WebCL.PROGRAM_BUILD_OPTIONS)').not.toThrow();
         expect('typeof program.getBuildInfo(device, WebCL.PROGRAM_BUILD_OPTIONS) === "string"').toEvalAs(true);
@@ -696,6 +753,7 @@ describe("Functionality", function() {
       });
 
       it("getBuildInfo(PROGRAM_BUILD_LOG) must actually report errors", function() {
+        if (!self.preconditions) pending();
         program = ctx.createProgram("obviously invalid");
         expect('program.build(devices)').toThrow();
         expect('program.getBuildInfo(device, WebCL.PROGRAM_BUILD_LOG).length > 0').toEvalAs(true);
@@ -711,11 +769,13 @@ describe("Functionality", function() {
     describe("createKernel", function() {
 
       it("createKernel(<validName>) must work", function() {
+        if (!self.preconditions) pending();
         expect('program.build()').not.toThrow();
         expect('program.createKernel("dummy")').not.toThrow();
       });
 
       it("createKernel(<invalidName>) must throw", function() {
+        if (!self.preconditions) pending();
         expect('program.build()').not.toThrow();
         expect('program.createKernel("foobar")').toThrow('INVALID_KERNEL_NAME');
         expect('program.createKernel()').toThrow('INVALID_KERNEL_NAME');
@@ -725,12 +785,14 @@ describe("Functionality", function() {
       });
 
       it("createKernelsInProgram() must work", function() {
+        if (!self.preconditions) pending();
         expect('program.build()').not.toThrow();
         expect('program.createKernelsInProgram()').not.toThrow();
         expect('program.createKernelsInProgram().length === 1').toEvalAs(true);
       });
 
       it("build() must throw if kernels are already created", function() {
+        if (!self.preconditions) pending();
         expect('program.build(devices)').not.toThrow();
         expect('program.createKernel("dummy")').not.toThrow();
         expect('program.build(devices)').toThrow('INVALID_OPERATION');
@@ -747,14 +809,18 @@ describe("Functionality", function() {
   // 
   describe("WebCLKernel", function() {
     
+    var self = {};
+
     beforeEach(function() {
       try {
         ctx = createContext();
         devices = ctx.getInfo(WebCL.CONTEXT_DEVICES);
         device = devices[0];
+        self.preconditions = true;
       } catch (e) {
-        ERROR("Functionality -> WebCLKernel -> beforeEach: Unable to create WebCLContext, all tests will fail!");
-        throw e;
+        ERROR("WebCLKernel -> beforeEach: Caught exception " + e);
+        ERROR("WebCLKernel -> beforeEach: Preconditions of the describe() block failed: Skipping all tests.");
+        self.preconditions = false;
       }
     });
 
@@ -765,9 +831,10 @@ describe("Functionality", function() {
     describe("getWorkGroupInfo", function() {
 
       it("must support KERNEL_WORK_GROUP_SIZE", function() {
+        if (!self.preconditions) pending();
         program = ctx.createProgram("kernel void dummy(global uint* buf) { buf[0]=0xdeadbeef; }");
-        program.build(devices);
-        kernel = program.createKernel("dummy");
+        expect('program.build()').not.toThrow();
+        expect('kernel = program.createKernel("dummy")').not.toThrow();
         expect('kernel.getWorkGroupInfo(device, WebCL.KERNEL_WORK_GROUP_SIZE)').not.toThrow();
         expect('kernel.getWorkGroupInfo(device, WebCL.KERNEL_WORK_GROUP_SIZE) >= 1').toEvalAs(true);
       });
@@ -780,17 +847,26 @@ describe("Functionality", function() {
     // 
     describe("setArg", function() {
 
+      var self = {};
       var src = loadSource('kernels/argtypes.cl');
       
       beforeEach(function() {
-        program = ctx.createProgram(src);
-        program.build(devices);
-        buffer = ctx.createBuffer(WebCL.MEM_READ_WRITE, 128);
-        image = ctx.createImage(WebCL.MEM_READ_WRITE, { width: 32, height: 32 });
-        sampler = ctx.createSampler(true, WebCL.ADDRESS_REPEAT, WebCL.FILTER_NEAREST);
+        try {
+          program = ctx.createProgram(src);
+          program.build(devices);
+          buffer = ctx.createBuffer(WebCL.MEM_READ_WRITE, 128);
+          image = ctx.createImage(WebCL.MEM_READ_WRITE, { width: 32, height: 32 });
+          sampler = ctx.createSampler(true, WebCL.ADDRESS_REPEAT, WebCL.FILTER_NEAREST);
+          self.preconditions = true;
+        } catch (e) {
+          ERROR("WebCLKernel -> setArg -> beforeEach: Caught exception " + e);
+          ERROR("WebCLKernel -> setArg -> beforeEach: Preconditions of the describe() block failed: Skipping all tests.");
+          self.preconditions = false;
+        }
       });
 
       it("setArg(index, clObject) must not throw if clObject matches the expected type", function() {
+        if (!self.preconditions) pending();
         kernel = program.createKernel('objects');
         expect('kernel instanceof WebCLKernel').toEvalAs(true);
         expect('kernel.setArg(0, buffer)').not.toThrow();
@@ -800,6 +876,7 @@ describe("Functionality", function() {
       });
 
       it("setArg(index, clObject) must throw if clObject does not match the expected type (CRITICAL)", function() {
+        if (!self.preconditions) pending();
         kernel = program.createKernel('objects');
         expect('kernel instanceof WebCLKernel').toEvalAs(true);
         expect('kernel.setArg(0, image)').toThrow();
@@ -813,6 +890,7 @@ describe("Functionality", function() {
       });
 
       it("setArg(index, clObject) must throw if an arbitrary integer is passed in (CRITICAL)", function() {
+        if (!self.preconditions) pending();
         kernel = program.createKernel('objects');
         expect('kernel instanceof WebCLKernel').toEvalAs(true);
         expect('kernel.setArg(0, new Uint32Array(1))').toThrow('INVALID_MEM_OBJECT');
@@ -824,6 +902,7 @@ describe("Functionality", function() {
       });
 
       it("setArg(index, value) must not throw if value matches the expected scalar type", function() {
+        if (!self.preconditions) pending();
         kernel = program.createKernel('scalars');
         expect('kernel instanceof WebCLKernel').toEvalAs(true);
         expect('kernel.setArg(1, new Int8Array(1))').not.toThrow();    // char
@@ -838,6 +917,7 @@ describe("Functionality", function() {
       });
 
       it("setArg(index, value) must not throw if value matches the expected vector type", function() {
+        if (!self.preconditions) pending();
         kernel = program.createKernel('vectors');
         expect('kernel instanceof WebCLKernel').toEvalAs(true);
         expect('kernel.setArg(1, new Int8Array(4))').not.toThrow();    // char4
@@ -852,6 +932,7 @@ describe("Functionality", function() {
       });
 
       it("setArg(index, value) must throw if value is not an ArrayBufferView (CRITICAL)", function() {
+        if (!self.preconditions) pending();
         kernel = program.createKernel('scalars');
         expect('kernel instanceof WebCLKernel').toEvalAs(true);
         expect('kernel.setArg(3, new ArrayBuffer(4))').toThrow('INVALID_ARG_VALUE');
@@ -873,6 +954,7 @@ describe("Functionality", function() {
       });
 
       it("setArg(index, value) must throw if value does not match the expected scalar size", function() {
+        if (!self.preconditions) pending();
         kernel = program.createKernel('scalars');
         expect('kernel instanceof WebCLKernel').toEvalAs(true);
         expect('kernel.setArg(1, new Int8Array(0))').toThrow('INVALID_ARG_SIZE');    // char
@@ -890,6 +972,7 @@ describe("Functionality", function() {
       });
 
       it("setArg(index, value) must throw if value does not match the expected vector size", function() {
+        if (!self.preconditions) pending();
         kernel = program.createKernel('vectors');
         expect('kernel instanceof WebCLKernel').toEvalAs(true);
         expect('kernel.setArg(1, new Int8Array(5))').toThrow('INVALID_ARG_SIZE');    // char4
@@ -905,6 +988,7 @@ describe("Functionality", function() {
       });
 
       it("setArg(index, value) must throw if value type is wrong, even if the size is right", function() {
+        if (!self.preconditions) pending();
         kernel = program.createKernel('scalars');
         expect('kernel instanceof WebCLKernel').toEvalAs(true);
         expect('kernel.setArg(1, new Uint8Array(1))').toThrow('INVALID_ARG_VALUE');    // char
@@ -921,12 +1005,14 @@ describe("Functionality", function() {
       });
 
       it("setArg(index, value) must not throw if a local memory size is passed in using Uint32Array(1)", function() {
+        if (!self.preconditions) pending();
         kernel = program.createKernel('localmem');
         expect('kernel instanceof WebCLKernel').toEvalAs(true);
         expect('kernel.setArg(1, new Uint32Array([10]))').not.toThrow();
       });
 
       it("setArg(index, value) must throw if a local memory size is passed in using anything but Uint32Array(1)", function() {
+        if (!self.preconditions) pending();
         kernel = program.createKernel('localmem');
         expect('kernel instanceof WebCLKernel').toEvalAs(true);
         expect('kernel.setArg(1, new Int32Array(1))').toThrow();
@@ -944,6 +1030,7 @@ describe("Functionality", function() {
       });
 
       it("setArg(index, value) must throw if attempting to set local memory size to zero", function() {
+        if (!self.preconditions) pending();
         kernel = program.createKernel('localmem');
         expect('kernel instanceof WebCLKernel').toEvalAs(true);
         expect('kernel.setArg(1, new Uint32Array([0]))').toThrow('INVALID_ARG_SIZE');
@@ -959,24 +1046,29 @@ describe("Functionality", function() {
   // 
   describe("WebCLCommandQueue", function() {
 
-    beforeEach(function() {
-      try {
-        ctx = createContext();
-        device = ctx.getInfo(WebCL.CONTEXT_DEVICES)[0];
-        queue = ctx.createCommandQueue(device, 0);
-      } catch (e) {
-        ERROR("Functionality -> WebCLCommandQueue -> beforeEach: Unable to create WebCL resources, all tests will fail!");
-        throw e;
-      }
-    });
-    
     //////////////////////////////////////////////////////////////////////////////
     //
     // Functionality -> WebCLCommandQueue -> getInfo
     // 
     describe("getInfo", function() {
 
+      var self = {};
+
+      beforeEach(function() {
+        try {
+          ctx = createContext();
+          device = ctx.getInfo(WebCL.CONTEXT_DEVICES)[0];
+          queue = ctx.createCommandQueue(device, 0);
+          self.preconditions = true;
+        } catch (e) {
+          ERROR("WebCLCommandQueue -> getInfo -> beforeEach: Caught exception " + e);
+          ERROR("WebCLCommandQueue -> getInfo -> beforeEach: Preconditions of the describe() block failed: Skipping all tests.");
+          self.preconditions = false;
+        }
+      });
+    
       it("getInfo(<validEnum>) must work", function() {
+        if (!self.preconditions) pending();
         expect('queue.getInfo(WebCL.QUEUE_CONTEXT)').not.toThrow();
         expect('queue.getInfo(WebCL.QUEUE_DEVICE)').not.toThrow();
         expect('queue.getInfo(WebCL.QUEUE_PROPERTIES)').not.toThrow();
@@ -986,6 +1078,7 @@ describe("Functionality", function() {
       });
 
       it("getInfo(<invalidEnum>) must throw", function() {
+        if (!self.preconditions) pending();
         expect('queue.getInfo()').toThrow('INVALID_VALUE');
         expect('queue.getInfo(0)').toThrow('INVALID_VALUE');
         expect('queue.getInfo(1)').toThrow('INVALID_VALUE');
@@ -1006,23 +1099,28 @@ describe("Functionality", function() {
     // 
     describe("enqueueNDRangeKernel", function() {
 
+      var self = {};
+
       beforeEach(function() {
         try {
           ctx = createContext();
-          queue = ctx.createCommandQueue(null, 0);
+          queue = ctx.createCommandQueue();
           buffer = ctx.createBuffer(WebCL.MEM_READ_ONLY, 16);
           program = ctx.createProgram("kernel void dummy(global uint* buf) { buf[0]=0xdeadbeef; }");
           devices = ctx.getInfo(WebCL.CONTEXT_DEVICES);
           program.build(devices);
           kernel = program.createKernelsInProgram()[0];
           kernel.setArg(0, buffer);
+          self.preconditions = true;
         } catch (e) {
-          ERROR("Functionality -> WebCLCommandQueue -> enqueueNDRangeKernel -> beforeEach: Unable to create WebCLContext, all tests will fail!");
-          throw e;
+          ERROR("WebCLCommandQueue -> enqueueNDRangeKernel -> beforeEach: Caught exception " + e);
+          ERROR("WebCLCommandQueue -> enqueueNDRangeKernel -> beforeEach: Preconditions of the describe() block failed: Skipping all tests.");
+          self.preconditions = false;
         }
       });
-      
+
       it("must work if all arguments are fully specified", function() {
+        if (!self.preconditions) pending();
         event = new WebCLEvent();
         expect('queue.enqueueNDRangeKernel(kernel, 1, [0], [1], [1], [], event); queue.finish()').not.toThrow();
         expect('queue.enqueueNDRangeKernel(kernel, 2, [0, 0], [1, 1], [1, 1], [], event); queue.finish()').not.toThrow();
@@ -1030,11 +1128,13 @@ describe("Functionality", function() {
       });
 
       it("must work if event === null/undefined/omitted", function() {
+        if (!self.preconditions) pending();
         expect('queue.enqueueNDRangeKernel(kernel, 1, [0], [1], [1], [], null); queue.finish()').not.toThrow();
         expect('queue.enqueueNDRangeKernel(kernel, 1, [0], [1], [1], []); queue.finish()').not.toThrow();
       });
 
       it("must work if eventWaitList === []/null/undefined/omitted", function() {
+        if (!self.preconditions) pending();
         expect('queue.enqueueNDRangeKernel(kernel, 1, [0], [1], [1], []); queue.finish()').not.toThrow();
         expect('queue.enqueueNDRangeKernel(kernel, 1, [0], [1], [1], null); queue.finish()').not.toThrow();
         expect('queue.enqueueNDRangeKernel(kernel, 1, [0], [1], [1], undefined); queue.finish()').not.toThrow();
@@ -1042,33 +1142,39 @@ describe("Functionality", function() {
       });
 
       it("must work if localWorkSize === null/undefined/omitted", function() {
+        if (!self.preconditions) pending();
         expect('queue.enqueueNDRangeKernel(kernel, 1, [0], [1], null); queue.finish()').not.toThrow();
         expect('queue.enqueueNDRangeKernel(kernel, 1, [0], [1], undefined); queue.finish()').not.toThrow();
         expect('queue.enqueueNDRangeKernel(kernel, 1, [0], [1]); queue.finish()').not.toThrow();
       });
 
       it("must work if globalWorkOffset === null/undefined", function() {
+        if (!self.preconditions) pending();
         expect('queue.enqueueNDRangeKernel(kernel, 1, null, [1], [1]); queue.finish()').not.toThrow();
         expect('queue.enqueueNDRangeKernel(kernel, 1, undefined, [1], [1]); queue.finish()').not.toThrow();
       });
 
       it("must work with all-default arguments", function() {
+        if (!self.preconditions) pending();
         expect('queue.enqueueNDRangeKernel(kernel, 1, null, [1]); queue.finish()').not.toThrow();
       });
 
       it("must throw if kernel is not a valid WebCLKernel", function() {
+        if (!self.preconditions) pending();
         expect('queue instanceof WebCLCommandQueue').toEvalAs(true);
         expect('queue.enqueueNDRangeKernel("foo", 1, [0], [1], [1])').toThrow('INVALID_KERNEL');
         expect('queue.enqueueNDRangeKernel(ctx, 1, [0], [1], [1])').toThrow('INVALID_KERNEL');
       });
 
       it("must throw if workDim is not equal to 1, 2, or 3", function() {
+        if (!self.preconditions) pending();
         expect('queue instanceof WebCLCommandQueue').toEvalAs(true);
         expect('queue.enqueueNDRangeKernel(kernel, 0, [0], [1], [1])').toThrow('INVALID_WORK_DIMENSION')
         expect('queue.enqueueNDRangeKernel(kernel, 4, [0, 0, 0, 0], [1, 1, 1, 1], [1, 1, 1, 1])').toThrow('INVALID_WORK_DIMENSION');
       });
 
       it("must throw if globalWorkSize.length != workDim", function() {
+        if (!self.preconditions) pending();
         expect('queue instanceof WebCLCommandQueue').toEvalAs(true);
         expect('queue.enqueueNDRangeKernel(kernel, 1, [0], [1, 1], [1])').toThrow('INVALID_GLOBAL_WORK_SIZE');
         expect('queue.enqueueNDRangeKernel(kernel, 2, [0, 0], [1], [1, 1])').toThrow('INVALID_GLOBAL_WORK_SIZE');
@@ -1078,6 +1184,7 @@ describe("Functionality", function() {
       });
 
       it("must throw if globalWorkSize[i] > 2^32-1", function() {
+        if (!self.preconditions) pending();
         expect('queue instanceof WebCLCommandQueue').toEvalAs(true);
         expect('queue.enqueueNDRangeKernel(kernel, 1, [0], [0xffffffff+1], [1])').toThrow('INVALID_GLOBAL_WORK_SIZE');
         expect('queue.enqueueNDRangeKernel(kernel, 2, [0, 0], [1, 0xffffffff+1], [1, 1])').toThrow('INVALID_GLOBAL_WORK_SIZE');
@@ -1091,6 +1198,8 @@ describe("Functionality", function() {
     // 
     describe("enqueueRead", function() {
 
+      var self = {};
+
       beforeEach(function() {
         try {
           W = 32;
@@ -1098,26 +1207,28 @@ describe("Functionality", function() {
           BPP = 4;
           bytesPerRow = BPP*W;
           ctx = createContext();
-          queue = ctx.createCommandQueue(null, 0);
+          queue = ctx.createCommandQueue();
           descriptor = { width : W, height : H };
           pixels = new Uint8Array(W*H*BPP);
           image = ctx.createImage(WebCL.MEM_READ_WRITE, descriptor);
           buffer = ctx.createBuffer(WebCL.MEM_READ_WRITE, W*H*BPP);
-          if (!image instanceof WebCLImage || !buffer instanceof WebCLBuffer)
-            throw { name: "TEST_SUITE_FAILURE", message: "beforeEach: Unable to create WebCL resources, all tests will fail!" };
+          self.preconditions = true;
         } catch (e) {
-          ERROR("Functionality -> WebCLCommandQueue -> enqueueRead -> beforeEach: Unable to create WebCL resources, all tests will fail!");
-          throw e;
+          ERROR("WebCLCommandQueue -> enqueueRead -> beforeEach: Caught exception " + e);
+          ERROR("WebCLCommandQueue -> enqueueRead -> beforeEach: Preconditions of the describe() block failed: Skipping all tests.");
+          self.preconditions = false;
         }
       });
 
       it("enqueueReadImage(<valid arguments>) must not throw", function() {
+        if (!self.preconditions) pending();
         expect('queue.enqueueReadImage(image, true, [0,0], [W, H], 0, pixels)').not.toThrow();
         expect('queue.enqueueReadImage(image, true, [0,0], [W, H], bytesPerRow, pixels)').not.toThrow();
         expect('queue.enqueueReadImage(image, true, [0,0], [W, H], bytesPerRow, pixels)').not.toThrow();
       });
 
       it("enqueueReadImage(<invalid image>) must throw", function() {
+        if (!self.preconditions) pending();
         expect('queue.enqueueReadImage(undefined, true, [0,0], [W, H], 0, pixels)').toThrow('INVALID_MEM_OBJECT');
         expect('queue.enqueueReadImage(null, true, [0,0], [W, H], 0, pixels)').toThrow('INVALID_MEM_OBJECT');
         expect('queue.enqueueReadImage({}, true, [0,0], [W, H], 0, pixels)').toThrow('INVALID_MEM_OBJECT');
@@ -1128,12 +1239,14 @@ describe("Functionality", function() {
       });
 
       it("enqueueReadImage(<image from another context>) must throw", function() {
+        if (!self.preconditions) pending();
         ctx2 = createContext();
         queue2 = ctx2.createCommandQueue(null, 0);
         expect('queue2.enqueueReadImage(image, true, [0,0], [W, H], 0, pixels)').toThrow('INVALID_CONTEXT');
       });
 
       it("enqueueReadImage(<invalid blockingRead>) must throw", function() { // TODO what exception type?
+        if (!self.preconditions) pending();
         expect('queue.enqueueReadImage(image, undefined, [0,0], [W, H], 0, pixels)').toThrow();
         expect('queue.enqueueReadImage(image, null, [0,0], [W, H], 0, pixels)').toThrow();
         expect('queue.enqueueReadImage(image, "foo", [0,0], [W, H], 0, pixels)').toThrow();
@@ -1141,6 +1254,7 @@ describe("Functionality", function() {
       });
 
       it("enqueueReadImage(<invalid origin>) must throw", function() {
+        if (!self.preconditions) pending();
         expect('queue.enqueueReadImage(image, true, undefined, [W, H], 0, pixels)').toThrow('INVALID_VALUE');
         expect('queue.enqueueReadImage(image, true, null, [W, H], 0, pixels)').toThrow('INVALID_VALUE');
         expect('queue.enqueueReadImage(image, true, [], [W, H], 0, pixels)').toThrow('INVALID_VALUE');
@@ -1152,6 +1266,7 @@ describe("Functionality", function() {
       });
 
       it("enqueueReadImage(<invalid region>) must throw", function() {
+        if (!self.preconditions) pending();
         expect('queue.enqueueReadImage(image, true, [0,0], undefined, 0, pixels)').toThrow('INVALID_VALUE');
         expect('queue.enqueueReadImage(image, true, [0,0], null, 0, pixels)').toThrow('INVALID_VALUE');
         expect('queue.enqueueReadImage(image, true, [0,0], [], 0, pixels)').toThrow('INVALID_VALUE');
@@ -1163,6 +1278,7 @@ describe("Functionality", function() {
       });
 
       it("enqueueReadImage(<invalid hostRowPitch>) must throw", function() {
+        if (!self.preconditions) pending();
         expect('queue.enqueueReadImage(image, true, [0,0], [W, H], -1, pixels)').toThrow('INVALID_VALUE');
         expect('queue.enqueueReadImage(image, true, [0,0], [W, H], bytesPerRow-1, pixels)').toThrow('INVALID_VALUE');
         expect('queue.enqueueReadImage(image, true, [0,0], [W, H], bytesPerRow+1, new Uint16Array(2*W*H*BPP))').toThrow('INVALID_VALUE');
@@ -1174,6 +1290,7 @@ describe("Functionality", function() {
       });
 
       it("enqueueReadImage(<invalid hostPtr>) must throw", function() {
+        if (!self.preconditions) pending();
         expect('queue.enqueueReadImage(image, true, [0,0], [W, H], 0, undefined)').toThrow('INVALID_VALUE');
         expect('queue.enqueueReadImage(image, true, [0,0], [W, H], 0, null)').toThrow('INVALID_VALUE');
         expect('queue.enqueueReadImage(image, true, [0,0], [W, H], 0, [])').toThrow('INVALID_VALUE');
@@ -1182,6 +1299,7 @@ describe("Functionality", function() {
       });
 
       it("enqueueReadImage(<image region out-of-bounds>) must throw", function() {
+        if (!self.preconditions) pending();
         expect('queue.enqueueReadImage(image, true, [0,0], [W+1, 1], 0, pixels)').toThrow('INVALID_VALUE');
         expect('queue.enqueueReadImage(image, true, [0,0], [1, H+1], 0, pixels)').toThrow('INVALID_VALUE');
         expect('queue.enqueueReadImage(image, true, [1,0], [W, 1], 0, pixels)').toThrow('INVALID_VALUE');
@@ -1191,6 +1309,7 @@ describe("Functionality", function() {
       });
 
       it("enqueueReadImage(<hostPtr region out-of-bounds>) must throw", function() {
+        if (!self.preconditions) pending();
         expect('queue.enqueueReadImage(image, true, [0,0], [W, H], 0, pixels.subarray(0,-2))').toThrow('INVALID_VALUE');
         expect('queue.enqueueReadImage(image, true, [0,0], [1, 1], 0, pixels.subarray(0, 3))').toThrow('INVALID_VALUE');
       });
@@ -1206,7 +1325,6 @@ describe("Functionality", function() {
   describe("Kernel language", function() {
 
     var self = {};
-    self.preconditions = undefined;
 
     beforeEach(function() {
       try {
@@ -1215,8 +1333,8 @@ describe("Functionality", function() {
           DEBUG("Asserting preconditions for the current describe() block...");
           mustBuild = ctx.createProgram("kernel void dummy(global uint* buf) { buf[0]=0xdeadbeef; }");
           mustBuild.build();
-          self.preconditions = true;
         }
+        self.preconditions = true;
       } catch (e) {
         DEBUG(e);
         DEBUG("Preconditions of the describe() block failed: Not executing any tests, marking them as 'pending' instead.");
@@ -1231,27 +1349,27 @@ describe("Functionality", function() {
     describe("Validator", function() {
 
       it("must not allow 'goto'", function() {
-        if (self.preconditions === false) pending();
+        if (!self.preconditions) pending();
         expect('kernels/goto.cl').not.toBuild();
       });
 
       it("must not allow 'printf'", function() {
-        if (self.preconditions === false) pending();
+        if (!self.preconditions) pending();
         expect('kernels/printf.cl').not.toBuild();
       });
 
       it("must not allow kernel-to-kernel calls", function() {
-        if (self.preconditions === false) pending();
+        if (!self.preconditions) pending();
         expect('kernels/kernel-to-kernel.cl').not.toBuild();
       });
 
       it("must not allow CLK_ADDRESS_NONE", function() {
-        if (self.preconditions === false) pending();
+        if (!self.preconditions) pending();
         expect('kernels/illegalSampler1.cl').not.toBuild();
       });
 
       it("must not allow CLK_NORMALIZED_COORDS_FALSE | CLK_ADDRESS_MODE_REPEAT", function() {
-        if (self.preconditions === false) pending();
+        if (!self.preconditions) pending();
         expect('kernels/illegalSampler2.cl').not.toBuild();
       });
 
@@ -1260,7 +1378,7 @@ describe("Functionality", function() {
       // from int* to long*.
       //
       it("must not allow casting an int* to long*", function() {
-        if (self.preconditions === false) pending();
+        if (!self.preconditions) pending();
         expect('kernels/pointerSizeCast.cl').not.toBuild();
       });
 
@@ -1273,14 +1391,14 @@ describe("Functionality", function() {
     describe("Compiler (OpenCL 1.1)", function() {
 
       it("must not allow obviously invalid kernel source", function() {
-        if (self.preconditions === false) pending();
+        if (!self.preconditions) pending();
         expect('program = ctx.createProgram("obviously invalid")').not.toThrow();
         expect('program.build()').toThrow('BUILD_PROGRAM_FAILURE');
         expect('program.build(null, "-w")').toThrow('BUILD_PROGRAM_FAILURE');
       });
 
       it("must not allow slightly invalid kernel source", function() {
-        if (self.preconditions === false) pending();
+        if (!self.preconditions) pending();
         src = "kernel int dummy(global uint* buf) { buf[0]=0xdeadbeef; }";
         expect('program = ctx.createProgram(src)').not.toThrow();
         expect('program.build()').toThrow('BUILD_PROGRAM_FAILURE');
@@ -1291,7 +1409,7 @@ describe("Functionality", function() {
       //  * <none>
       //
       it("must not allow 'memcpy'", function() {
-        if (self.preconditions === false) pending();
+        if (!self.preconditions) pending();
         expect('kernels/memcpy.cl').not.toBuild();
       });
 
@@ -1300,7 +1418,7 @@ describe("Functionality", function() {
       //  * Win7 / Intel CPU driver
       //
       it("must not allow 'extern'", function() {
-        if (self.preconditions === false) pending();
+        if (!self.preconditions) pending();
         expect('kernels/extern.cl').not.toBuild();
       });
 
@@ -1309,7 +1427,7 @@ describe("Functionality", function() {
       //  * Win7 / Intel CPU driver
       //
       it("must not allow pointer casts between address spaces", function() {
-        if (self.preconditions === false) pending();
+        if (!self.preconditions) pending();
         expect('kernels/pointerAddressSpaceCast.cl').not.toBuild();
       });
 
@@ -1318,7 +1436,7 @@ describe("Functionality", function() {
       //  * Win7 / Intel CPU driver
       //
       it("must not allow the 'extern' keyword", function() {
-        if (self.preconditions === false) pending();
+        if (!self.preconditions) pending();
         expect('kernels/externQualifier.cl').not.toBuild();
       });
 
@@ -1326,7 +1444,7 @@ describe("Functionality", function() {
       //  * <none>
       //
       it("must not allow initializing 'local' variables", function() {
-        if (self.preconditions === false) pending();
+        if (!self.preconditions) pending();
         expect('kernels/localMemInit.cl').not.toBuild();
       });
 
@@ -1335,7 +1453,7 @@ describe("Functionality", function() {
       //  * Win7 / Intel CPU driver
       //
       it("must not allow declaring 'local' variables in inner scope", function() {
-        if (self.preconditions === false) pending();
+        if (!self.preconditions) pending();
         expect('kernels/localMemAlloc.cl').not.toBuild();
       });
 
@@ -1343,7 +1461,7 @@ describe("Functionality", function() {
       //  * <none>
       //
       it("must not allow dynamic memory allocation", function() {
-        if (self.preconditions === false) pending();
+        if (!self.preconditions) pending();
         expect('kernels/dynamicArray.cl').not.toBuild();
       });
 
@@ -1352,7 +1470,7 @@ describe("Functionality", function() {
       //  * Win7 / Intel CPU driver
       //
       it("must not allow local memory pointer as return value", function() {
-        if (self.preconditions === false) pending();
+        if (!self.preconditions) pending();
         expect('kernels/localMemReturn.cl').not.toBuild();
       });
 
@@ -1360,7 +1478,7 @@ describe("Functionality", function() {
       //  * <none>
       //
       it("must not allow writing to 'constant' address space", function() {
-        if (self.preconditions === false) pending();
+        if (!self.preconditions) pending();
         expect('kernels/constantWrite.cl').not.toBuild();
       });
 
@@ -1369,7 +1487,7 @@ describe("Functionality", function() {
       //  * Win7 / Intel CPU driver
       //
       it("must not allow allocating 6 GB of 'private' memory", function() {
-        if (self.preconditions === false) pending();
+        if (!self.preconditions) pending();
         expect('kernels/largeArrayPrivate.cl').not.toBuild();
       });
 
@@ -1378,7 +1496,7 @@ describe("Functionality", function() {
       //  * Win7 / Intel CPU driver (freezes on first run)
       //
       xit("must not allow allocating 6 GB of 'local' memory", function() {
-        if (self.preconditions === false) pending();
+        if (!self.preconditions) pending();
         expect('kernels/largeArrayLocal.cl').not.toBuild();
       });
 
@@ -1386,7 +1504,7 @@ describe("Functionality", function() {
       //  * <none>
       //
       it("must not allow allocating 6 GB of 'global' memory", function() {
-        if (self.preconditions === false) pending();
+        if (!self.preconditions) pending();
         expect('kernels/largeArrayGlobal.cl').not.toBuild();
       });
 
