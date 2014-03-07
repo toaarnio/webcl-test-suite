@@ -30,7 +30,7 @@ describe("Robustness", function() {
   //  * Win7 / NVIDIA GPU driver (crashes on second run)
   //  * Win7 / Intel CPU driver (freezes on first run)
   //
-  it("must not allow allocating 6 GB of 'local' memory", function() {
+  xit("must not allow allocating 6 GB of 'local' memory", function() {
     expect('kernels/largeArrayLocal.cl').not.toBuild();
   });
 
@@ -46,9 +46,10 @@ describe("Robustness", function() {
   });
 
   // Known failures as of 2014-03-05:
-  //  * Win7 / NVIDIA GPU driver (crashes)
+  //  * Win7 / Firefox 32-bit / NVIDIA GPU driver (crashes)
+  //  * Win7 / Firefox 64-bit / Intel CPU driver (crashes randomly)
   //
-  it("setArg(<invalidArgument>) must not crash", function() {
+  xit("setArg(<invalidArgument>) must not crash", function() {
     ctx = createContext();
     src = loadSource('kernels/rng.cl');
     expect('program = ctx.createProgram(src)').not.toThrow();
@@ -61,7 +62,7 @@ describe("Robustness", function() {
   //  * Win7 / NVIDIA GPU driver (crashes)
   //  * Win7 / Intel CPU driver (crashes)
   //
-  it("build(<callback>) must not crash", function() {
+  xit("build(<callback>) must not crash", function() {
     buildCallback = function() {
       console.log("Callback invoked!");
     }

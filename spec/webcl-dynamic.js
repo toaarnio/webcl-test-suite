@@ -1205,8 +1205,23 @@ describe("Functionality", function() {
   // 
   describe("Kernel language", function() {
 
+    var self = {};
+    self.preconditions = undefined;
+
     beforeEach(function() {
-      ctx = createContext();
+      try {
+        ctx = createContext();
+        if (self.preconditions === undefined) {
+          DEBUG("Asserting preconditions for the current describe() block...");
+          mustBuild = ctx.createProgram("kernel void dummy(global uint* buf) { buf[0]=0xdeadbeef; }");
+          mustBuild.build();
+          self.preconditions = true;
+        }
+      } catch (e) {
+        DEBUG(e);
+        DEBUG("Preconditions of the describe() block failed: Not executing any tests, marking them as 'pending' instead.");
+        self.preconditions = false;
+      }
     });
 
     //////////////////////////////////////////////////////////////////////////////
@@ -1216,22 +1231,27 @@ describe("Functionality", function() {
     describe("Validator", function() {
 
       it("must not allow 'goto'", function() {
+        if (self.preconditions === false) pending();
         expect('kernels/goto.cl').not.toBuild();
       });
 
       it("must not allow 'printf'", function() {
+        if (self.preconditions === false) pending();
         expect('kernels/printf.cl').not.toBuild();
       });
 
       it("must not allow kernel-to-kernel calls", function() {
+        if (self.preconditions === false) pending();
         expect('kernels/kernel-to-kernel.cl').not.toBuild();
       });
 
       it("must not allow CLK_ADDRESS_NONE", function() {
+        if (self.preconditions === false) pending();
         expect('kernels/illegalSampler1.cl').not.toBuild();
       });
 
       it("must not allow CLK_NORMALIZED_COORDS_FALSE | CLK_ADDRESS_MODE_REPEAT", function() {
+        if (self.preconditions === false) pending();
         expect('kernels/illegalSampler2.cl').not.toBuild();
       });
 
@@ -1240,6 +1260,7 @@ describe("Functionality", function() {
       // from int* to long*.
       //
       it("must not allow casting an int* to long*", function() {
+        if (self.preconditions === false) pending();
         expect('kernels/pointerSizeCast.cl').not.toBuild();
       });
 
@@ -1251,16 +1272,17 @@ describe("Functionality", function() {
     // 
     describe("Compiler (OpenCL 1.1)", function() {
 
-      it("must not allow obviously invalid minimal kernel source", function() {
-        program = ctx.createProgram("obviously invalid");
-        expect('program instanceof WebCLProgram').toEvalAs(true);
+      it("must not allow obviously invalid kernel source", function() {
+        if (self.preconditions === false) pending();
+        expect('program = ctx.createProgram("obviously invalid")').not.toThrow();
         expect('program.build()').toThrow('BUILD_PROGRAM_FAILURE');
         expect('program.build(null, "-w")').toThrow('BUILD_PROGRAM_FAILURE');
       });
 
-      it("must not allow slightly invalid minimal kernel source", function() {
-        program = ctx.createProgram("kernel int dummy(global uint* buf) { buf[0]=0xdeadbeef; }");
-        expect('program instanceof WebCLProgram').toEvalAs(true);
+      it("must not allow slightly invalid kernel source", function() {
+        if (self.preconditions === false) pending();
+        src = "kernel int dummy(global uint* buf) { buf[0]=0xdeadbeef; }";
+        expect('program = ctx.createProgram(src)').not.toThrow();
         expect('program.build()').toThrow('BUILD_PROGRAM_FAILURE');
         expect('program.build(null, "-w")').toThrow('BUILD_PROGRAM_FAILURE');
       });
@@ -1269,6 +1291,7 @@ describe("Functionality", function() {
       //  * <none>
       //
       it("must not allow 'memcpy'", function() {
+        if (self.preconditions === false) pending();
         expect('kernels/memcpy.cl').not.toBuild();
       });
 
@@ -1277,6 +1300,7 @@ describe("Functionality", function() {
       //  * Win7 / Intel CPU driver
       //
       it("must not allow 'extern'", function() {
+        if (self.preconditions === false) pending();
         expect('kernels/extern.cl').not.toBuild();
       });
 
@@ -1285,6 +1309,7 @@ describe("Functionality", function() {
       //  * Win7 / Intel CPU driver
       //
       it("must not allow pointer casts between address spaces", function() {
+        if (self.preconditions === false) pending();
         expect('kernels/pointerAddressSpaceCast.cl').not.toBuild();
       });
 
@@ -1293,6 +1318,7 @@ describe("Functionality", function() {
       //  * Win7 / Intel CPU driver
       //
       it("must not allow the 'extern' keyword", function() {
+        if (self.preconditions === false) pending();
         expect('kernels/externQualifier.cl').not.toBuild();
       });
 
@@ -1300,6 +1326,7 @@ describe("Functionality", function() {
       //  * <none>
       //
       it("must not allow initializing 'local' variables", function() {
+        if (self.preconditions === false) pending();
         expect('kernels/localMemInit.cl').not.toBuild();
       });
 
@@ -1308,6 +1335,7 @@ describe("Functionality", function() {
       //  * Win7 / Intel CPU driver
       //
       it("must not allow declaring 'local' variables in inner scope", function() {
+        if (self.preconditions === false) pending();
         expect('kernels/localMemAlloc.cl').not.toBuild();
       });
 
@@ -1315,6 +1343,7 @@ describe("Functionality", function() {
       //  * <none>
       //
       it("must not allow dynamic memory allocation", function() {
+        if (self.preconditions === false) pending();
         expect('kernels/dynamicArray.cl').not.toBuild();
       });
 
@@ -1323,6 +1352,7 @@ describe("Functionality", function() {
       //  * Win7 / Intel CPU driver
       //
       it("must not allow local memory pointer as return value", function() {
+        if (self.preconditions === false) pending();
         expect('kernels/localMemReturn.cl').not.toBuild();
       });
 
@@ -1330,6 +1360,7 @@ describe("Functionality", function() {
       //  * <none>
       //
       it("must not allow writing to 'constant' address space", function() {
+        if (self.preconditions === false) pending();
         expect('kernels/constantWrite.cl').not.toBuild();
       });
 
@@ -1338,6 +1369,7 @@ describe("Functionality", function() {
       //  * Win7 / Intel CPU driver
       //
       it("must not allow allocating 6 GB of 'private' memory", function() {
+        if (self.preconditions === false) pending();
         expect('kernels/largeArrayPrivate.cl').not.toBuild();
       });
 
@@ -1346,6 +1378,7 @@ describe("Functionality", function() {
       //  * Win7 / Intel CPU driver (freezes on first run)
       //
       xit("must not allow allocating 6 GB of 'local' memory", function() {
+        if (self.preconditions === false) pending();
         expect('kernels/largeArrayLocal.cl').not.toBuild();
       });
 
@@ -1353,6 +1386,7 @@ describe("Functionality", function() {
       //  * <none>
       //
       it("must not allow allocating 6 GB of 'global' memory", function() {
+        if (self.preconditions === false) pending();
         expect('kernels/largeArrayGlobal.cl').not.toBuild();
       });
 

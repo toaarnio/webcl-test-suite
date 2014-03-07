@@ -118,7 +118,7 @@
           } catch(e) {
             DEBUG("Building '" + pathToSource + "' threw " + e.name);
             try {
-              DEBUG("Build log: " + program.getBuildInfo(device, WebCL.BUILD_LOG));
+              DEBUG("Build log: " + program.getBuildInfo(devices[0], WebCL.PROGRAM_BUILD_LOG));
             } catch (e2) {
               DEBUG("Failed to get BUILD_LOG: ", e2);
             }
@@ -129,7 +129,6 @@
           try {
             var pathToSource = actual;
             src = loadSource(pathToSource);
-            var ctx = createContext();
             var program = ctx.createProgram(src);
             var devices = ctx.getInfo(WebCL.CONTEXT_DEVICES);
             program.build(devices, buildOptions);
@@ -139,7 +138,7 @@
             if (program instanceof WebCLProgram) {
               DEBUG("Building '" + pathToSource + "' threw " + e.name);
               try {
-                DEBUG("Build log: " + program.getBuildInfo(device, WebCL.BUILD_LOG));
+                DEBUG("Build log: " + program.getBuildInfo(devices[0], WebCL.PROGRAM_BUILD_LOG));
               } catch (e2) {
                 DEBUG("Failed to get BUILD_LOG: ", e2);
               }
