@@ -166,12 +166,13 @@ describe("Functionality", function() {
 
       it("getSupportedImageFormats(<validEnum>) must not throw", function() {
         if (!self.preconditions) pending();
+        expect('ctx.getSupportedImageFormats()').not.toThrow();
         expect('ctx.getSupportedImageFormats(WebCL.MEM_READ_WRITE)').not.toThrow();
         expect('ctx.getSupportedImageFormats(WebCL.MEM_WRITE_ONLY)').not.toThrow();
         expect('ctx.getSupportedImageFormats(WebCL.MEM_READ_ONLY)').not.toThrow();
       });
 
-      it("getSupportedImageFormats(<validEnum>) must return at least the mandatory formats", function() {
+      it("getSupportedImageFormats(<validEnum>) must return the mandatory formats", function() {
         if (!self.preconditions) pending();
         function rgbaFilter(item) { return (item.channelOrder === WebCL.RGBA); }
         rgbaFormatsReadWrite = ctx.getSupportedImageFormats(WebCL.MEM_READ_WRITE).filter(rgbaFilter);
@@ -183,9 +184,15 @@ describe("Functionality", function() {
         expect('rgbaFormatsReadOnly.length >= 10').toEvalAs(true);
       });
 
+      it("getSupportedImageFormats() must be equivalent to getSupportedImageFormats(MEM_READ_WRITE)", function() {
+        if (!self.preconditions) pending();
+        var formats = ctx.getSupportedImageFormats();
+        var formatsReadWrite = ctx.getSupportedImageFormats(WebCL.MEM_READ_WRITE);
+        expect(formats).toEqual(formatsReadWrite);
+      });
+
       it("getSupportedImageFormats(<invalidEnum>) must throw", function() {
         if (!self.preconditions) pending();
-        expect('ctx.getSupportedImageFormats()').toThrow('INVALID_VALUE');
         expect('ctx.getSupportedImageFormats(0)').toThrow('INVALID_VALUE');
         expect('ctx.getSupportedImageFormats(3)').toThrow('INVALID_VALUE');
         expect('ctx.getSupportedImageFormats(5)').toThrow('INVALID_VALUE');
