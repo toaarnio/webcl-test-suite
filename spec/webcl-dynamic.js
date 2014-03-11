@@ -155,18 +155,28 @@ describe("Functionality", function() {
         expect('ctx.getInfo(WebCL.CONTEXT_DEVICES)').not.toThrow();
         expect('ctx.getInfo(WebCL.CONTEXT_NUM_DEVICES) === 1').toEvalAs(true);
         expect('ctx.getInfo(WebCL.CONTEXT_DEVICES).length === 1').toEvalAs(true);
+        expect('ctx.getInfo(WebCL.CONTEXT_DEVICES)[0] === device').toEvalAs(true);
       });
 
       it("getInfo(<invalidEnum>) must throw", function() {
         if (!self.preconditions) pending();
         expect('ctx.getInfo()').toThrow('INVALID_VALUE');
+        expect('ctx.getInfo(0)').toThrow('INVALID_VALUE');
+        expect('ctx.getInfo(3)').toThrow('INVALID_VALUE');
+        expect('ctx.getInfo(0x1001)').toThrow('INVALID_VALUE');
+        expect('ctx.getInfo(-1)').toThrow('INVALID_VALUE');
+        expect('ctx.getInfo("")').toThrow('INVALID_VALUE');
+        expect('ctx.getInfo([])').toThrow('INVALID_VALUE');
+        expect('ctx.getInfo({})').toThrow('INVALID_VALUE');
+        expect('ctx.getInfo(ctx)').toThrow('INVALID_VALUE');
         expect('ctx.getInfo(WebCL.CONTEXT_REFERENCE_COUNT)').toThrow('INVALID_VALUE');
         expect('ctx.getInfo(WebCL.CONTEXT_PROPERTIES)').toThrow('INVALID_VALUE');
       });
 
-      it("getSupportedImageFormats(<validEnum>) must not throw", function() {
+      it("getSupportedImageFormats(<validEnum>) must work", function() {
         if (!self.preconditions) pending();
         expect('ctx.getSupportedImageFormats()').not.toThrow();
+        expect('ctx.getSupportedImageFormats()[0] instanceof WebCLImageDescriptor').toEvalAs(true);
         expect('ctx.getSupportedImageFormats(WebCL.MEM_READ_WRITE)').not.toThrow();
         expect('ctx.getSupportedImageFormats(WebCL.MEM_WRITE_ONLY)').not.toThrow();
         expect('ctx.getSupportedImageFormats(WebCL.MEM_READ_ONLY)').not.toThrow();
@@ -506,6 +516,7 @@ describe("Functionality", function() {
       it("getInfo() must work", function() {
         if (!self.preconditions) pending();
         expect('image.getInfo()').not.toThrow();
+        expect('image.getInfo() instanceof WebCLImageDescriptor').toEvalAs(true);
         expect('image.getInfo().width').toEvalAs('33');
         expect('image.getInfo().height').toEvalAs('17');
         expect('image.getInfo().rowPitch').toEvalAs('33*4');

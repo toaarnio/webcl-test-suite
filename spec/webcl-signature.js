@@ -31,10 +31,12 @@ describe("Signature", function() {
     }
   });
 
-  it("must have all the expected member functions", function() {
+  it("must have all the expected member functions and properties", function() {
     checkSignature('webcl', true);
     for (var className in expectedClasses) {
-      checkSignature(className, true);
+      if (checkSignature(className, true) === false) {
+        pending();
+      }
     }
   });
 
@@ -82,7 +84,7 @@ describe("Signature", function() {
       return {
         compare: function(actual, expected) {
           var obj = typeof(actual) === "string" ? window[actual] : actual;
-          return { pass: (obj[name] !== undefined) };
+          return { pass: (obj[expected] !== undefined) };
         }
       };
     },
@@ -108,6 +110,9 @@ describe("Signature", function() {
   });
 
   function checkSignature(className, checkExisting) {
+    if (window[className] === undefined)
+      return false;
+
     for (var funcName in expectedFunctions[className]) {
       if (checkExisting && expectedFunctions[className][funcName] === true) {
         expect(className).toHaveFunction(funcName);
@@ -116,6 +121,12 @@ describe("Signature", function() {
         expect(className).not.toHaveFunction(funcName);
       }
     }
+    for (var propName in expectedProperties[className]) {
+      if (checkExisting && expectedProperties[className][propName] === true) {
+        expect(className).toHaveProperty(propName);
+      }
+    }
+    return true;
   };
 
   //////////////////////////////////////////////////////////////
@@ -134,6 +145,8 @@ describe("Signature", function() {
     WebCLBuffer : true,
     WebCLImage : true,
     WebCLUserEvent : true,
+    WebCLImageDescriptor : true,
+    //WebCLKernelArgInfo : true,
   };
 
   var expectedFunctions = {
@@ -281,5 +294,25 @@ describe("Signature", function() {
       releaseCLResources : false,       // renamed to release
     },
   };
+
+  var expectedProperties = {
+
+    WebCLImageDescriptor : {
+      channelOrder : true,
+      channelType : true,
+      width : true,
+      height : true,
+      rowPitch : true,
+    },
+
+    WebCLKernelArgInfo : {
+      name : true,
+      typeName : true,
+      addressQualifier : true,
+      accessQualifier : true,
+    },
+
+  };
+
 
 });
