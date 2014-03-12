@@ -593,7 +593,6 @@ describe("Functionality", function() {
         expect('image.getInfo(1)').toThrow('INVALID_VALUE');
         expect('image.getInfo(-1)').toThrow('INVALID_VALUE');
         expect('image.getInfo(WebCL.MEM_OBJECT_IMAGE2D)').toThrow('INVALID_VALUE');
-        expect('image.getInfo(null)').toThrow('INVALID_VALUE');
         expect('image.getInfo({})').toThrow('INVALID_VALUE');
         expect('image.getInfo([])').toThrow('INVALID_VALUE');
         expect('image.getInfo("")').toThrow('INVALID_VALUE');
