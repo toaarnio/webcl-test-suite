@@ -176,10 +176,23 @@ describe("Functionality", function() {
       it("getSupportedImageFormats(<validEnum>) must work", function() {
         if (!self.preconditions) pending();
         expect('ctx.getSupportedImageFormats()').not.toThrow();
+        expect('ctx.getSupportedImageFormats() instanceof Array').toEvalAs(true);
+        expect('ctx.getSupportedImageFormats().length >= 10').toEvalAs(true);
         expect('ctx.getSupportedImageFormats()[0] instanceof WebCLImageDescriptor').toEvalAs(true);
         expect('ctx.getSupportedImageFormats(WebCL.MEM_READ_WRITE)').not.toThrow();
         expect('ctx.getSupportedImageFormats(WebCL.MEM_WRITE_ONLY)').not.toThrow();
         expect('ctx.getSupportedImageFormats(WebCL.MEM_READ_ONLY)').not.toThrow();
+      });
+
+      it("getSupportedImageFormats() must be equivalent to getSupportedImageFormats(MEM_READ_WRITE)", function() {
+        if (!self.preconditions) pending();
+        formats = ctx.getSupportedImageFormats();
+        formatsReadWrite = ctx.getSupportedImageFormats(WebCL.MEM_READ_WRITE);
+        expect('formats.length').toEvalAs('formatsReadWrite.length');
+        for (i=0; i < formats.length; i++) {
+          expect('formats[i].channelOrder === formatsReadWrite[i].channelOrder').toEvalAs(true);
+          expect('formats[i].channelType === formatsReadWrite[i].channelType').toEvalAs(true);
+        }
       });
 
       it("getSupportedImageFormats(<validEnum>) must return the mandatory formats", function() {
@@ -192,13 +205,6 @@ describe("Functionality", function() {
         expect('rgbaFormatsReadWrite.length >= 10').toEvalAs(true);
         expect('rgbaFormatsWriteOnly.length >= 10').toEvalAs(true);
         expect('rgbaFormatsReadOnly.length >= 10').toEvalAs(true);
-      });
-
-      it("getSupportedImageFormats() must be equivalent to getSupportedImageFormats(MEM_READ_WRITE)", function() {
-        if (!self.preconditions) pending();
-        var formats = ctx.getSupportedImageFormats();
-        var formatsReadWrite = ctx.getSupportedImageFormats(WebCL.MEM_READ_WRITE);
-        expect(formats).toEqual(formatsReadWrite);
       });
 
       it("getSupportedImageFormats(<invalidEnum>) must throw", function() {
@@ -333,6 +339,14 @@ describe("Functionality", function() {
         expect('ctx.createImage(WebCL.MEM_READ_WRITE, { width: 64, height: 64 })').not.toThrow();
       });
 
+      it("createImage(<validDescriptor>) must not throw", function() {
+        if (!self.preconditions) pending();
+        expect('desc = new WebCLImageDescriptor()').not.toThrow();
+        expect('desc.width = 11; desc.height = 17;').not.toThrow();
+        expect('ctx.createImage(WebCL.MEM_READ_ONLY, desc)').not.toThrow();
+        expect('ctx.createImage(WebCL.MEM_READ_ONLY, { width: 11, height: 17 })').not.toThrow();
+      });
+
       it("createImage(<validDimensions>) must not throw", function() {
         if (!self.preconditions) pending();
         expect('ctx.createImage(WebCL.MEM_READ_ONLY, { width: 37, height: 1 })').not.toThrow();
@@ -340,16 +354,28 @@ describe("Functionality", function() {
         expect('ctx.createImage(WebCL.MEM_READ_WRITE, { width: 19, height: 11 })').not.toThrow();
       });
 
+      it("createImage(<validHostPtr>) must not throw", function() {
+        if (!self.preconditions) pending();
+        expect('ctx.createImage(WebCL.MEM_READ_ONLY, { width: 11, height: 17 }, new Uint8Array(11*17*4))').not.toThrow();
+      });
+
       it("createImage(<validRowPitch>) must not throw", function() {
         if (!self.preconditions) pending();
+        expect('ctx.createImage(WebCL.MEM_READ_ONLY, { width: 11, height: 17, rowPitch: 0 })').not.toThrow();
         expect('ctx.createImage(WebCL.MEM_READ_ONLY, { width: 11, height: 17, rowPitch: 0 }, new Uint8Array(11*17*4))').not.toThrow();
         expect('ctx.createImage(WebCL.MEM_READ_ONLY, { width: 11, height: 17, rowPitch: 11*4 }, new Uint8Array(11*17*4))').not.toThrow();
+      });
+
+      it("createImage() must throw", function() {
+        if (!self.preconditions) pending();
+        expect('ctx.createImage()').toThrow();
       });
 
       it("createImage(<invalidMemFlags>) must throw", function() {
         if (!self.preconditions) pending();
         descriptor = { width: 64, height: 64 };
-        expect('ctx.createImage()').toThrow('INVALID_VALUE');
+        expect('ctx.createImage(undefined, descriptor)').toThrow('INVALID_VALUE');
+        expect('ctx.createImage(null, descriptor)').toThrow('INVALID_VALUE');
         expect('ctx.createImage(0, descriptor)').toThrow('INVALID_VALUE');
         expect('ctx.createImage(-1, descriptor)').toThrow('INVALID_VALUE');
         expect('ctx.createImage("", descriptor)').toThrow('INVALID_VALUE');
@@ -358,35 +384,48 @@ describe("Functionality", function() {
         expect('ctx.createImage(WebCL.RGBA, descriptor)').toThrow('INVALID_VALUE');
       });
 
-      it("createImage(<missingDescriptor>) must throw", function() {
+      it("createImage(<invalidDescriptor>) must throw", function() {
         if (!self.preconditions) pending();
-        expect('ctx.createImage(WebCL.MEM_READ_ONLY)').toThrow('INVALID_IMAGE_FORMAT_DESCRIPTOR');
-        expect('ctx.createImage(WebCL.MEM_READ_ONLY, null)').toThrow('INVALID_IMAGE_FORMAT_DESCRIPTOR');
-        expect('ctx.createImage(WebCL.MEM_READ_ONLY, {})').toThrow('INVALID_IMAGE_FORMAT_DESCRIPTOR');
-        expect('ctx.createImage(WebCL.MEM_READ_ONLY, [])').toThrow('INVALID_IMAGE_FORMAT_DESCRIPTOR');
-        expect('ctx.createImage(WebCL.MEM_READ_ONLY, "")').toThrow('INVALID_IMAGE_FORMAT_DESCRIPTOR');
-        expect('ctx.createImage(WebCL.MEM_READ_ONLY, ctx)').toThrow('INVALID_IMAGE_FORMAT_DESCRIPTOR');
+        expect('ctx.createImage(WebCL.MEM_READ_ONLY)').toThrow('INVALID_IMAGE_DESCRIPTOR');
+        expect('ctx.createImage(WebCL.MEM_READ_ONLY, null)').toThrow('INVALID_IMAGE_DESCRIPTOR');
+        expect('ctx.createImage(WebCL.MEM_READ_ONLY, {})').toThrow('INVALID_IMAGE_DESCRIPTOR');
+        expect('ctx.createImage(WebCL.MEM_READ_ONLY, [])').toThrow('INVALID_IMAGE_DESCRIPTOR');
+        expect('ctx.createImage(WebCL.MEM_READ_ONLY, "")').toThrow('INVALID_IMAGE_DESCRIPTOR');
+        expect('ctx.createImage(WebCL.MEM_READ_ONLY, ctx)').toThrow('INVALID_IMAGE_DESCRIPTOR');
+        expect('ctx.createImage(WebCL.MEM_READ_ONLY, { width: 4 })').toThrow('INVALID_IMAGE_DESCRIPTOR');
+        expect('ctx.createImage(WebCL.MEM_READ_ONLY, { width: 4, height: null })').toThrow('INVALID_IMAGE_DESCRIPTOR');
+        expect('ctx.createImage(WebCL.MEM_READ_ONLY, { width: 4, height: {} })').toThrow('INVALID_IMAGE_DESCRIPTOR');
+        expect('ctx.createImage(WebCL.MEM_READ_ONLY, { width: 4, height: [] })').toThrow('INVALID_IMAGE_DESCRIPTOR');
+        expect('ctx.createImage(WebCL.MEM_READ_ONLY, { width: 4, height: "" })').toThrow('INVALID_IMAGE_DESCRIPTOR');
+        expect('ctx.createImage(WebCL.MEM_READ_ONLY, { width: 4, height: ctx })').toThrow('INVALID_IMAGE_DESCRIPTOR');
+        expect('ctx.createImage(WebCL.MEM_READ_ONLY, { width: 4, height: 4, rowPitch: null })').toThrow('INVALID_IMAGE_DESCRIPTOR');
+        expect('ctx.createImage(WebCL.MEM_READ_ONLY, { width: 4, height: 4, rowPitch: {} })').toThrow('INVALID_IMAGE_DESCRIPTOR');
+        expect('ctx.createImage(WebCL.MEM_READ_ONLY, { width: 4, height: 4, rowPitch: [] })').toThrow('INVALID_IMAGE_DESCRIPTOR');
+        expect('ctx.createImage(WebCL.MEM_READ_ONLY, { width: 4, height: 4, rowPitch: "" })').toThrow('INVALID_IMAGE_DESCRIPTOR');
+        expect('ctx.createImage(WebCL.MEM_READ_ONLY, { width: 4, height: 4, rowPitch: ctx })').toThrow('INVALID_IMAGE_DESCRIPTOR');
+        expect('ctx.createImage(WebCL.MEM_READ_ONLY, { width: 4, height: 4, channelOrder: null })').toThrow('INVALID_IMAGE_DESCRIPTOR');
+        expect('ctx.createImage(WebCL.MEM_READ_ONLY, { width: 4, height: 4, channelOrder: {} })').toThrow('INVALID_IMAGE_DESCRIPTOR');
+        expect('ctx.createImage(WebCL.MEM_READ_ONLY, { width: 4, height: 4, channelOrder: [] })').toThrow('INVALID_IMAGE_DESCRIPTOR');
+        expect('ctx.createImage(WebCL.MEM_READ_ONLY, { width: 4, height: 4, channelOrder: "" })').toThrow('INVALID_IMAGE_DESCRIPTOR');
+        expect('ctx.createImage(WebCL.MEM_READ_ONLY, { width: 4, height: 4, channelOrder: ctx })').toThrow('INVALID_IMAGE_DESCRIPTOR');
+        expect('ctx.createImage(WebCL.MEM_READ_ONLY, { width: 4, height: 4, channelType: null })').toThrow('INVALID_IMAGE_DESCRIPTOR');
+        expect('ctx.createImage(WebCL.MEM_READ_ONLY, { width: 4, height: 4, channelType: {} })').toThrow('INVALID_IMAGE_DESCRIPTOR');
+        expect('ctx.createImage(WebCL.MEM_READ_ONLY, { width: 4, height: 4, channelType: [] })').toThrow('INVALID_IMAGE_DESCRIPTOR');
+        expect('ctx.createImage(WebCL.MEM_READ_ONLY, { width: 4, height: 4, channelType: "" })').toThrow('INVALID_IMAGE_DESCRIPTOR');
+        expect('ctx.createImage(WebCL.MEM_READ_ONLY, { width: 4, height: 4, channelType: ctx })').toThrow('INVALID_IMAGE_DESCRIPTOR');
       });
 
       it("createImage(<invalidDimensions>) must throw", function() {
         if (!self.preconditions) pending();
-        expect('ctx.createImage(WebCL.MEM_READ_ONLY, { width: 4 })').toThrow('INVALID_IMAGE_SIZE');
-        expect('ctx.createImage(WebCL.MEM_READ_ONLY, { width: 4, height: [] })').toThrow('INVALID_IMAGE_SIZE');
-        expect('ctx.createImage(WebCL.MEM_READ_ONLY, { width: 4, height: "" })').toThrow('INVALID_IMAGE_SIZE');
-        expect('ctx.createImage(WebCL.MEM_READ_ONLY, { width: 4, height: {} })').toThrow('INVALID_IMAGE_SIZE');
-        expect('ctx.createImage(WebCL.MEM_READ_ONLY, { width: 4, height: ctx })').toThrow('INVALID_IMAGE_SIZE');
         expect('ctx.createImage(WebCL.MEM_READ_ONLY, { width: 4, height: 0 })').toThrow('INVALID_IMAGE_SIZE');
+        expect('ctx.createImage(WebCL.MEM_READ_ONLY, { width: 4, height: -4 })').toThrow('INVALID_IMAGE_SIZE');
         expect('ctx.createImage(WebCL.MEM_READ_ONLY, { width: 1024*1024, height: 1 })').toThrow('INVALID_IMAGE_SIZE');
       });
 
       it("createImage(<invalidRowPitch>) must throw", function() {
         if (!self.preconditions) pending();
-        expect('ctx.createImage(WebCL.MEM_READ_ONLY, { width: 4, height: 4, rowPitch: 0 })').not.toThrow();
         expect('ctx.createImage(WebCL.MEM_READ_ONLY, { width: 4, height: 4, rowPitch: -1 })').toThrow('INVALID_IMAGE_SIZE');
         expect('ctx.createImage(WebCL.MEM_READ_ONLY, { width: 4, height: 4, rowPitch: 1 })').toThrow('INVALID_IMAGE_SIZE');
-        expect('ctx.createImage(WebCL.MEM_READ_ONLY, { width: 4, height: 4, rowPitch: "" })').toThrow('INVALID_IMAGE_FORMAT_DESCRIPTOR');
-        expect('ctx.createImage(WebCL.MEM_READ_ONLY, { width: 4, height: 4, rowPitch: ctx })').toThrow('INVALID_IMAGE_FORMAT_DESCRIPTOR');
-        expect('ctx.createImage(WebCL.MEM_READ_ONLY, { width: 4, height: 4, rowPitch: [] })').toThrow('INVALID_IMAGE_FORMAT_DESCRIPTOR');
         expect('ctx.createImage(WebCL.MEM_READ_ONLY, { width: 4, height: 4, rowPitch: 15 }, new Uint8Array(4*4*4))').toThrow('INVALID_IMAGE_SIZE');
       });
 
@@ -408,20 +447,19 @@ describe("Functionality", function() {
         expect('ctx.createImage(WebCL.MEM_READ_ONLY, { width: 4, height: 4, channelOrder: WebCL.FLOAT })').toThrow('INVALID_IMAGE_FORMAT_DESCRIPTOR');
         expect('ctx.createImage(WebCL.MEM_READ_ONLY, { width: 4, height: 4, channelOrder: 0 })').toThrow('INVALID_IMAGE_FORMAT_DESCRIPTOR');
         expect('ctx.createImage(WebCL.MEM_READ_ONLY, { width: 4, height: 4, channelOrder: -1 })').toThrow('INVALID_IMAGE_FORMAT_DESCRIPTOR');
-        expect('ctx.createImage(WebCL.MEM_READ_ONLY, { width: 4, height: 4, channelOrder: "" })').toThrow('INVALID_IMAGE_FORMAT_DESCRIPTOR');
       });
 
       it("createImage(<invalidChannelType>) must throw", function() {
         if (!self.preconditions) pending();
-        expect('ctx.createImage(WebCL.MEM_READ_ONLY, { width: 4, height: 4, channelType: WebCL.FLOAT })').not.toThrow();
         expect('ctx.createImage(WebCL.MEM_READ_ONLY, { width: 4, height: 4, channelType: WebCL.RGBA })').toThrow('INVALID_IMAGE_FORMAT_DESCRIPTOR');
         expect('ctx.createImage(WebCL.MEM_READ_ONLY, { width: 4, height: 4, channelType: 0 })').toThrow('INVALID_IMAGE_FORMAT_DESCRIPTOR');
         expect('ctx.createImage(WebCL.MEM_READ_ONLY, { width: 4, height: 4, channelType: -1 })').toThrow('INVALID_IMAGE_FORMAT_DESCRIPTOR');
-        expect('ctx.createImage(WebCL.MEM_READ_ONLY, { width: 4, height: 4, channelType: "" })').toThrow('INVALID_IMAGE_FORMAT_DESCRIPTOR');
       });
 
       it("createImage(<unsupportedImageFormat>) must throw", function() {
-        pending();
+        if (!self.preconditions) pending();
+        unsupportedFormat = { width: 4, height: 4, channelOrder: WebCL.RGB, channelType: WebCL.UNORM_SHORT_555 };
+        expect('ctx.createImage(WebCL.MEM_READ_ONLY, unsupportedFormat)').toThrow('IMAGE_FORMAT_NOT_SUPPORTED');
       });
 
     });
