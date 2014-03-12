@@ -84,7 +84,8 @@ describe("Signature", function() {
       return {
         compare: function(actual, expected) {
           var obj = typeof(actual) === "string" ? window[actual] : actual;
-          return { pass: (obj[expected] !== undefined) };
+          var exists = obj && obj.prototype && (obj.prototype[expected] !== undefined);
+          return { pass: exists };
         }
       };
     },
