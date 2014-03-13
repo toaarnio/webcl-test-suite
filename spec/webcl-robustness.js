@@ -49,6 +49,7 @@ describe("Robustness", function() {
   xit("must not allow allocating 6 GB of 'local' memory", function() {
     if (!self.preconditions) pending();
     expect('kernels/largeArrayLocal.cl').not.toBuild();
+    webcl.releaseAll();
   });
 
   // Known failures as of 2014-03-05:
@@ -62,6 +63,7 @@ describe("Robustness", function() {
     expect('program.build()').not.toThrow();
     expect('program.createKernelsInProgram()').not.toThrow();
     DEBUG("Build log: " + program.getBuildInfo(ctx.getInfo(WebCL.CONTEXT_DEVICES)[0], WebCL.PROGRAM_BUILD_LOG));
+    webcl.releaseAll();
   });
 
   // Known failures as of 2014-03-05:
@@ -76,6 +78,7 @@ describe("Robustness", function() {
     expect('program.build()').not.toThrow();
     expect('kernel = program.createKernelsInProgram()[0]').not.toThrow();
     expect('kernel.setArg(0, new Uint32Array([10]))').toThrow();
+    webcl.releaseAll();
   });
 
   // Known failures as of 2014-03-05:
@@ -91,8 +94,19 @@ describe("Robustness", function() {
     src = loadSource('kernels/rng.cl');
     expect('program = ctx.createProgram(src)').not.toThrow();
     expect('program.build(null, null, buildCallback)').not.toThrow();
+    webcl.releaseAll();
+  });
+
+  it("createKernel(<validName>) must not crash", function() {
+    ctx = createContext();
+    program = ctx.createProgram("kernel void dummy(global uint* buf) { buf[0]=0xdeadbeef; }");
+    expect('program.build()').not.toThrow();
+    expect('kernel = program.createKernel("dummy")').not.toThrow();
+    kernel.release();
+    program.release();
+    ctx.release();
+    webcl.releaseAll();
   });
 
   beforeEach(addCustomMatchers);
-  afterEach(releaseAll);
 });
