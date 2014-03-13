@@ -97,6 +97,16 @@ describe("Robustness", function() {
     webcl.releaseAll();
   });
 
+  it("releasing objects in the 'wrong' order must not crash", function() {
+    ctx = createContext();
+    program = ctx.createProgram("kernel void dummy(global uint* buf) { buf[0]=0xdeadbeef; }");
+    expect('program.build()').not.toThrow();
+    expect('kernel = program.createKernel("dummy")').not.toThrow();
+    expect('program.release()').not.toThrow();
+    expect('kernel.release()').not.toThrow();
+    expect('webcl.releaseAll()').not.toThrow();
+  });
+
   it("createKernel(<validName>) must not crash", function() {
     ctx = createContext();
     program = ctx.createProgram("kernel void dummy(global uint* buf) { buf[0]=0xdeadbeef; }");
