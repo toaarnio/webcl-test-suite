@@ -35,6 +35,19 @@ describe("Robustness", function() {
     expect('ctx.release()').not.toThrow();
   });
 
+  // Known failures as of 2014-03-13:
+  //  * Mac OSX Mavericks (crashes)
+  //
+  it("must not crash or throw when releasing objects in 'wrong' order", function() {
+    ctx = createContext();
+    program = ctx.createProgram("kernel void dummy(global uint* buf) { buf[0]=0xdeadbeef; }");
+    expect('program.build()').not.toThrow();
+    expect('kernel = program.createKernel("dummy")').not.toThrow();
+    expect('program.release()').not.toThrow();
+    expect('kernel.release()').not.toThrow();
+    expect('webcl.releaseAll()').not.toThrow();
+  });
+
   it("must throw when trying to use an object that has been released", function() {
     if (!self.preconditions) pending();
     ctx = createContext();
@@ -94,27 +107,6 @@ describe("Robustness", function() {
     src = loadSource('kernels/rng.cl');
     expect('program = ctx.createProgram(src)').not.toThrow();
     expect('program.build(null, null, buildCallback)').not.toThrow();
-    webcl.releaseAll();
-  });
-
-  it("releasing objects in the 'wrong' order must not crash", function() {
-    ctx = createContext();
-    program = ctx.createProgram("kernel void dummy(global uint* buf) { buf[0]=0xdeadbeef; }");
-    expect('program.build()').not.toThrow();
-    expect('kernel = program.createKernel("dummy")').not.toThrow();
-    expect('program.release()').not.toThrow();
-    expect('kernel.release()').not.toThrow();
-    expect('webcl.releaseAll()').not.toThrow();
-  });
-
-  it("createKernel(<validName>) must not crash", function() {
-    ctx = createContext();
-    program = ctx.createProgram("kernel void dummy(global uint* buf) { buf[0]=0xdeadbeef; }");
-    expect('program.build()').not.toThrow();
-    expect('kernel = program.createKernel("dummy")').not.toThrow();
-    kernel.release();
-    program.release();
-    ctx.release();
     webcl.releaseAll();
   });
 
