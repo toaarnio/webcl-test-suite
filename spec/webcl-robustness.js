@@ -14,13 +14,29 @@
 
 describe("Robustness", function() {
 
-  it("must not crash or throw when calling release() more than once (CRITICAL)", function()  {
+  var self = {};
+
+  beforeEach(function() {
+    try {
+      aPlatform = webcl.getPlatforms()[0];
+      aDevice = aPlatform.getDevices()[0];
+      self.preconditions = true;
+    } catch (e) {
+      ERROR("Robustness -> beforeEach: Caught exception " + e);
+      ERROR("Robustness -> beforeEach: Preconditions of the describe() block failed: Skipping all tests.");
+      self.preconditions = false;
+    }
+  });
+
+  it("must not crash or throw when calling release() more than once", function()  {
+    if (!self.preconditions) pending();
     ctx = createContext();
     ctx.release();
     expect('ctx.release()').not.toThrow();
   });
 
   it("must throw when trying to use an object that has been released", function() {
+    if (!self.preconditions) pending();
     ctx = createContext();
     ctx.release();
     expect('ctx.getInfo(WebCL.CONTEXT_NUM_DEVICES)').toThrow('WEBCL_IMPLEMENTATION_FAILURE');
@@ -31,6 +47,7 @@ describe("Robustness", function() {
   //  * Win7 / Intel CPU driver (freezes on first run)
   //
   xit("must not allow allocating 6 GB of 'local' memory", function() {
+    if (!self.preconditions) pending();
     expect('kernels/largeArrayLocal.cl').not.toBuild();
   });
 
@@ -38,6 +55,7 @@ describe("Robustness", function() {
   //  * Mac OSX Mavericks (crashes)
   //
   it("createKernelsInProgram() must not crash", function() {
+    if (!self.preconditions) pending();
     ctx = createContext();
     src = loadSource('kernels/rng.cl');
     program = ctx.createProgram(src);
@@ -51,6 +69,7 @@ describe("Robustness", function() {
   //  * Win7 / Firefox 64-bit / Intel CPU driver (crashes randomly)
   //
   xit("setArg(<invalidArgument>) must not crash", function() {
+    if (!self.preconditions) pending();
     ctx = createContext();
     src = loadSource('kernels/rng.cl');
     expect('program = ctx.createProgram(src)').not.toThrow();
@@ -64,6 +83,7 @@ describe("Robustness", function() {
   //  * Win7 / Intel CPU driver (crashes)
   //
   it("build(<callback>) must not crash", function() {
+    if (!self.preconditions) pending();
     buildCallback = function() {
       DEBUG("Callback invoked!");
     }

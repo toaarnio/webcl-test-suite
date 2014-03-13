@@ -18,11 +18,11 @@
 // 
 describe("Signature", function() {
 
-  beforeEach(function() {
-    expect(webcl).toBeDefined();
-  });
+  var self = {};
+  self.preconditions = (window.webcl !== undefined);
 
   it("must have the singleton 'webcl' object", function() {
+    expect(window).toHaveProperty('webcl');
   });
 
   it("must have all the expected classes", function() {
@@ -32,15 +32,15 @@ describe("Signature", function() {
   });
 
   it("must have all the expected member functions and properties", function() {
+    if (!self.preconditions) pending();
     checkSignature('webcl', true);
     for (var className in expectedClasses) {
-      if (checkSignature(className, true) === false) {
-        pending();
-      }
+      expect(checkSignature(className, true)).toEqual(true);
     }
   });
 
   it("must have error code enums ranging from 0 to -64", function() {
+    if (!self.preconditions) pending();
     for (var enumName in errorEnums) {
       var actualValue = WebCL[enumName];
       var expectedValue = errorEnums[enumName];
@@ -50,6 +50,7 @@ describe("Signature", function() {
   });
 
   it("must have device info enums ranging from 0x1000 to 0x103D", function() {
+    if (!self.preconditions) pending();
     for (var enumName in deviceInfoEnums) {
       var actualValue = WebCL[enumName];
       var expectedValue = deviceInfoEnums[enumName];
@@ -59,6 +60,7 @@ describe("Signature", function() {
   });
 
   it("must not have any disallowed member functions", function() {
+    if (!self.preconditions) pending();
     checkSignature('webcl', false);
     for (var className in expectedClasses) {
       checkSignature(className, false);
@@ -66,12 +68,14 @@ describe("Signature", function() {
   });
 
   it("must not have any disallowed device info enums", function() {
+    if (!self.preconditions) pending();
     for (var enumName in removedDeviceInfoEnums) {
       expect('webcl').not.toHaveProperty(enumName);
     }
   });
 
   it("must not have error code enums that have been removed", function() {
+    if (!self.preconditions) pending();
     for (var enumName in removedErrorEnums) {
       expect(WebCL[enumName]).not.toBeDefined();
     }
@@ -84,7 +88,8 @@ describe("Signature", function() {
       return {
         compare: function(actual, expected) {
           var obj = typeof(actual) === "string" ? window[actual] : actual;
-          var exists = obj && obj.prototype && (obj.prototype[expected] !== undefined);
+          var exists = obj && (obj[expected] !== undefined);
+          exists = exists || (obj && obj.prototype && (obj.prototype[expected] !== undefined));
           return { pass: exists };
         }
       };
@@ -105,15 +110,7 @@ describe("Signature", function() {
     jasmine.addMatchers(customMatchers);
   });
 
-  afterEach(function() { 
-    //console.log("afterEach jasmine.Suite(): ", jasmine);
-    //testSuiteTrace(this); 
-  });
-
   function checkSignature(className, checkExisting) {
-    if (window[className] === undefined)
-      return false;
-
     for (var funcName in expectedFunctions[className]) {
       if (checkExisting && expectedFunctions[className][funcName] === true) {
         expect(className).toHaveFunction(funcName);
@@ -147,7 +144,7 @@ describe("Signature", function() {
     WebCLImage : true,
     WebCLUserEvent : true,
     WebCLImageDescriptor : true,
-    //WebCLKernelArgInfo : true,
+    WebCLKernelArgInfo : true,
   };
 
   var expectedFunctions = {

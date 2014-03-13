@@ -52,24 +52,15 @@
 
   createContext = function() {
     try {
-      if (DEVICE_INDEX === null) {
-        DEBUG("Creating a Context for Device DEFAULT");
-        return webcl.createContext();
-      } else {
-        var selected = getDeviceAtIndex(DEVICE_INDEX);
-        var ctx = webcl.createContext(selected);
-        var device = ctx.getInfo(WebCL.CONTEXT_DEVICES)[0];
-        var vendorId = device.getInfo(WebCL.DEVICE_VENDOR_ID);
-        DEBUG("Creating a Context for Device " + deviceVendors[vendorId] + " (VENDOR_ID="+vendorId+")");
-        ctx.vendor = deviceVendors[vendorId];
-        return ctx;
-      }
+      DEVICE_INDEX = DEVICE_INDEX || 0;
+      var selected = getDeviceAtIndex(DEVICE_INDEX);
+      var ctx = webcl.createContext(selected);
+      var device = ctx.getInfo(WebCL.CONTEXT_DEVICES)[0];
+      var vendorId = device.getInfo(WebCL.DEVICE_VENDOR_ID);
+      DEBUG("Creating a Context for Device " + deviceVendors[vendorId] + " (VENDOR_ID="+vendorId+")");
+      ctx.vendor = deviceVendors[vendorId];
+      return ctx;
     } catch (e) {
-      ERROR("webcl-harness.js: Unrecoverable error: createContext() failed, terminating test suite.");
-      alert("webcl-harness.js: Unrecoverable error: createContext() failed, terminating test suite.");
-      jasmine.getEnv().specFilter = function(spec) {
-        return false;
-      };
       throw e;
     }
   };
@@ -78,11 +69,6 @@
     try { 
       webcl.releaseAll();
     } catch(e) { 
-      ERROR("webcl-harness.js: Unrecoverable error: webcl.releaseAll() failed, terminating test suite.");
-      alert("webcl-harness.js: Unrecoverable error: webcl.releaseAll() failed, terminating test suite.");
-      jasmine.getEnv().specFilter = function(spec) {
-        return false;
-      };
       throw e;
     }
   };
@@ -250,7 +236,7 @@
   // exception or passes `null` to the given `callback`.
   //
   loadSource = function(uri, callback) {
-    var validURI = (typeof(uri) === 'string') && uri.endsWith('.cl');
+    var validURI = (typeof(uri) === 'string') && (uri.lastIndexOf('.cl') === uri.length-3);
     if (validURI) {
       return xhrLoad(uri, callback);
     } else {
@@ -261,17 +247,12 @@
   // ### getDeviceAtIndex() ###
   // 
   getDeviceAtIndex = function(index) {
-    if (index === null) {
-      DEBUG("Selected device [0] (DEFAULT)");
-      return webcl.getPlatforms()[0].getDevices()[0];
-    } else {
-      var devices = [];
-      webcl.getPlatforms().forEach(function(plat) {
-        Array.prototype.push.apply(devices, plat.getDevices());
-      });
-      DEBUG("Selected device ["+index+"]");
-      return devices[index];
-    }
+    index = index || 0;
+    var devices = [];
+    webcl.getPlatforms().forEach(function(plat) {
+      Array.prototype.push.apply(devices, plat.getDevices());
+    });
+    return devices[index];
   };
 
   var deviceVendors = {
@@ -317,21 +298,3 @@
   };
 
 })();
-
-// Augment Jasmine with a "fail fast" mode to stop running a test
-// suite immediately after the first failure.
-
-jasmine.Env.prototype.failFast = function() {
-  var env = this;
-  env.afterEach(function() {
-    if (!this.results().passed()) {
-      env.specFilter = function(spec) {
-        return false;
-      };
-    }
-  });
-};
-
-// Uncomment the following line to enable the "fail fast" mode.
-//jasmine.getEnv().failFast();
-

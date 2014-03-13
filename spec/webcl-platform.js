@@ -14,6 +14,16 @@
 
 describe("Platform", function() {
 
+  beforeEach(function() {
+    self = {};
+    try {
+      aPlatform = webcl.getPlatforms()[0];
+      self.preconditions = true;
+    } catch (e) {
+      self.preconditions = false;
+    }
+  });
+
   //////////////////////////////////////////////////////////////////////////////
   //
   // Platform -> getPlatforms
@@ -21,16 +31,19 @@ describe("Platform", function() {
   describe("getPlatforms", function() {
 
     it("getPlatforms() must not throw", function() {
+      if (window.webcl === undefined) pending();
       expect('webcl.getPlatforms()').not.toThrow();
     });
 
     it("getPlatforms() must return a WebCLPlatform array with length >= 1", function() {
+      if (!self.preconditions) pending();
       expect('webcl.getPlatforms() instanceof Array').toEvalAs(true);
       expect('webcl.getPlatforms().length >= 1').toEvalAs(true);
       expect('webcl.getPlatforms()[0] instanceof WebCLPlatform').toEvalAs(true)
     });
 
     it("getPlatforms(invalidArgument) must throw", function() {
+      if (!self.preconditions) pending();
       expect('webcl.getPlatforms()').not.toThrow();
       expect('webcl.getPlatforms("foo")').toThrow();
       expect('webcl.getPlatforms(0x1234)').toThrow();
@@ -46,6 +59,7 @@ describe("Platform", function() {
   describe("getDevices", function() {
 
     it("getDevices(ALL || DEFAULT) must not throw", function() {
+      if (!self.preconditions) pending();
       platforms = webcl.getPlatforms();
       for (i=0; i < platforms.length; i++) {
         expect('platforms['+i+'].getDevices()').not.toThrow();
@@ -55,6 +69,7 @@ describe("Platform", function() {
     });
 
     it("getDevices(ALL || DEFAULT) must return a WebCLDevice array with length >= 1", function() {
+      if (!self.preconditions) pending();
       platforms = webcl.getPlatforms();
       for (i=0; i < platforms.length; i++) {
         expect('platforms['+i+'].getDevices()').not.toThrow();
@@ -73,6 +88,7 @@ describe("Platform", function() {
     });
 
     it("getDevices(CPU || GPU || ACCELERATOR) must not throw", function() {
+      if (!self.preconditions) pending();
       platforms = webcl.getPlatforms();
       for (i=0; i < platforms.length; i++) {
         var defaultDevice = platforms[i].getDevices(WebCL.DEVICE_TYPE_DEFAULT)[0];
@@ -94,6 +110,7 @@ describe("Platform", function() {
     });
 
     it("getDevices(CPU || GPU || ACCELERATOR) must return a WebCLDevice array with length >= 1", function() {
+      if (!self.preconditions) pending();
       platforms = webcl.getPlatforms();
       for (i=0; i < platforms.length; i++) {
         var defaultDevice = platforms[i].getDevices(WebCL.DEVICE_TYPE_DEFAULT)[0];
@@ -124,6 +141,7 @@ describe("Platform", function() {
     });
 
     it("getDevices(invalidArgument) must throw", function() {
+      if (!self.preconditions) pending();
       platforms = webcl.getPlatforms();
       for (i=0; i < platforms.length; i++) {
         expect('platforms['+i+'].getDevices()').not.toThrow();
@@ -145,15 +163,18 @@ describe("Platform", function() {
   describe("getInfo", function() {
     
     beforeEach(function() {
+      self = {};
       try {
+        DEBUG("Testing on Device ["+(DEVICE_INDEX || 0)+"]")
         device = getDeviceAtIndex(DEVICE_INDEX);
-      } catch(e) {}
-      if (device === undefined) {
-        pending();
+        self.preconditions = true;
+      } catch(e) {
+        self.preconditions = false;
       }
     });
 
     it("platform.getInfo(<validEnum>) must return the expected kind of value", function() {
+      if (!self.preconditions) pending();
       var plats = webcl.getPlatforms();
       function checkInfo() {
         for (var i=0; i < plats.length; i++) {
@@ -177,6 +198,7 @@ describe("Platform", function() {
     });
 
     it("platform.getInfo(<invalidEnum>) must throw", function() {
+      if (!self.preconditions) pending();
       platform = webcl.getPlatforms()[0];
       expect('platform.getInfo(WebCL.PLATFORM_VENDOR)').not.toThrow();
       expect('platform.getInfo(WebCL.DEVICE_VENDOR)').toThrow('INVALID_VALUE');
@@ -192,6 +214,7 @@ describe("Platform", function() {
     });
 
     it("device.getInfo(<validEnum>) must not throw", function() {
+      if (!self.preconditions) pending();
       for (enumName in deviceInfoEnums) {
         enumValue = deviceInfoEnums[enumName];
         expect('device.getInfo(WebCL.'+enumName+')').not.toThrow();
@@ -199,6 +222,7 @@ describe("Platform", function() {
     });
 
     it("device.getInfo(<validEnum>) must return the expected kind of value", function() {
+      if (!self.preconditions) pending();
       device = getDeviceAtIndex(DEVICE_INDEX);
       for (enumName in deviceInfoEnums) {
         matcher = deviceInfoEnumMatchers[enumName];
@@ -209,6 +233,7 @@ describe("Platform", function() {
     });
 
     it("device.getInfo(<invalidEnum>) must throw", function() {
+      if (!self.preconditions) pending();
       device = getDeviceAtIndex(DEVICE_INDEX);
       expect('device.getInfo(WebCL.DEVICE_VENDOR)').not.toThrow();
       expect('device.getInfo(WebCL.PLATFORM_VENDOR)').toThrow('INVALID_VALUE');
@@ -224,6 +249,7 @@ describe("Platform", function() {
     });
 
     it("device.getInfo(<nonEnabledExtensionEnum>) must throw", function() {
+      if (!self.preconditions) pending();
       device = getDeviceAtIndex(DEVICE_INDEX);
       expect('device.getInfo(WebCL.DEVICE_VENDOR)').not.toThrow();
       for (enumName in extensionEnums) {
@@ -240,7 +266,19 @@ describe("Platform", function() {
   // 
   describe("JavaScript semantics", function() {
 
+    beforeEach(function() {
+      self = {};
+      try {
+        aPlatform = webcl.getPlatforms()[0];
+        aDevice = aPlatform.getDevices()[0];
+        self.preconditions = true;
+      } catch (e) {
+        self.preconditions = false;
+      }
+    });
+
     it("objects must accommodate user-defined fields", function() {
+      if (!self.preconditions) pending();
       platform = webcl.getPlatforms()[0];
       expect('webcl.foo = "bar"').not.toThrow();
       expect('webcl.foo === "bar"').toEvalAs(true);
@@ -249,21 +287,12 @@ describe("Platform", function() {
     });
     
     it("platform getters must return the same object every time", function() {
+      if (!self.preconditions) pending();
       platform = webcl.getPlatforms()[0];
       device = platform.getDevices()[0];
       expect('platform === webcl.getPlatforms()[0]').toEvalAs(true);
       expect('device === platform.getDevices()[0]').toEvalAs(true);
       expect('platform === device.getInfo(WebCL.DEVICE_PLATFORM)').toEvalAs(true);
-    });
-
-    it("dynamic getters must return the same object every time", function() {
-      context = webcl.createContext();
-      queue = context.createCommandQueue();
-      platform = webcl.getPlatforms()[0];
-      device = platform.getDevices()[0];
-      expect('device === context.getInfo(WebCL.CONTEXT_DEVICES)[0]').toEvalAs(true);
-      expect('context === queue.getInfo(WebCL.QUEUE_CONTEXT)').toEvalAs(true);
-      expect('device === queue.getInfo(WebCL.QUEUE_DEVICE)').toEvalAs(true);
     });
 
   });

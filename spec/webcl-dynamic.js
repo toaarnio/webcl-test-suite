@@ -21,20 +21,31 @@ describe("Functionality", function() {
   describe("createContext", function() {
 
     beforeEach(function() {
-      aPlatform = webcl.getPlatforms()[0];
-      aDevice = aPlatform.getDevices()[0];
+      self = self || {};
+      try {
+        aPlatform = webcl.getPlatforms()[0];
+        aDevice = aPlatform.getDevices()[0];
+        self.preconditions = true;
+      } catch (e) {
+        ERROR("createContext -> beforeEach: Caught exception " + e);
+        ERROR("createContext -> beforeEach: Preconditions of the describe() block failed: Skipping all tests.");
+        self.preconditions = false;
+      }
     });
-    
+
     it("createContext() must not throw", function() {
+      if (!self.preconditions) pending();
       expect('webcl.createContext()').not.toThrow();
       expect('webcl.createContext(undefined)').not.toThrow();
     });
 
     it("createContext(DEVICE_TYPE_DEFAULT) must not throw", function() {
+      if (!self.preconditions) pending();
       expect('webcl.createContext(WebCL.DEVICE_TYPE_DEFAULT)').not.toThrow();
     });
 
     it("createContext(CPU || GPU || ACCELERATOR) must not throw", function() {
+      if (!self.preconditions) pending();
       var types = [ WebCL.DEVICE_TYPE_CPU, WebCL.DEVICE_TYPE_GPU, WebCL.DEVICE_TYPE_ACCELERATOR ];
       for (var t=0, found=false; t < types.length && !found; t++) {
         try {
@@ -47,10 +58,12 @@ describe("Functionality", function() {
     });
 
     it("createContext(aPlatform) must not throw", function() {
+      if (!self.preconditions) pending();
       expect('webcl.createContext(aPlatform)').not.toThrow();
     });
 
     it("createContext(aPlatform, CPU || GPU || ACCELERATOR) must not throw", function() {
+      if (!self.preconditions) pending();
       var types = [ WebCL.DEVICE_TYPE_CPU, WebCL.DEVICE_TYPE_GPU, WebCL.DEVICE_TYPE_ACCELERATOR ];
       for (var t=0, found=false; t < types.length && !found; t++) {
         try {
@@ -63,26 +76,32 @@ describe("Functionality", function() {
     });
 
     it("createContext(aDevice) must not throw", function() {
+      if (!self.preconditions) pending();
       expect('webcl.createContext(aDevice)').not.toThrow();
     });
 
     it("createContext([aDevice]) must not throw", function() {
+      if (!self.preconditions) pending();
       expect('webcl.createContext([aDevice])').not.toThrow();
     });
 
     it("createContext(aPlatform, DEVICE_TYPE_ALL) must not throw", function() {
+      if (!self.preconditions) pending();
       expect('webcl.createContext(aPlatform, WebCL.DEVICE_TYPE_ALL)').not.toThrow();
     });
 
     it("createContext(DEVICE_TYPE_ACCELERATOR) must throw", function() {
+      if (!self.preconditions) pending();
       expect('webcl.createContext(WebCL.DEVICE_TYPE_ACCELERATOR)').toThrow('DEVICE_NOT_FOUND');
     });
 
     it("createContext(aPlatform, DEVICE_TYPE_ACCELERATOR) must throw", function() {
+      if (!self.preconditions) pending();
       expect('webcl.createContext(aPlatform, WebCL.DEVICE_TYPE_ACCELERATOR)').toThrow('DEVICE_NOT_FOUND');
     });
 
     it("createContext(<invalid deviceType>) must throw", function() {
+      if (!self.preconditions) pending();
       expect('webcl.createContext(WebCL.DEVICE_TYPE_ALL)').toThrow('INVALID_DEVICE_TYPE');
       expect('webcl.createContext(0)').toThrow('INVALID_DEVICE_TYPE');
       expect('webcl.createContext(0x1234)').toThrow('INVALID_DEVICE_TYPE');
@@ -91,6 +110,7 @@ describe("Functionality", function() {
     });
 
     it("createContext(aPlatform, <invalid deviceType>) must throw", function() {
+      if (!self.preconditions) pending();
       expect('webcl.createContext(aPlatform, 0)').toThrow('INVALID_DEVICE_TYPE');
       expect('webcl.createContext(aPlatform, 0x1234)').toThrow('INVALID_DEVICE_TYPE');
       expect('webcl.createContext(aPlatform, null)').toThrow('INVALID_DEVICE_TYPE');
@@ -98,6 +118,7 @@ describe("Functionality", function() {
     });
 
     it("createContext(<invalid device or platform>) must throw", function() {
+      if (!self.preconditions) pending();
       expect('webcl.createContext({})').toThrow('INVALID_DEVICE_TYPE');
       expect('webcl.createContext(webcl)').toThrow('INVALID_DEVICE_TYPE');
       expect('webcl.createContext(WebCL)').toThrow('INVALID_DEVICE_TYPE');
@@ -105,6 +126,7 @@ describe("Functionality", function() {
     });
 
     it("createContext(<invalid device array>) must throw", function() {
+      if (!self.preconditions) pending();
       expect('webcl.createContext([])').toThrow('INVALID_VALUE');
       expect('webcl.createContext([undefined])').toThrow('INVALID_DEVICE');
       expect('webcl.createContext([null])').toThrow('INVALID_DEVICE');
@@ -129,9 +151,8 @@ describe("Functionality", function() {
   // 
   describe("WebCLContext", function() {
 
-    var self = {};
-
     beforeEach(function() {
+      self = self || {};
       try {
         ctx = createContext();
         device = ctx.getInfo(WebCL.CONTEXT_DEVICES)[0];
@@ -472,9 +493,8 @@ describe("Functionality", function() {
   // 
   describe("WebCLBuffer", function() {
     
-    var self = {};
-
     beforeEach(function() {
+      self = self || {};
       try {
         ctx = createContext();
         buffer = ctx.createBuffer(WebCL.MEM_READ_WRITE, 123);
@@ -530,9 +550,8 @@ describe("Functionality", function() {
   // 
   describe("WebCLImage", function() {
     
-    var self = {};
-
     beforeEach(function() {
+      self = self || {};
       try {
         ctx = createContext();
         var descriptor = { width : 33, height : 17 };
@@ -609,9 +628,8 @@ describe("Functionality", function() {
   // 
   describe("WebCLEvent", function() {
     
-    var self = {};
-
     beforeEach(function() {
+      self = self || {};
       try {
         ctx = createContext();
         self.preconditions = true;
@@ -707,9 +725,8 @@ describe("Functionality", function() {
   // 
   describe("WebCLProgram", function() {
     
-    var self = {};
-
     beforeEach(function() {
+      self = self || {};
       try {
         ctx = createContext();
         program = ctx.createProgram("kernel void dummy(global uint* buf) { buf[0]=0xdeadbeef; }");
@@ -955,9 +972,8 @@ describe("Functionality", function() {
   // 
   describe("WebCLKernel", function() {
     
-    var self = {};
-
     beforeEach(function() {
+      self = self || {};
       try {
         ctx = createContext();
         devices = ctx.getInfo(WebCL.CONTEXT_DEVICES);
@@ -993,10 +1009,10 @@ describe("Functionality", function() {
     // 
     describe("setArg", function() {
 
-      var self = {};
       var src = loadSource('kernels/argtypes.cl');
-      
+
       beforeEach(function() {
+        self = self || {};
         try {
           program = ctx.createProgram(src);
           program.build(devices);
@@ -1198,9 +1214,8 @@ describe("Functionality", function() {
     // 
     describe("getInfo", function() {
 
-      var self = {};
-
       beforeEach(function() {
+        self = self || {};
         try {
           ctx = createContext();
           device = ctx.getInfo(WebCL.CONTEXT_DEVICES)[0];
@@ -1245,9 +1260,8 @@ describe("Functionality", function() {
     // 
     describe("enqueueNDRangeKernel", function() {
 
-      var self = {};
-
       beforeEach(function() {
+        self = self || {};
         try {
           ctx = createContext();
           queue = ctx.createCommandQueue();
@@ -1344,9 +1358,8 @@ describe("Functionality", function() {
     // 
     describe("enqueueRead", function() {
 
-      var self = {};
-
       beforeEach(function() {
+        self = self || {};
         try {
           W = 32;
           H = 32;
@@ -1462,202 +1475,6 @@ describe("Functionality", function() {
 
     });
       
-  });
-
-  //////////////////////////////////////////////////////////////////////////////
-  //
-  // Functionality -> Kernel language
-  // 
-  describe("Kernel language", function() {
-
-    var self = {};
-
-    beforeEach(function() {
-      try {
-        if (self.preconditions !== false) {
-          ctx = createContext();
-          if (self.preconditions === undefined) {
-            DEBUG("Asserting preconditions for the current describe() block...");
-            mustBuild = ctx.createProgram("kernel void dummy(global uint* buf) { buf[0]=0xdeadbeef; }");
-            mustBuild.build();
-          }
-          self.preconditions = true;
-        }
-      } catch (e) {
-        ERROR("Kernel language -> beforeEach: Caught exception " + e);
-        ERROR("Kernel language -> beforeEach: Preconditions of the describe() block failed: Skipping all tests.");
-        self.preconditions = false;
-      }
-    });
-
-    //////////////////////////////////////////////////////////////////////////////
-    //
-    // Functionality -> Kernel language -> Validator
-    // 
-    describe("Validator", function() {
-
-      it("must not allow 'goto'", function() {
-        if (!self.preconditions) pending();
-        expect('kernels/goto.cl').not.toBuild();
-      });
-
-      it("must not allow 'printf'", function() {
-        if (!self.preconditions) pending();
-        expect('kernels/printf.cl').not.toBuild();
-      });
-
-      it("must not allow kernel-to-kernel calls", function() {
-        if (!self.preconditions) pending();
-        expect('kernels/kernel-to-kernel.cl').not.toBuild();
-      });
-
-      it("must not allow CLK_ADDRESS_NONE", function() {
-        if (!self.preconditions) pending();
-        expect('kernels/illegalSampler1.cl').not.toBuild();
-      });
-
-      it("must not allow CLK_NORMALIZED_COORDS_FALSE | CLK_ADDRESS_MODE_REPEAT", function() {
-        if (!self.preconditions) pending();
-        expect('kernels/illegalSampler2.cl').not.toBuild();
-      });
-
-      // Performs an out-of-bounds write to an int variable through a long
-      // pointer. The WebCL validator should catch the illegal pointer cast
-      // from int* to long*.
-      //
-      it("must not allow casting an int* to long*", function() {
-        if (!self.preconditions) pending();
-        expect('kernels/pointerSizeCast.cl').not.toBuild();
-      });
-
-    });
-
-    //////////////////////////////////////////////////////////////////////////////
-    //
-    // Functionality -> Kernel language -> Compiler
-    // 
-    describe("Compiler (OpenCL 1.1)", function() {
-
-      it("must not allow obviously invalid kernel source", function() {
-        if (!self.preconditions) pending();
-        expect('program = ctx.createProgram("obviously invalid")').not.toThrow();
-        expect('program.build()').toThrow('BUILD_PROGRAM_FAILURE');
-        expect('program.build(null, "-w")').toThrow('BUILD_PROGRAM_FAILURE');
-      });
-
-      it("must not allow slightly invalid kernel source", function() {
-        if (!self.preconditions) pending();
-        src = "kernel int dummy(global uint* buf) { buf[0]=0xdeadbeef; }";
-        expect('program = ctx.createProgram(src)').not.toThrow();
-        expect('program.build()').toThrow('BUILD_PROGRAM_FAILURE');
-        expect('program.build(null, "-w")').toThrow('BUILD_PROGRAM_FAILURE');
-      });
-
-      // Known failures as of 2014-02-12:
-      //  * <none>
-      //
-      it("must not allow 'memcpy'", function() {
-        if (!self.preconditions) pending();
-        expect('kernels/memcpy.cl').not.toBuild();
-      });
-
-      // Known failures as of 2014-02-12:
-      //  * Win7 / NVIDIA GPU driver
-      //  * Win7 / Intel CPU driver
-      //
-      it("must not allow 'extern'", function() {
-        if (!self.preconditions) pending();
-        expect('kernels/extern.cl').not.toBuild();
-      });
-
-      // Known failures as of 2014-02-05:
-      //  * Win7 / NVIDIA GPU driver
-      //  * Win7 / Intel CPU driver
-      //
-      it("must not allow pointer casts between address spaces", function() {
-        if (!self.preconditions) pending();
-        expect('kernels/pointerAddressSpaceCast.cl').not.toBuild();
-      });
-
-      // Known failures as of 2014-02-05:
-      //  * Win7 / NVIDIA GPU driver
-      //  * Win7 / Intel CPU driver
-      //
-      it("must not allow the 'extern' keyword", function() {
-        if (!self.preconditions) pending();
-        expect('kernels/externQualifier.cl').not.toBuild();
-      });
-
-      // Known failures as of 2014-02-05:
-      //  * <none>
-      //
-      it("must not allow initializing 'local' variables", function() {
-        if (!self.preconditions) pending();
-        expect('kernels/localMemInit.cl').not.toBuild();
-      });
-
-      // Known failures as of 2014-02-05:
-      //  * Win7 / NVIDIA GPU driver
-      //  * Win7 / Intel CPU driver
-      //
-      it("must not allow declaring 'local' variables in inner scope", function() {
-        if (!self.preconditions) pending();
-        expect('kernels/localMemAlloc.cl').not.toBuild();
-      });
-
-      // Known failures as of 2014-02-05:
-      //  * <none>
-      //
-      it("must not allow dynamic memory allocation", function() {
-        if (!self.preconditions) pending();
-        expect('kernels/dynamicArray.cl').not.toBuild();
-      });
-
-      // Known failures as of 2014-02-05:
-      //  * Win7 / NVIDIA GPU driver
-      //  * Win7 / Intel CPU driver
-      //
-      it("must not allow local memory pointer as return value", function() {
-        if (!self.preconditions) pending();
-        expect('kernels/localMemReturn.cl').not.toBuild();
-      });
-
-      // Known failures as of 2014-02-05:
-      //  * <none>
-      //
-      it("must not allow writing to 'constant' address space", function() {
-        if (!self.preconditions) pending();
-        expect('kernels/constantWrite.cl').not.toBuild();
-      });
-
-      // Known failures as of 2014-02-05:
-      //  * Win7 / NVIDIA GPU driver
-      //  * Win7 / Intel CPU driver
-      //
-      it("must not allow allocating 6 GB of 'private' memory", function() {
-        if (!self.preconditions) pending();
-        expect('kernels/largeArrayPrivate.cl').not.toBuild();
-      });
-
-      // Known failures as of 2014-02-12:
-      //  * Win7 / NVIDIA GPU driver (crashes on second run)
-      //  * Win7 / Intel CPU driver (freezes on first run)
-      //
-      xit("must not allow allocating 6 GB of 'local' memory", function() {
-        if (!self.preconditions) pending();
-        expect('kernels/largeArrayLocal.cl').not.toBuild();
-      });
-
-      // Known failures as of 2014-02-12:
-      //  * <none>
-      //
-      it("must not allow allocating 6 GB of 'global' memory", function() {
-        if (!self.preconditions) pending();
-        expect('kernels/largeArrayGlobal.cl').not.toBuild();
-      });
-
-    });
-
   });
 
   //////////////////////////////////////////////////////////////////////////////
