@@ -1088,7 +1088,7 @@ describe("Functionality", function() {
         expect('kernel.setArg(3, image)').toThrow();
       });
 
-      it("setArg(index, clObject) must throw if an arbitrary integer is passed in (CRITICAL)", function() {
+      xit("setArg(index, clObject) must throw if an arbitrary integer is passed in (CRITICAL)", function() {
         if (!self.preconditions) pending();
         kernel = program.createKernel('objects');
         expect('kernel instanceof WebCLKernel').toEvalAs(true);
