@@ -33,17 +33,24 @@ describe("Robustness", function() {
     expect('ctx.release()').not.toThrow();
   });
 
+  it("must not crash or throw on releaseAll()", function() {
+    if (!preconditions) pending();
+    program = ctx.createProgram("kernel void dummy(global uint* buf) { buf[0]=0xdeadbeef; }");
+    expect('program.build()').not.toThrow();
+    expect('kernel = program.createKernel("dummy")').not.toThrow();
+    expect('webcl.releaseAll()').not.toThrow();
+  });
+
   // Known failures as of 2014-03-13:
   //  * Mac OSX Mavericks (crashes)
   //
-  it("must not crash or throw when releasing objects in 'wrong' order", function() {
+  it("must not crash or throw when manually releasing objects in 'wrong' order", function() {
     if (!preconditions) pending();
     program = ctx.createProgram("kernel void dummy(global uint* buf) { buf[0]=0xdeadbeef; }");
     expect('program.build()').not.toThrow();
     expect('kernel = program.createKernel("dummy")').not.toThrow();
     expect('program.release()').not.toThrow();
     expect('kernel.release()').not.toThrow();
-    expect('webcl.releaseAll()').not.toThrow();
   });
 
   // Known failures as of 2014-03-05:
