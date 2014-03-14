@@ -1037,32 +1037,6 @@ describe("Functionality", function() {
         expect('kernel.setArg(3, sampler)').not.toThrow();
       });
 
-      it("setArg(index, clObject) must throw if clObject does not match the expected type (CRITICAL)", function() {
-        if (!self.preconditions) pending();
-        kernel = program.createKernel('objects');
-        expect('kernel instanceof WebCLKernel').toEvalAs(true);
-        expect('kernel.setArg(0, image)').toThrow();
-        expect('kernel.setArg(0, sampler)').toThrow();
-        expect('kernel.setArg(1, buffer)').toThrow();
-        expect('kernel.setArg(1, sampler)').toThrow();
-        expect('kernel.setArg(2, buffer)').toThrow();
-        expect('kernel.setArg(2, sampler)').toThrow();
-        expect('kernel.setArg(3, buffer)').toThrow();
-        expect('kernel.setArg(3, image)').toThrow();
-      });
-
-      it("setArg(index, clObject) must throw if an arbitrary integer is passed in (CRITICAL)", function() {
-        if (!self.preconditions) pending();
-        kernel = program.createKernel('objects');
-        expect('kernel instanceof WebCLKernel').toEvalAs(true);
-        expect('kernel.setArg(0, new Uint32Array(1))').toThrow('INVALID_MEM_OBJECT');
-        expect('kernel.setArg(0, new Uint32Array(2))').toThrow('INVALID_MEM_OBJECT');
-        expect('kernel.setArg(1, new Uint32Array(1))').toThrow('INVALID_MEM_OBJECT');
-        expect('kernel.setArg(1, new Uint32Array(2))').toThrow('INVALID_MEM_OBJECT');
-        expect('kernel.setArg(3, new Uint32Array(1))').toThrow('INVALID_SAMPLER');
-        expect('kernel.setArg(3, new Uint32Array(2))').toThrow('INVALID_SAMPLER');
-      });
-
       it("setArg(index, value) must not throw if value matches the expected scalar type", function() {
         if (!self.preconditions) pending();
         kernel = program.createKernel('scalars');
@@ -1091,6 +1065,41 @@ describe("Functionality", function() {
         expect('kernel.setArg(7, new Uint32Array(4))').not.toThrow();  // uint4
         expect('kernel.setArg(8, new Uint32Array(8))').not.toThrow();  // ulong4
         expect('kernel.setArg(9, new Float32Array(4))').not.toThrow(); // float4
+      });
+
+      it("setArg(index, value) must not throw if a local memory size is passed in using Uint32Array of length 1", function() {
+        if (!self.preconditions) pending();
+        kernel = program.createKernel('localmem');
+        expect('kernel instanceof WebCLKernel').toEvalAs(true);
+        expect('kernel.setArg(1, new Uint32Array([10]))').not.toThrow();
+      });
+
+      it("setArg(index, clObject) must throw if clObject does not match the expected type (CRITICAL)", function() {
+        if (!self.preconditions) pending();
+        kernel = program.createKernel('objects');
+        expect('kernel instanceof WebCLKernel').toEvalAs(true);
+        expect('kernel.setArg(0, image)').toThrow();
+        expect('kernel.setArg(0, sampler)').toThrow();
+        expect('kernel.setArg(1, buffer)').toThrow();
+        expect('kernel.setArg(1, sampler)').toThrow();
+        expect('kernel.setArg(2, buffer)').toThrow();
+        expect('kernel.setArg(2, sampler)').toThrow();
+        expect('kernel.setArg(3, buffer)').toThrow();
+        expect('kernel.setArg(3, image)').toThrow();
+      });
+
+      it("setArg(index, clObject) must throw if an arbitrary integer is passed in (CRITICAL)", function() {
+        if (!self.preconditions) pending();
+        kernel = program.createKernel('objects');
+        expect('kernel instanceof WebCLKernel').toEvalAs(true);
+        expect('kernel.setArg(0, new Uint32Array(1))').toThrow('INVALID_MEM_OBJECT'); // global uint* expected
+        expect('kernel.setArg(0, new Uint32Array(2))').toThrow('INVALID_MEM_OBJECT'); // global uint* expected
+        expect('kernel.setArg(1, new Uint32Array(1))').toThrow('INVALID_MEM_OBJECT'); // read_only image2d_t expected
+        expect('kernel.setArg(1, new Uint32Array(2))').toThrow('INVALID_MEM_OBJECT'); // read_only image2d_t expected
+        expect('kernel.setArg(2, new Uint32Array(1))').toThrow('INVALID_MEM_OBJECT'); // write_only image2d_t expected
+        expect('kernel.setArg(2, new Uint32Array(2))').toThrow('INVALID_MEM_OBJECT'); // write_only image2d_t expected
+        expect('kernel.setArg(3, new Uint32Array(1))').toThrow('INVALID_SAMPLER');    // sampler_t expected
+        expect('kernel.setArg(3, new Uint32Array(2))').toThrow('INVALID_SAMPLER');    // sampler_t expected
       });
 
       it("setArg(index, value) must throw if value is not an ArrayBufferView (CRITICAL)", function() {
@@ -1166,14 +1175,7 @@ describe("Functionality", function() {
         expect('kernel.setArg(4, new Float32Array(2))').toThrow('INVALID_ARG_VALUE');  // long
       });
 
-      it("setArg(index, value) must not throw if a local memory size is passed in using Uint32Array(1)", function() {
-        if (!self.preconditions) pending();
-        kernel = program.createKernel('localmem');
-        expect('kernel instanceof WebCLKernel').toEvalAs(true);
-        expect('kernel.setArg(1, new Uint32Array([10]))').not.toThrow();
-      });
-
-      it("setArg(index, value) must throw if a local memory size is passed in using anything but Uint32Array(1)", function() {
+      it("setArg(index, value) must throw if a local memory size is passed in using anything but Uint32Array of length 1", function() {
         if (!self.preconditions) pending();
         kernel = program.createKernel('localmem');
         expect('kernel instanceof WebCLKernel').toEvalAs(true);
