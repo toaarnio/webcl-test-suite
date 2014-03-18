@@ -549,7 +549,7 @@ describe("Functionality", function() {
         expect('image.getInfo().channelType').toEvalAs('WebCL.UNORM_INT8');
       });
 
-      it("getInfo() must work with non-default channelType", function() {
+      it("getInfo() must work with non-default channelType (WebCL.FLOAT)", function() {
         if (!suite.preconditions) pending();
         descriptor = { width: 19, height: 11, channelOrder: WebCL.RGBA, channelType: WebCL.FLOAT };
         expect('image1 = ctx.createImage(WebCL.MEM_READ_ONLY, descriptor)').not.toThrow();
@@ -558,6 +558,17 @@ describe("Functionality", function() {
         expect('image1.getInfo().rowPitch').toEvalAs('19*4*4');
         expect('image1.getInfo().channelOrder').toEvalAs('WebCL.RGBA');
         expect('image1.getInfo().channelType').toEvalAs('WebCL.FLOAT');
+      });
+
+      it("getInfo() must work with non-default channelOrder (WebCL.R)", function() {
+        if (!suite.preconditions) pending();
+        descriptor = { width: 11, height: 27, channelOrder: WebCL.R, channelType: WebCL.UNORM_INT8 };
+        expect('image1 = ctx.createImage(WebCL.MEM_READ_ONLY, descriptor)').not.toThrow();
+        expect('image1.getInfo().width').toEvalAs('11');
+        expect('image1.getInfo().height').toEvalAs('27');
+        expect('image1.getInfo().rowPitch').toEvalAs('11');
+        expect('image1.getInfo().channelOrder').toEvalAs('WebCL.R');
+        expect('image1.getInfo().channelType').toEvalAs('WebCL.UNORM_INT8');
       });
 
       it("getInfo(<validEnum>) must work", function() {
@@ -1283,21 +1294,34 @@ describe("Functionality", function() {
       beforeEach(enforcePreconditions.bind(this, function() {
         W = 32;
         H = 32;
-        BPP = 4;
-        bytesPerRow = BPP*W;
+        C = 4;
+        BPP = C*1;
+        bytesPerRow = BPP * W;
+        BPPf32 = C*4;
+        bytesPerRowf32 = BPPf32 * W;
         ctx = createContext();
         queue = ctx.createCommandQueue();
-        descriptor = { width : W, height : H };
-        pixels = new Uint8Array(W*H*BPP);
-        image = ctx.createImage(WebCL.MEM_READ_WRITE, descriptor);
-        buffer = ctx.createBuffer(WebCL.MEM_READ_WRITE, W*H*BPP);
+        var descriptorRGBA8 = { width : W, height : H };
+        var descriptorRGBAf32 = { width : W, height : H, channelOrder : WebCL.RGBA, channelType: WebCL.FLOAT };
+        pixels = new Uint8Array(W*H*C);
+        pixelsf32 = new Float32Array(W*H*C);
+        image = ctx.createImage(WebCL.MEM_READ_WRITE, descriptorRGBA8);
+        imagef32 = ctx.createImage(WebCL.MEM_READ_WRITE, descriptorRGBAf32);
+        buffer = ctx.createBuffer(WebCL.MEM_READ_WRITE, W*H*C);
       }));
 
-      it("enqueueReadImage(<valid arguments>) must not throw", function() {
+      it("enqueueReadImage(<valid arguments>) must work with RGBA8", function() {
         if (!suite.preconditions) pending();
         expect('queue.enqueueReadImage(image, true, [0,0], [W, H], 0, pixels)').not.toThrow();
         expect('queue.enqueueReadImage(image, true, [0,0], [W, H], bytesPerRow, pixels)').not.toThrow();
         expect('queue.enqueueReadImage(image, true, [0,0], [W, H], bytesPerRow, pixels)').not.toThrow();
+      });
+
+      it("enqueueReadImage(<valid arguments>) must work with RGBAf32", function() {
+        if (!suite.preconditions) pending();
+        expect('queue.enqueueReadImage(imagef32, true, [0,0], [W, H], 0, pixelsf32)').not.toThrow();
+        expect('queue.enqueueReadImage(imagef32, true, [0,0], [W, H], bytesPerRowf32, pixelsf32)').not.toThrow();
+        expect('queue.enqueueReadImage(imagef32, true, [0,0], [W, H], bytesPerRowf32, pixelsf32)').not.toThrow();
       });
 
       it("enqueueReadImage(<invalid image>) must throw", function() {
@@ -1354,7 +1378,7 @@ describe("Functionality", function() {
         if (!suite.preconditions) pending();
         expect('queue.enqueueReadImage(image, true, [0,0], [W, H], -1, pixels)').toThrow('INVALID_VALUE');
         expect('queue.enqueueReadImage(image, true, [0,0], [W, H], bytesPerRow-1, pixels)').toThrow('INVALID_VALUE');
-        expect('queue.enqueueReadImage(image, true, [0,0], [W, H], bytesPerRow+1, new Uint16Array(2*W*H*BPP))').toThrow('INVALID_VALUE');
+        expect('queue.enqueueReadImage(image, true, [0,0], [W, H], bytesPerRow+1, new Uint16Array(2*W*H*C))').toThrow('INVALID_VALUE');
         expect('queue.enqueueReadImage(image, true, [0,0], [W, H], undefined, pixels)').toThrow('INVALID_VALUE');
         expect('queue.enqueueReadImage(image, true, [0,0], [W, H], null, pixels)').toThrow('INVALID_VALUE');
         expect('queue.enqueueReadImage(image, true, [0,0], [W, H], "foo", pixels)').toThrow('INVALID_VALUE');
