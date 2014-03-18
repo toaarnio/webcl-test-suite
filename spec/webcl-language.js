@@ -39,51 +39,9 @@ describe("Kernel language", function() {
 
   //////////////////////////////////////////////////////////////////////////////
   //
-  // Kernel language -> Validator
-  // 
-  describe("Validator", function() {
-
-    it("must not allow 'goto'", function() {
-      if (!self.preconditions) pending();
-      expect('kernels/goto.cl').not.toBuild();
-    });
-
-    it("must not allow 'printf'", function() {
-      if (!self.preconditions) pending();
-      expect('kernels/printf.cl').not.toBuild();
-    });
-
-    it("must not allow kernel-to-kernel calls", function() {
-      if (!self.preconditions) pending();
-      expect('kernels/kernel-to-kernel.cl').not.toBuild();
-    });
-
-    it("must not allow CLK_ADDRESS_NONE", function() {
-      if (!self.preconditions) pending();
-      expect('kernels/illegalSampler1.cl').not.toBuild();
-    });
-
-    it("must not allow CLK_NORMALIZED_COORDS_FALSE | CLK_ADDRESS_MODE_REPEAT", function() {
-      if (!self.preconditions) pending();
-      expect('kernels/illegalSampler2.cl').not.toBuild();
-    });
-
-    // Performs an out-of-bounds write to an int variable through a long
-    // pointer. The WebCL validator should catch the illegal pointer cast
-    // from int* to long*.
-    //
-    it("must not allow casting an int* to long*", function() {
-      if (!self.preconditions) pending();
-      expect('kernels/pointerSizeCast.cl').not.toBuild();
-    });
-
-  });
-
-  //////////////////////////////////////////////////////////////////////////////
-  //
   // Kernel language -> Compiler
   // 
-  describe("Compiler (OpenCL 1.1)", function() {
+  describe("Compiler (OpenCL C 1.1 conformance)", function() {
 
     it("must not allow obviously invalid kernel source", function() {
       if (!self.preconditions) pending();
@@ -112,9 +70,18 @@ describe("Kernel language", function() {
     //  * Win7 / NVIDIA GPU driver
     //  * Win7 / Intel CPU driver
     //
-    it("must not allow 'extern'", function() {
+    it("must not allow 'extern' variables", function() {
       if (!self.preconditions) pending();
-      expect('kernels/extern.cl').not.toBuild();
+      expect('kernels/externVariable.cl').not.toBuild();
+    });
+
+    // Known failures as of 2014-02-05:
+    //  * Win7 / NVIDIA GPU driver
+    //  * Win7 / Intel CPU driver
+    //
+    it("must not allow 'extern' functions", function() {
+      if (!self.preconditions) pending();
+      expect('kernels/externFunction.cl').not.toBuild();
     });
 
     // Known failures as of 2014-02-05:
@@ -124,15 +91,6 @@ describe("Kernel language", function() {
     it("must not allow pointer casts between address spaces", function() {
       if (!self.preconditions) pending();
       expect('kernels/pointerAddressSpaceCast.cl').not.toBuild();
-    });
-
-    // Known failures as of 2014-02-05:
-    //  * Win7 / NVIDIA GPU driver
-    //  * Win7 / Intel CPU driver
-    //
-    it("must not allow the 'extern' keyword", function() {
-      if (!self.preconditions) pending();
-      expect('kernels/externQualifier.cl').not.toBuild();
     });
 
     // Known failures as of 2014-02-05:
@@ -201,6 +159,48 @@ describe("Kernel language", function() {
     it("must not allow allocating 6 GB of 'global' memory", function() {
       if (!self.preconditions) pending();
       expect('kernels/largeArrayGlobal.cl').not.toBuild();
+    });
+
+  });
+
+  //////////////////////////////////////////////////////////////////////////////
+  //
+  // Kernel language -> Validator
+  // 
+  describe("Validator (WebCL C conformance)", function() {
+
+    it("must not allow 'goto'", function() {
+      if (!self.preconditions) pending();
+      expect('kernels/goto.cl').not.toBuild();
+    });
+
+    it("must not allow 'printf'", function() {
+      if (!self.preconditions) pending();
+      expect('kernels/printf.cl').not.toBuild();
+    });
+
+    it("must not allow kernel-to-kernel calls", function() {
+      if (!self.preconditions) pending();
+      expect('kernels/kernel-to-kernel.cl').not.toBuild();
+    });
+
+    it("must not allow CLK_ADDRESS_NONE", function() {
+      if (!self.preconditions) pending();
+      expect('kernels/illegalSampler1.cl').not.toBuild();
+    });
+
+    it("must not allow CLK_NORMALIZED_COORDS_FALSE | CLK_ADDRESS_MODE_REPEAT", function() {
+      if (!self.preconditions) pending();
+      expect('kernels/illegalSampler2.cl').not.toBuild();
+    });
+
+    // Performs an out-of-bounds write to an int variable through a long
+    // pointer. The WebCL validator should catch the illegal pointer cast
+    // from int* to long*.
+    //
+    it("must not allow casting an int* to long*", function() {
+      if (!self.preconditions) pending();
+      expect('kernels/pointerSizeCast.cl').not.toBuild();
     });
 
   });

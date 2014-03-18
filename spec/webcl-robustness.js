@@ -58,13 +58,20 @@ describe("Robustness", function() {
   //
   it("must not crash or throw on build(<callback>)", function() {
     if (!preconditions) pending();
+    var r = confirm("This test case may crash your browser. Run anyway?");
+    if (r === false) pending();
     buildCallback = function() {
-      DEBUG("Callback invoked!");
+      DEBUG("WebCLProgram.build() callback invoked!");
+      expect('webcl.releaseAll()').not.toThrow();
     }
     src = loadSource('kernels/rng.cl');
     expect('program = ctx.createProgram(src)').not.toThrow();
-    expect('program.build(null, null, buildCallback)').not.toThrow();
-    expect('webcl.releaseAll()').not.toThrow();
+    try {
+      program.build(null, null, buildCallback);
+    } catch (e) {
+      expect('program.build(null, null, buildCallback)').not.toThrow();
+      expect('webcl.releaseAll()').not.toThrow();
+    }
   });
 
   // Known failures as of 2014-03-05:

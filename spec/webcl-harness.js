@@ -50,6 +50,18 @@
     }
   };
 
+  enforcePreconditions = function(precondFunc) {
+    suite = this;
+    try {
+      precondFunc.call(this);
+      this.preconditions = true;
+    } catch (e) {
+      ERROR(this.description + " -> beforeEach: Caught exception " + e);
+      ERROR(this.description + " -> beforeEach: Preconditions of the describe() block failed: Skipping all tests.");
+      this.preconditions = false;
+    }
+  };
+
   createContext = function() {
     try {
       DEVICE_INDEX = DEVICE_INDEX || 0;

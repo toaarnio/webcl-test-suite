@@ -19,7 +19,7 @@
 describe("Signature", function() {
 
   var self = {};
-  self.preconditions = (window.webcl !== undefined);
+  self.preconditions = (window.webcl !== undefined || window.WebCL !== undefined);
 
   it("must have the singleton 'webcl' object", function() {
     expect(window).toHaveProperty('webcl');
