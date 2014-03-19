@@ -329,9 +329,4 @@ describe("Platform", function() {
 
   beforeEach(addCustomMatchers);
 
-  afterEach(function() { 
-    //testSuiteTrace(this);
-    //releaseAll();
-  });
-
 });

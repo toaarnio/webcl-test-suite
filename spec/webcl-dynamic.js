@@ -469,6 +469,45 @@ describe("Runtime", function() {
 
     });
 
+    //////////////////////////////////////////////////////////////////////////////
+    //
+    // Runtime -> WebCLContext -> createSampler
+    // 
+    describe("createSampler", function() {
+
+      it("createSampler(<validArguments>) must not throw", function() {
+        if (!suite.preconditions) pending();
+        expect('ctx.createSampler(true, WebCL.ADDRESS_CLAMP, WebCL.FILTER_NEAREST)').not.toThrow();
+        expect('ctx.createSampler(true, WebCL.ADDRESS_CLAMP, WebCL.FILTER_LINEAR)').not.toThrow();
+        expect('ctx.createSampler(true, WebCL.ADDRESS_CLAMP_TO_EDGE, WebCL.FILTER_NEAREST)').not.toThrow();
+        expect('ctx.createSampler(true, WebCL.ADDRESS_CLAMP_TO_EDGE, WebCL.FILTER_LINEAR)').not.toThrow();
+        expect('ctx.createSampler(true, WebCL.ADDRESS_REPEAT, WebCL.FILTER_NEAREST)').not.toThrow();
+        expect('ctx.createSampler(true, WebCL.ADDRESS_REPEAT, WebCL.FILTER_LINEAR)').not.toThrow();
+        expect('ctx.createSampler(true, WebCL.ADDRESS_MIRRORED_REPEAT, WebCL.FILTER_NEAREST)').not.toThrow();
+        expect('ctx.createSampler(true, WebCL.ADDRESS_MIRRORED_REPEAT, WebCL.FILTER_LINEAR)').not.toThrow();
+      });
+
+      it("createSampler(<invalidArguments>) must throw", function() {
+        if (!suite.preconditions) pending();
+        expect('ctx.createSampler(false, WebCL.ADDRESS_REPEAT, WebCL.FILTER_NEAREST)').toThrow('INVALID_VALUE');
+        expect('ctx.createSampler(false, WebCL.ADDRESS_MIRRORED_REPEAT, WebCL.FILTER_NEAREST)').toThrow('INVALID_VALUE');
+      });
+
+    });
+
+    //////////////////////////////////////////////////////////////////////////////
+    //
+    // Runtime -> WebCLContext -> createUserEvent
+    // 
+    describe("createUserEvent", function() {
+
+      xit("createUserEvent() must not throw", function() {
+        if (!suite.preconditions) pending();
+        expect('ctx.createUserEvent()').not.toThrow();
+      });
+
+    });
+
   });
 
   //////////////////////////////////////////////////////////////////////////////
@@ -595,95 +634,6 @@ describe("Runtime", function() {
         expect('image.getInfo([])').toThrow('INVALID_VALUE');
         expect('image.getInfo("")').toThrow('INVALID_VALUE');
         expect('image.getInfo("foo")').toThrow('INVALID_VALUE');
-      });
-
-    });
-    
-  });
-
-  //////////////////////////////////////////////////////////////////////////////
-  //
-  // Runtime -> WebCLEvent
-  // 
-  describe("WebCLEvent", function() {
-    
-    beforeEach(enforcePreconditions.bind(this, function() {
-      ctx = createContext();
-    }));
-
-    //////////////////////////////////////////////////////////////////////////////
-    //
-    // Runtime -> WebCLEvent -> getInfo
-    // 
-    describe("getInfo", function() {
-
-      it("new WebCLEvent() must work", function() {
-        if (!suite.preconditions) pending();
-        expect('event = new WebCLEvent()').not.toThrow();
-        expect('event instanceof WebCLEvent').toEvalAs(true);
-      });
-
-      it("getInfo(<validEnum>) must work for an empty event", function() {
-        if (!suite.preconditions) pending();
-        expect('event = new WebCLEvent()').not.toThrow();
-        expect('event.getInfo(WebCL.EVENT_COMMAND_QUEUE)').not.toThrow();
-        expect('event.getInfo(WebCL.EVENT_CONTEXT)').not.toThrow();
-        expect('event.getInfo(WebCL.EVENT_COMMAND_TYPE)').not.toThrow();
-        expect('event.getInfo(WebCL.EVENT_COMMAND_EXECUTION_STATUS)').not.toThrow();
-        expect('event.getInfo(WebCL.EVENT_COMMAND_EXECUTION_STATUS) === -1').toEvalAs(true);
-      });
-
-      it("getInfo(<validEnum>) must work for a populated event", function() {
-        pending();
-      });
-
-      it("getInfo(<invalidEnum>) must throw", function() {
-        if (!suite.preconditions) pending();
-        expect('event = new WebCLEvent()').not.toThrow();
-        expect('event.getInfo(0)').toThrow('INVALID_VALUE');
-        expect('event.getInfo(1)').toThrow('INVALID_VALUE');
-        expect('event.getInfo(-1)').toThrow('INVALID_VALUE');
-        expect('event.getInfo(WebCL.PROFILING_COMMAND_QUEUED)').toThrow('INVALID_VALUE');
-        expect('event.getInfo(null)').toThrow('INVALID_VALUE');
-        expect('event.getInfo({})').toThrow('INVALID_VALUE');
-        expect('event.getInfo([])').toThrow('INVALID_VALUE');
-        expect('event.getInfo("")').toThrow('INVALID_VALUE');
-        expect('event.getInfo("foo")').toThrow('INVALID_VALUE');
-      });
-
-    });
-    
-    //////////////////////////////////////////////////////////////////////////////
-    //
-    // Runtime -> WebCLEvent -> getProfilingInfo
-    // 
-    describe("getProfilingInfo", function() {
-
-      it("getProfilingInfo(<validEnum>) must work for an empty event", function() {
-        if (!suite.preconditions) pending();
-        expect('event = new WebCLEvent()').not.toThrow();
-        expect('event.getProfilingInfo(WebCL.PROFILING_COMMAND_QUEUED)').toThrow('PROFILING_INFO_NOT_AVAILABLE');
-        expect('event.getProfilingInfo(WebCL.PROFILING_COMMAND_SUBMIT)').toThrow('PROFILING_INFO_NOT_AVAILABLE');
-        expect('event.getProfilingInfo(WebCL.PROFILING_COMMAND_START)').toThrow('PROFILING_INFO_NOT_AVAILABLE');
-        expect('event.getProfilingInfo(WebCL.PROFILING_COMMAND_END)').toThrow('PROFILING_INFO_NOT_AVAILABLE');
-      });
-
-      it("getProfilingInfo(<validEnum>) must work for a populated event", function() {
-        pending();
-      });
-
-      it("getProfilingInfo(<invalidEnum>) must throw", function() {
-        if (!suite.preconditions) pending();
-        expect('event = new WebCLEvent()').not.toThrow();
-        expect('event.getProfilingInfo(0)').toThrow('INVALID_VALUE');
-        expect('event.getProfilingInfo(1)').toThrow('INVALID_VALUE');
-        expect('event.getProfilingInfo(-1)').toThrow('INVALID_VALUE');
-        expect('event.getProfilingInfo(WebCL.EVENT_CONTEXT)').toThrow('INVALID_VALUE');
-        expect('event.getProfilingInfo(null)').toThrow('INVALID_VALUE');
-        expect('event.getProfilingInfo({})').toThrow('INVALID_VALUE');
-        expect('event.getProfilingInfo([])').toThrow('INVALID_VALUE');
-        expect('event.getProfilingInfo("")').toThrow('INVALID_VALUE');
-        expect('event.getProfilingInfo("foo")').toThrow('INVALID_VALUE');
       });
 
     });
@@ -1212,26 +1162,13 @@ describe("Runtime", function() {
         kernel.setArg(0, buffer);
       }));
 
-      it("must work if all arguments are fully specified", function() {
+      it("must work if eventWaitList and event are omitted", function() {
         if (!suite.preconditions) pending();
-        event = new WebCLEvent();
-        expect('queue.enqueueNDRangeKernel(kernel, 1, [0], [1], [1], [], event); queue.finish()').not.toThrow();
-        expect('queue.enqueueNDRangeKernel(kernel, 2, [0, 0], [1, 1], [1, 1], [], event); queue.finish()').not.toThrow();
-        expect('queue.enqueueNDRangeKernel(kernel, 3, [0, 0, 0], [1, 1, 1], [1, 1, 1], [], event); queue.finish()').not.toThrow();
-      });
-
-      it("must work if event === null/undefined/omitted", function() {
-        if (!suite.preconditions) pending();
-        expect('queue.enqueueNDRangeKernel(kernel, 1, [0], [1], [1], [], null); queue.finish()').not.toThrow();
-        expect('queue.enqueueNDRangeKernel(kernel, 1, [0], [1], [1], []); queue.finish()').not.toThrow();
-      });
-
-      it("must work if eventWaitList === []/null/undefined/omitted", function() {
-        if (!suite.preconditions) pending();
-        expect('queue.enqueueNDRangeKernel(kernel, 1, [0], [1], [1], []); queue.finish()').not.toThrow();
-        expect('queue.enqueueNDRangeKernel(kernel, 1, [0], [1], [1], null); queue.finish()').not.toThrow();
-        expect('queue.enqueueNDRangeKernel(kernel, 1, [0], [1], [1], undefined); queue.finish()').not.toThrow();
         expect('queue.enqueueNDRangeKernel(kernel, 1, [0], [1], [1]); queue.finish()').not.toThrow();
+        expect('queue.enqueueNDRangeKernel(kernel, 1, [0], [1], [1], null); queue.finish()').not.toThrow();
+        expect('queue.enqueueNDRangeKernel(kernel, 1, [0], [1], [1], null, null); queue.finish()').not.toThrow();
+        expect('queue.enqueueNDRangeKernel(kernel, 1, [0], [1], [1], []); queue.finish()').not.toThrow();
+        expect('queue.enqueueNDRangeKernel(kernel, 1, [0], [1], [1], [], null); queue.finish()').not.toThrow();
       });
 
       it("must work if localWorkSize === null/undefined/omitted", function() {
@@ -1413,6 +1350,181 @@ describe("Runtime", function() {
 
     });
       
+  });
+
+
+  //////////////////////////////////////////////////////////////////////////////
+  //
+  // Runtime -> WebCLEvent
+  // 
+  describe("WebCLEvent", function() {
+    
+    beforeEach(enforcePreconditions.bind(this, function() {
+      ctx = createContext();
+      queue = ctx.createCommandQueue(null, WebCL.QUEUE_PROFILING_ENABLE);
+      buffer = ctx.createBuffer(WebCL.MEM_READ_ONLY, 16);
+      hostPtr = new Uint8Array(16);
+      event = new WebCLEvent();
+    }));
+
+    //////////////////////////////////////////////////////////////////////////////
+    //
+    // Runtime -> WebCLEvent -> initialization
+    // 
+    describe("Initialization", function() {
+
+      it("new WebCLEvent() must work", function() {
+        if (!suite.preconditions) pending();
+        expect('event instanceof WebCLEvent').toEvalAs(true);
+      });
+
+      it("enqueue*(<emptyEvent>) must work", function() {
+        if (!suite.preconditions) pending();
+        expect('queue.enqueueReadBuffer(buffer, true, 0, 16, hostPtr, null, event)').not.toThrow();
+      });
+
+      it("enqueue*(<populatedEvent>) must throw", function() {
+        if (!suite.preconditions) pending();
+        expect('queue.enqueueReadBuffer(buffer, true, 0, 16, hostPtr, null, event)').not.toThrow();
+        expect('queue.enqueueReadBuffer(buffer, true, 0, 16, hostPtr, null, event)').toThrow('INVALID_EVENT');
+      });
+
+      it("enqueue*(<releasedEvent>) must throw", function() {
+        if (!suite.preconditions) pending();
+        expect('queue.enqueueReadBuffer(buffer, true, 0, 16, hostPtr, null, event)').not.toThrow();
+        expect('event.release()').not.toThrow();
+        expect('queue.enqueueReadBuffer(buffer, true, 0, 16, hostPtr, null, event)').toThrow('INVALID_EVENT');
+      });
+
+      it("enqueue*(<invalidEvent>) must throw", function() {
+        if (!suite.preconditions) pending();
+        expect('queue.enqueueReadBuffer(buffer, true, 0, 16, hostPtr, null, "foo")').toThrow('INVALID_EVENT');
+      });
+
+    });
+
+    //////////////////////////////////////////////////////////////////////////////
+    //
+    // Runtime -> WebCLEvent -> getInfo
+    // 
+    describe("getInfo", function() {
+
+      it("getInfo(<validEnum>) must work for an empty event", function() {
+        if (!suite.preconditions) pending();
+        expect('event.getInfo(WebCL.EVENT_COMMAND_QUEUE)').not.toThrow();
+        expect('event.getInfo(WebCL.EVENT_CONTEXT)').not.toThrow();
+        expect('event.getInfo(WebCL.EVENT_COMMAND_TYPE)').not.toThrow();
+        expect('event.getInfo(WebCL.EVENT_COMMAND_EXECUTION_STATUS)').not.toThrow();
+        expect('event.getInfo(WebCL.EVENT_COMMAND_EXECUTION_STATUS) === -1').toEvalAs(true);
+      });
+
+      it("getInfo(<validEnum>) must work for a populated event", function() {
+        if (!suite.preconditions) pending();
+        expect('queue.enqueueReadBuffer(buffer, true, 0, 16, hostPtr, null, event)').not.toThrow();
+        expect('event.getInfo(WebCL.EVENT_COMMAND_QUEUE)').not.toThrow();
+        expect('event.getInfo(WebCL.EVENT_CONTEXT)').not.toThrow();
+        expect('event.getInfo(WebCL.EVENT_COMMAND_TYPE)').not.toThrow();
+        expect('event.getInfo(WebCL.EVENT_COMMAND_EXECUTION_STATUS)').not.toThrow();
+        expect('event.getInfo(WebCL.EVENT_COMMAND_QUEUE) === queue').toEvalAs(true);
+        expect('event.getInfo(WebCL.EVENT_CONTEXT) === ctx').toEvalAs(true);
+        expect('event.getInfo(WebCL.EVENT_COMMAND_TYPE) === WebCL.COMMAND_READ_BUFFER').toEvalAs(true);
+        expect('event.getInfo(WebCL.EVENT_COMMAND_EXECUTION_STATUS) === WebCL.COMPLETE').toEvalAs(true);
+      });
+
+      it("getInfo(<invalidEnum>) must throw", function() {
+        if (!suite.preconditions) pending();
+        emptyEvent = event;
+        expect('emptyEvent.getInfo(0)').toThrow('INVALID_VALUE');
+        expect('emptyEvent.getInfo(1)').toThrow('INVALID_VALUE');
+        expect('emptyEvent.getInfo(-1)').toThrow('INVALID_VALUE');
+        expect('emptyEvent.getInfo(WebCL.PROFILING_COMMAND_QUEUED)').toThrow('INVALID_VALUE');
+        expect('emptyEvent.getInfo(null)').toThrow('INVALID_VALUE');
+        expect('emptyEvent.getInfo({})').toThrow('INVALID_VALUE');
+        expect('emptyEvent.getInfo([])').toThrow('INVALID_VALUE');
+        expect('emptyEvent.getInfo("")').toThrow('INVALID_VALUE');
+        expect('emptyEvent.getInfo("foo")').toThrow('INVALID_VALUE');
+
+        populatedEvent = event;
+        expect('queue.enqueueReadBuffer(buffer, true, 0, 16, hostPtr, null, populatedEvent)').not.toThrow();
+        expect('populatedEvent.getInfo(0)').toThrow('INVALID_VALUE');
+        expect('populatedEvent.getInfo(1)').toThrow('INVALID_VALUE');
+        expect('populatedEvent.getInfo(-1)').toThrow('INVALID_VALUE');
+        expect('populatedEvent.getInfo(WebCL.PROFILING_COMMAND_QUEUED)').toThrow('INVALID_VALUE');
+        expect('populatedEvent.getInfo(null)').toThrow('INVALID_VALUE');
+        expect('populatedEvent.getInfo({})').toThrow('INVALID_VALUE');
+        expect('populatedEvent.getInfo([])').toThrow('INVALID_VALUE');
+        expect('populatedEvent.getInfo("")').toThrow('INVALID_VALUE');
+        expect('populatedEvent.getInfo("foo")').toThrow('INVALID_VALUE');
+      });
+
+    });
+    
+    //////////////////////////////////////////////////////////////////////////////
+    //
+    // Runtime -> WebCLEvent -> getProfilingInfo
+    // 
+    describe("getProfilingInfo", function() {
+
+      it("getProfilingInfo(<validEnum>) must work for a populated event", function() {
+        if (!suite.preconditions) pending();
+        event = new WebCLEvent();
+        expect('queue.enqueueReadBuffer(buffer, true, 0, 16, hostPtr, null, event)').not.toThrow();
+        expect('event.getInfo(WebCL.EVENT_COMMAND_EXECUTION_STATUS) === WebCL.COMPLETE').toEvalAs(true);
+        expect('event.getProfilingInfo(WebCL.PROFILING_COMMAND_QUEUED)').not.toThrow();
+        expect('event.getProfilingInfo(WebCL.PROFILING_COMMAND_SUBMIT)').not.toThrow();
+        expect('event.getProfilingInfo(WebCL.PROFILING_COMMAND_START)').not.toThrow();
+        expect('event.getProfilingInfo(WebCL.PROFILING_COMMAND_END)').not.toThrow();
+      });
+
+      it("getProfilingInfo() return values must be ordered QUEUED <= SUBMIT <= START <= END", function() {
+        if (!suite.preconditions) pending();
+        event = new WebCLEvent();
+        expect('queue.enqueueReadBuffer(buffer, true, 0, 16, hostPtr, null, event)').not.toThrow();
+        expect('event.getInfo(WebCL.EVENT_COMMAND_EXECUTION_STATUS) === WebCL.COMPLETE').toEvalAs(true);
+        event.queued = event.getProfilingInfo(WebCL.PROFILING_COMMAND_QUEUED);
+        event.submit = event.getProfilingInfo(WebCL.PROFILING_COMMAND_SUBMIT);
+        event.start = event.getProfilingInfo(WebCL.PROFILING_COMMAND_START);
+        event.end = event.getProfilingInfo(WebCL.PROFILING_COMMAND_END);
+        expect(event.queued).not.toBeGreaterThan(event.submit);
+        expect(event.submit).not.toBeGreaterThan(event.start);
+        expect(event.start).not.toBeGreaterThan(event.end);
+      });
+
+      it("getProfilingInfo(<invalidEnum>) must throw", function() {
+        if (!suite.preconditions) pending();
+        expect('event = new WebCLEvent()').not.toThrow();
+        expect('queue.enqueueReadBuffer(buffer, true, 0, 16, hostPtr, null, event)').not.toThrow();
+        expect('event.getProfilingInfo(0)').toThrow('INVALID_VALUE');
+        expect('event.getProfilingInfo(1)').toThrow('INVALID_VALUE');
+        expect('event.getProfilingInfo(-1)').toThrow('INVALID_VALUE');
+        expect('event.getProfilingInfo(WebCL.EVENT_CONTEXT)').toThrow('INVALID_VALUE');
+        expect('event.getProfilingInfo(null)').toThrow('INVALID_VALUE');
+        expect('event.getProfilingInfo({})').toThrow('INVALID_VALUE');
+        expect('event.getProfilingInfo([])').toThrow('INVALID_VALUE');
+        expect('event.getProfilingInfo("")').toThrow('INVALID_VALUE');
+        expect('event.getProfilingInfo("foo")').toThrow('INVALID_VALUE');
+      });
+
+      it("getProfilingInfo(<validEnum>) must throw on an unpopulated event", function() {
+        if (!suite.preconditions) pending();
+        expect('event = new WebCLEvent()').not.toThrow();
+        expect('event.getProfilingInfo(WebCL.PROFILING_COMMAND_QUEUED)').toThrow('PROFILING_INFO_NOT_AVAILABLE');
+        expect('event.getProfilingInfo(WebCL.PROFILING_COMMAND_SUBMIT)').toThrow('PROFILING_INFO_NOT_AVAILABLE');
+        expect('event.getProfilingInfo(WebCL.PROFILING_COMMAND_START)').toThrow('PROFILING_INFO_NOT_AVAILABLE');
+        expect('event.getProfilingInfo(WebCL.PROFILING_COMMAND_END)').toThrow('PROFILING_INFO_NOT_AVAILABLE');
+      });
+
+      xit("getProfilingInfo(<validEnum>) must throw on a user event", function() {
+        if (!suite.preconditions) pending();
+        expect('userEvent = ctx.createUserEvent()').not.toThrow();
+        expect('userEvent.getProfilingInfo(WebCL.PROFILING_COMMAND_QUEUED)').toThrow('PROFILING_INFO_NOT_AVAILABLE');
+        expect('userEvent.getProfilingInfo(WebCL.PROFILING_COMMAND_SUBMIT)').toThrow('PROFILING_INFO_NOT_AVAILABLE');
+        expect('userEvent.getProfilingInfo(WebCL.PROFILING_COMMAND_START)').toThrow('PROFILING_INFO_NOT_AVAILABLE');
+        expect('userEvent.getProfilingInfo(WebCL.PROFILING_COMMAND_END)').toThrow('PROFILING_INFO_NOT_AVAILABLE');
+      });
+
+    });
+    
   });
 
   //////////////////////////////////////////////////////////////////////////////
