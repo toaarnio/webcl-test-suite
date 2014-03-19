@@ -12,11 +12,11 @@
  * Author: Tomi Aarnio, 2014
  */
 
-describe("Functionality", function() {
+describe("Runtime", function() {
 
   //////////////////////////////////////////////////////////////////////////////
   //
-  // Functionality -> createContext
+  // Runtime -> createContext
   // 
   describe("createContext", function() {
 
@@ -139,7 +139,7 @@ describe("Functionality", function() {
 
   //////////////////////////////////////////////////////////////////////////////
   //
-  // Functionality -> WebCLContext
+  // Runtime -> WebCLContext
   // 
   describe("WebCLContext", function() {
 
@@ -150,7 +150,7 @@ describe("Functionality", function() {
 
     //////////////////////////////////////////////////////////////////////////////
     //
-    // Functionality -> WebCLContext -> getInfo
+    // Runtime -> WebCLContext -> getInfo
     // 
     describe("getInfo", function() {
 
@@ -230,7 +230,7 @@ describe("Functionality", function() {
 
     //////////////////////////////////////////////////////////////////////////////
     //
-    // Functionality -> WebCLContext -> createCommandQueue
+    // Runtime -> WebCLContext -> createCommandQueue
     // 
     describe("createCommandQueue", function() {
 
@@ -284,7 +284,7 @@ describe("Functionality", function() {
 
     //////////////////////////////////////////////////////////////////////////////
     //
-    // Functionality -> WebCLContext -> createProgram
+    // Runtime -> WebCLContext -> createProgram
     // 
     describe("createProgram", function() {
 
@@ -308,7 +308,7 @@ describe("Functionality", function() {
 
     //////////////////////////////////////////////////////////////////////////////
     //
-    // Functionality -> WebCLContext -> createBuffer
+    // Runtime -> WebCLContext -> createBuffer
     // 
     describe("createBuffer", function() {
 
@@ -333,7 +333,7 @@ describe("Functionality", function() {
 
     //////////////////////////////////////////////////////////////////////////////
     //
-    // Functionality -> WebCLContext -> createImage
+    // Runtime -> WebCLContext -> createImage
     // 
     describe("createImage", function() {
 
@@ -473,7 +473,7 @@ describe("Functionality", function() {
 
   //////////////////////////////////////////////////////////////////////////////
   //
-  // Functionality -> WebCLBuffer
+  // Runtime -> WebCLBuffer
   // 
   describe("WebCLBuffer", function() {
     
@@ -484,7 +484,7 @@ describe("Functionality", function() {
 
     //////////////////////////////////////////////////////////////////////////////
     //
-    // Functionality -> WebCLBuffer -> getInfo
+    // Runtime -> WebCLBuffer -> getInfo
     // 
     describe("getInfo", function() {
 
@@ -522,7 +522,7 @@ describe("Functionality", function() {
 
   //////////////////////////////////////////////////////////////////////////////
   //
-  // Functionality -> WebCLImage
+  // Runtime -> WebCLImage
   // 
   describe("WebCLImage", function() {
     
@@ -534,7 +534,7 @@ describe("Functionality", function() {
 
     //////////////////////////////////////////////////////////////////////////////
     //
-    // Functionality -> WebCLImage -> getInfo
+    // Runtime -> WebCLImage -> getInfo
     // 
     describe("getInfo", function() {
 
@@ -603,7 +603,7 @@ describe("Functionality", function() {
 
   //////////////////////////////////////////////////////////////////////////////
   //
-  // Functionality -> WebCLEvent
+  // Runtime -> WebCLEvent
   // 
   describe("WebCLEvent", function() {
     
@@ -613,7 +613,7 @@ describe("Functionality", function() {
 
     //////////////////////////////////////////////////////////////////////////////
     //
-    // Functionality -> WebCLEvent -> getInfo
+    // Runtime -> WebCLEvent -> getInfo
     // 
     describe("getInfo", function() {
 
@@ -655,7 +655,7 @@ describe("Functionality", function() {
     
     //////////////////////////////////////////////////////////////////////////////
     //
-    // Functionality -> WebCLEvent -> getProfilingInfo
+    // Runtime -> WebCLEvent -> getProfilingInfo
     // 
     describe("getProfilingInfo", function() {
 
@@ -692,7 +692,7 @@ describe("Functionality", function() {
 
   //////////////////////////////////////////////////////////////////////////////
   //
-  // Functionality -> WebCLProgram
+  // Runtime -> WebCLProgram
   // 
   describe("WebCLProgram", function() {
     
@@ -705,7 +705,7 @@ describe("Functionality", function() {
 
     //////////////////////////////////////////////////////////////////////////////
     //
-    // Functionality -> WebCLProgram -> getInfo
+    // Runtime -> WebCLProgram -> getInfo
     // 
     describe("getInfo", function() {
 
@@ -740,7 +740,7 @@ describe("Functionality", function() {
 
     //////////////////////////////////////////////////////////////////////////////
     //
-    // Functionality -> WebCLProgram -> build
+    // Runtime -> WebCLProgram -> build
     // 
     describe("build", function() {
 
@@ -821,7 +821,7 @@ describe("Functionality", function() {
 
     //////////////////////////////////////////////////////////////////////////////
     //
-    // Functionality -> WebCLProgram -> getBuildInfo
+    // Runtime -> WebCLProgram -> getBuildInfo
     // 
     describe("getBuildInfo", function() {
 
@@ -890,7 +890,7 @@ describe("Functionality", function() {
 
     //////////////////////////////////////////////////////////////////////////////
     //
-    // Functionality -> WebCLProgram -> createKernel
+    // Runtime -> WebCLProgram -> createKernel
     // 
     describe("createKernel", function() {
 
@@ -931,7 +931,7 @@ describe("Functionality", function() {
 
   //////////////////////////////////////////////////////////////////////////////
   //
-  // Functionality -> WebCLKernel
+  // Runtime -> WebCLKernel
   // 
   describe("WebCLKernel", function() {
     
@@ -943,7 +943,7 @@ describe("Functionality", function() {
 
     //////////////////////////////////////////////////////////////////////////////
     //
-    // Functionality -> WebCLKernel -> getWorkGroupInfo
+    // Runtime -> WebCLKernel -> getWorkGroupInfo
     // 
     describe("getWorkGroupInfo", function() {
 
@@ -960,7 +960,7 @@ describe("Functionality", function() {
 
     //////////////////////////////////////////////////////////////////////////////
     //
-    // Functionality -> WebCLKernel -> setArg
+    // Runtime -> WebCLKernel -> setArg
     // 
     describe("setArg", function() {
 
@@ -1153,13 +1153,13 @@ describe("Functionality", function() {
 
   //////////////////////////////////////////////////////////////////////////////
   //
-  // Functionality -> WebCLCommandQueue
+  // Runtime -> WebCLCommandQueue
   // 
   describe("WebCLCommandQueue", function() {
 
     //////////////////////////////////////////////////////////////////////////////
     //
-    // Functionality -> WebCLCommandQueue -> getInfo
+    // Runtime -> WebCLCommandQueue -> getInfo
     // 
     describe("getInfo", function() {
 
@@ -1197,7 +1197,7 @@ describe("Functionality", function() {
 
     //////////////////////////////////////////////////////////////////////////////
     //
-    // Functionality -> WebCLCommandQueue -> enqueueNDRangeKernel
+    // Runtime -> WebCLCommandQueue -> enqueueNDRangeKernel
     // 
     describe("enqueueNDRangeKernel", function() {
 
@@ -1287,7 +1287,7 @@ describe("Functionality", function() {
 
     //////////////////////////////////////////////////////////////////////////////
     //
-    // Functionality -> WebCLCommandQueue -> enqueueRead
+    // Runtime -> WebCLCommandQueue -> enqueueRead
     // 
     describe("enqueueRead", function() {
 
