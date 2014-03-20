@@ -1162,6 +1162,11 @@ describe("Runtime", function() {
         kernel.setArg(0, buffer);
       }));
 
+      it("must work with all-default arguments", function() {
+        if (!suite.preconditions) pending();
+        expect('queue.enqueueNDRangeKernel(kernel, 1, null, [1]); queue.finish()').not.toThrow();
+      });
+
       it("must work if eventWaitList and event are omitted", function() {
         if (!suite.preconditions) pending();
         expect('queue.enqueueNDRangeKernel(kernel, 1, [0], [1], [1]); queue.finish()').not.toThrow();
@@ -1184,11 +1189,6 @@ describe("Runtime", function() {
         expect('queue.enqueueNDRangeKernel(kernel, 1, undefined, [1], [1]); queue.finish()').not.toThrow();
       });
 
-      it("must work with all-default arguments", function() {
-        if (!suite.preconditions) pending();
-        expect('queue.enqueueNDRangeKernel(kernel, 1, null, [1]); queue.finish()').not.toThrow();
-      });
-
       it("must throw if kernel is not a valid WebCLKernel", function() {
         if (!suite.preconditions) pending();
         expect('queue instanceof WebCLCommandQueue').toEvalAs(true);
@@ -1206,18 +1206,42 @@ describe("Runtime", function() {
       it("must throw if globalWorkSize.length != workDim", function() {
         if (!suite.preconditions) pending();
         expect('queue instanceof WebCLCommandQueue').toEvalAs(true);
-        expect('queue.enqueueNDRangeKernel(kernel, 1, [0], [1, 1], [1])').toThrow('INVALID_GLOBAL_WORK_SIZE');
-        expect('queue.enqueueNDRangeKernel(kernel, 2, [0, 0], [1], [1, 1])').toThrow('INVALID_GLOBAL_WORK_SIZE');
-        expect('queue.enqueueNDRangeKernel(kernel, 2, [0, 0], [1, 1, 1], [1, 1])').toThrow('INVALID_GLOBAL_WORK_SIZE');
-        expect('queue.enqueueNDRangeKernel(kernel, 3, [0, 0, 0], [1, 1], [1, 1, 1])').toThrow('INVALID_GLOBAL_WORK_SIZE');
-        expect('queue.enqueueNDRangeKernel(kernel, 3, [0, 0, 0], [1, 1, 1, 1], [1, 1, 1])').toThrow('INVALID_GLOBAL_WORK_SIZE');
+        expect('queue.enqueueNDRangeKernel(kernel, 1, null, [1, 1])').toThrow('INVALID_GLOBAL_WORK_SIZE');
+        expect('queue.enqueueNDRangeKernel(kernel, 2, null, [   1])').toThrow('INVALID_GLOBAL_WORK_SIZE');
+        expect('queue.enqueueNDRangeKernel(kernel, 3, null, [1, 1])').toThrow('INVALID_GLOBAL_WORK_SIZE');
+      });
+
+      it("must throw if globalWorkOffset.length != workDim", function() {
+        if (!suite.preconditions) pending();
+        expect('queue instanceof WebCLCommandQueue').toEvalAs(true);
+        expect('queue.enqueueNDRangeKernel(kernel, 1, [1, 1], [      1])').toThrow('INVALID_GLOBAL_WORK_OFFSET');
+        expect('queue.enqueueNDRangeKernel(kernel, 2, [   1], [   1, 1])').toThrow('INVALID_GLOBAL_WORK_OFFSET');
+        expect('queue.enqueueNDRangeKernel(kernel, 3, [   1], [1, 1, 1])').toThrow('INVALID_GLOBAL_WORK_OFFSET');
+      });
+
+      it("must throw if localWorkSize.length != workDim", function() {
+        if (!suite.preconditions) pending();
+        expect('queue instanceof WebCLCommandQueue').toEvalAs(true);
+        expect('queue.enqueueNDRangeKernel(kernel, 1, null, [      1], [1, 1])').toThrow('INVALID_WORK_GROUP_SIZE');
+        expect('queue.enqueueNDRangeKernel(kernel, 2, null, [   1, 1], [   1])').toThrow('INVALID_WORK_GROUP_SIZE');
+        expect('queue.enqueueNDRangeKernel(kernel, 3, null, [1, 1, 1], [1, 1])').toThrow('INVALID_WORK_GROUP_SIZE');
       });
 
       it("must throw if globalWorkSize[i] > 2^32-1", function() {
         if (!suite.preconditions) pending();
         expect('queue instanceof WebCLCommandQueue').toEvalAs(true);
-        expect('queue.enqueueNDRangeKernel(kernel, 1, [0], [0xffffffff+1], [1])').toThrow('INVALID_GLOBAL_WORK_SIZE');
-        expect('queue.enqueueNDRangeKernel(kernel, 2, [0, 0], [1, 0xffffffff+1], [1, 1])').toThrow('INVALID_GLOBAL_WORK_SIZE');
+        expect('queue.enqueueNDRangeKernel(kernel, 1, null, [   0xffffffff+1])').toThrow('INVALID_GLOBAL_WORK_SIZE');
+        expect('queue.enqueueNDRangeKernel(kernel, 2, null, [1, 0xffffffff+1])').toThrow('INVALID_GLOBAL_WORK_SIZE');
+      });
+
+      it("must throw if globalWorkOffset[i] is invalid", function() {
+        if (!suite.preconditions) pending();
+        expect('queue instanceof WebCLCommandQueue').toEvalAs(true);
+        expect('queue.enqueueNDRangeKernel(kernel, 1, [], [1])').toThrow('INVALID_GLOBAL_WORK_OFFSET');
+        expect('queue.enqueueNDRangeKernel(kernel, 1, "foo", [1])').toThrow('INVALID_GLOBAL_WORK_OFFSET');
+        expect('queue.enqueueNDRangeKernel(kernel, 1, [ "foo" ], [1])').toThrow('INVALID_GLOBAL_WORK_OFFSET');
+        expect('queue.enqueueNDRangeKernel(kernel, 1, [ {} ], [1])').toThrow('INVALID_GLOBAL_WORK_OFFSET');
+        expect('queue.enqueueNDRangeKernel(kernel, 1, [ 0xffffffff+1 ], [1])').toThrow('INVALID_GLOBAL_WORK_OFFSET');
       });
 
     });
