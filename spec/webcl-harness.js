@@ -52,7 +52,9 @@
 
   enforcePreconditions = function(precondFunc) {
     suite = this;
-    try {
+    if (suite.parentSuite.preconditions === false) {
+      suite.preconditions = false;
+    } else try {
       precondFunc.call(this);
       this.preconditions = true;
     } catch (e) {

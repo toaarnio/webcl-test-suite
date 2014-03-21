@@ -1107,17 +1107,18 @@ describe("Runtime", function() {
   // 
   describe("WebCLCommandQueue", function() {
 
+    beforeEach(enforcePreconditions.bind(this, function() {
+      ctx = createContext();
+      devices = ctx.getInfo(WebCL.CONTEXT_DEVICES);
+      device = devices[0];
+      queue = ctx.createCommandQueue(device);
+    }));
+
     //////////////////////////////////////////////////////////////////////////////
     //
     // Runtime -> WebCLCommandQueue -> getInfo
     // 
     describe("getInfo", function() {
-
-      beforeEach(enforcePreconditions.bind(this, function() {
-        ctx = createContext();
-        device = ctx.getInfo(WebCL.CONTEXT_DEVICES)[0];
-        queue = ctx.createCommandQueue(device, 0);
-      }));
 
       it("getInfo(<validEnum>) must work", function() {
         if (!suite.preconditions) pending();
@@ -1147,107 +1148,6 @@ describe("Runtime", function() {
 
     //////////////////////////////////////////////////////////////////////////////
     //
-    // Runtime -> WebCLCommandQueue -> enqueueNDRangeKernel
-    // 
-    describe("enqueueNDRangeKernel", function() {
-
-      beforeEach(enforcePreconditions.bind(this, function() {
-        ctx = createContext();
-        queue = ctx.createCommandQueue();
-        buffer = ctx.createBuffer(WebCL.MEM_READ_ONLY, 16);
-        program = ctx.createProgram("kernel void dummy(global uint* buf) { buf[0]=0xdeadbeef; }");
-        devices = ctx.getInfo(WebCL.CONTEXT_DEVICES);
-        program.build(devices);
-        kernel = program.createKernelsInProgram()[0];
-        kernel.setArg(0, buffer);
-      }));
-
-      it("must work with all-default arguments", function() {
-        if (!suite.preconditions) pending();
-        expect('queue.enqueueNDRangeKernel(kernel, 1, null, [1]); queue.finish()').not.toThrow();
-      });
-
-      it("must work if eventWaitList and event are omitted", function() {
-        if (!suite.preconditions) pending();
-        expect('queue.enqueueNDRangeKernel(kernel, 1, [0], [1], [1]); queue.finish()').not.toThrow();
-        expect('queue.enqueueNDRangeKernel(kernel, 1, [0], [1], [1], null); queue.finish()').not.toThrow();
-        expect('queue.enqueueNDRangeKernel(kernel, 1, [0], [1], [1], null, null); queue.finish()').not.toThrow();
-        expect('queue.enqueueNDRangeKernel(kernel, 1, [0], [1], [1], []); queue.finish()').not.toThrow();
-        expect('queue.enqueueNDRangeKernel(kernel, 1, [0], [1], [1], [], null); queue.finish()').not.toThrow();
-      });
-
-      it("must work if localWorkSize === null/undefined/omitted", function() {
-        if (!suite.preconditions) pending();
-        expect('queue.enqueueNDRangeKernel(kernel, 1, [0], [1], null); queue.finish()').not.toThrow();
-        expect('queue.enqueueNDRangeKernel(kernel, 1, [0], [1], undefined); queue.finish()').not.toThrow();
-        expect('queue.enqueueNDRangeKernel(kernel, 1, [0], [1]); queue.finish()').not.toThrow();
-      });
-
-      it("must work if globalWorkOffset === null/undefined", function() {
-        if (!suite.preconditions) pending();
-        expect('queue.enqueueNDRangeKernel(kernel, 1, null, [1], [1]); queue.finish()').not.toThrow();
-        expect('queue.enqueueNDRangeKernel(kernel, 1, undefined, [1], [1]); queue.finish()').not.toThrow();
-      });
-
-      it("must throw if kernel is not a valid WebCLKernel", function() {
-        if (!suite.preconditions) pending();
-        expect('queue instanceof WebCLCommandQueue').toEvalAs(true);
-        expect('queue.enqueueNDRangeKernel("foo", 1, [0], [1], [1])').toThrow('INVALID_KERNEL');
-        expect('queue.enqueueNDRangeKernel(ctx, 1, [0], [1], [1])').toThrow('INVALID_KERNEL');
-      });
-
-      it("must throw if workDim is not equal to 1, 2, or 3", function() {
-        if (!suite.preconditions) pending();
-        expect('queue instanceof WebCLCommandQueue').toEvalAs(true);
-        expect('queue.enqueueNDRangeKernel(kernel, 0, [0], [1], [1])').toThrow('INVALID_WORK_DIMENSION')
-        expect('queue.enqueueNDRangeKernel(kernel, 4, [0, 0, 0, 0], [1, 1, 1, 1], [1, 1, 1, 1])').toThrow('INVALID_WORK_DIMENSION');
-      });
-
-      it("must throw if globalWorkSize.length != workDim", function() {
-        if (!suite.preconditions) pending();
-        expect('queue instanceof WebCLCommandQueue').toEvalAs(true);
-        expect('queue.enqueueNDRangeKernel(kernel, 1, null, [1, 1])').toThrow('INVALID_GLOBAL_WORK_SIZE');
-        expect('queue.enqueueNDRangeKernel(kernel, 2, null, [   1])').toThrow('INVALID_GLOBAL_WORK_SIZE');
-        expect('queue.enqueueNDRangeKernel(kernel, 3, null, [1, 1])').toThrow('INVALID_GLOBAL_WORK_SIZE');
-      });
-
-      it("must throw if globalWorkOffset.length != workDim", function() {
-        if (!suite.preconditions) pending();
-        expect('queue instanceof WebCLCommandQueue').toEvalAs(true);
-        expect('queue.enqueueNDRangeKernel(kernel, 1, [1, 1], [      1])').toThrow('INVALID_GLOBAL_WORK_OFFSET');
-        expect('queue.enqueueNDRangeKernel(kernel, 2, [   1], [   1, 1])').toThrow('INVALID_GLOBAL_WORK_OFFSET');
-        expect('queue.enqueueNDRangeKernel(kernel, 3, [   1], [1, 1, 1])').toThrow('INVALID_GLOBAL_WORK_OFFSET');
-      });
-
-      it("must throw if localWorkSize.length != workDim", function() {
-        if (!suite.preconditions) pending();
-        expect('queue instanceof WebCLCommandQueue').toEvalAs(true);
-        expect('queue.enqueueNDRangeKernel(kernel, 1, null, [      1], [1, 1])').toThrow('INVALID_WORK_GROUP_SIZE');
-        expect('queue.enqueueNDRangeKernel(kernel, 2, null, [   1, 1], [   1])').toThrow('INVALID_WORK_GROUP_SIZE');
-        expect('queue.enqueueNDRangeKernel(kernel, 3, null, [1, 1, 1], [1, 1])').toThrow('INVALID_WORK_GROUP_SIZE');
-      });
-
-      it("must throw if globalWorkSize[i] > 2^32-1", function() {
-        if (!suite.preconditions) pending();
-        expect('queue instanceof WebCLCommandQueue').toEvalAs(true);
-        expect('queue.enqueueNDRangeKernel(kernel, 1, null, [   0xffffffff+1])').toThrow('INVALID_GLOBAL_WORK_SIZE');
-        expect('queue.enqueueNDRangeKernel(kernel, 2, null, [1, 0xffffffff+1])').toThrow('INVALID_GLOBAL_WORK_SIZE');
-      });
-
-      it("must throw if globalWorkOffset[i] is invalid", function() {
-        if (!suite.preconditions) pending();
-        expect('queue instanceof WebCLCommandQueue').toEvalAs(true);
-        expect('queue.enqueueNDRangeKernel(kernel, 1, [], [1])').toThrow('INVALID_GLOBAL_WORK_OFFSET');
-        expect('queue.enqueueNDRangeKernel(kernel, 1, "foo", [1])').toThrow('INVALID_GLOBAL_WORK_OFFSET');
-        expect('queue.enqueueNDRangeKernel(kernel, 1, [ "foo" ], [1])').toThrow('INVALID_GLOBAL_WORK_OFFSET');
-        expect('queue.enqueueNDRangeKernel(kernel, 1, [ {} ], [1])').toThrow('INVALID_GLOBAL_WORK_OFFSET');
-        expect('queue.enqueueNDRangeKernel(kernel, 1, [ 0xffffffff+1 ], [1])').toThrow('INVALID_GLOBAL_WORK_OFFSET');
-      });
-
-    });
-
-    //////////////////////////////////////////////////////////////////////////////
-    //
     // Runtime -> WebCLCommandQueue -> enqueueRead
     // 
     describe("enqueueRead", function() {
@@ -1260,8 +1160,6 @@ describe("Runtime", function() {
         bytesPerRow = BPP * W;
         BPPf32 = C*4;
         bytesPerRowf32 = BPPf32 * W;
-        ctx = createContext();
-        queue = ctx.createCommandQueue();
         var descriptorRGBA8 = { width : W, height : H };
         var descriptorRGBAf32 = { width : W, height : H, channelOrder : WebCL.RGBA, channelType: WebCL.FLOAT };
         pixels = new Uint8Array(W*H*C);
@@ -1299,7 +1197,7 @@ describe("Runtime", function() {
       it("enqueueReadImage(<image from another context>) must throw", function() {
         if (!suite.preconditions) pending();
         ctx2 = createContext();
-        queue2 = ctx2.createCommandQueue(null, 0);
+        queue2 = ctx2.createCommandQueue();
         expect('queue2.enqueueReadImage(image, true, [0,0], [W, H], 0, pixels)').toThrow('INVALID_CONTEXT');
       });
 
@@ -1373,7 +1271,198 @@ describe("Runtime", function() {
       });
 
     });
+
+    //////////////////////////////////////////////////////////////////////////////
+    //
+    // Runtime -> WebCLCommandQueue -> enqueueNDRangeKernel
+    // 
+    describe("enqueueNDRangeKernel", function() {
       
+      beforeEach(enforcePreconditions.bind(this, function() {
+        buffer = ctx.createBuffer(WebCL.MEM_READ_ONLY, 16);
+        program = ctx.createProgram("kernel void dummy(global uint* buf) { buf[get_global_id(0)]=0xdeadbeef; }");
+        devices = ctx.getInfo(WebCL.CONTEXT_DEVICES);
+        program.build(devices);
+        kernel = program.createKernelsInProgram()[0];
+        kernel.setArg(0, buffer);
+      }));
+
+      it("must work with minimal/default arguments", function() {
+        if (!suite.preconditions) pending();
+        expect('queue.enqueueNDRangeKernel(kernel, 1, null, [7]); queue.finish()').not.toThrow();
+        expect('queue.enqueueNDRangeKernel(kernel, 1, null, [7], null); queue.finish()').not.toThrow();
+        expect('queue.enqueueNDRangeKernel(kernel, 1, null, [7], null, null); queue.finish()').not.toThrow();
+        expect('queue.enqueueNDRangeKernel(kernel, 1, null, [7], null, null, null); queue.finish()').not.toThrow();
+        expect('queue.enqueueNDRangeKernel(kernel, 1, null, [7], null, [], null); queue.finish()').not.toThrow();
+        expect('queue.enqueueNDRangeKernel(kernel, 1, null, [7], undefined, [], null); queue.finish()').not.toThrow();
+      });
+
+      it("must work if workDim === {1, 2, 3}", function() {
+        if (!suite.preconditions) pending();
+        expect('queue.enqueueNDRangeKernel(kernel, 1, null, [7      ]); queue.finish()').not.toThrow();
+        expect('queue.enqueueNDRangeKernel(kernel, 2, null, [7, 2   ]); queue.finish()').not.toThrow();
+        expect('queue.enqueueNDRangeKernel(kernel, 3, null, [2, 2, 3]); queue.finish()').not.toThrow();
+        expect('queue.enqueueNDRangeKernel(kernel, 3.0, null, [2, 2, 3]); queue.finish()').not.toThrow();
+      });
+
+      it("must work if globalWorkOffset !== null", function() {
+        if (!suite.preconditions) pending();
+        expect('queue.enqueueNDRangeKernel(kernel, 1, [0      ], [7      ]); queue.finish()').not.toThrow();
+        expect('queue.enqueueNDRangeKernel(kernel, 1, [1      ], [7      ]); queue.finish()').not.toThrow();
+        expect('queue.enqueueNDRangeKernel(kernel, 2, [1, 2   ], [7, 2   ]); queue.finish()').not.toThrow();
+        expect('queue.enqueueNDRangeKernel(kernel, 3, [1, 2, 1], [2, 1, 2]); queue.finish()').not.toThrow();
+      });
+
+      it("must work if localWorkSize !== null", function() {
+        if (!suite.preconditions) pending();
+        expect('queue.enqueueNDRangeKernel(kernel, 1, null, [7      ], [1      ]); queue.finish()').not.toThrow();
+        expect('queue.enqueueNDRangeKernel(kernel, 1, null, [8      ], [2      ]); queue.finish()').not.toThrow();
+        expect('queue.enqueueNDRangeKernel(kernel, 1, null, [9      ], [3      ]); queue.finish()').not.toThrow();
+        expect('queue.enqueueNDRangeKernel(kernel, 2, null, [8, 2   ], [1, 1   ]); queue.finish()').not.toThrow();
+        expect('queue.enqueueNDRangeKernel(kernel, 2, null, [8, 2   ], [2, 2   ]); queue.finish()').not.toThrow();
+        expect('queue.enqueueNDRangeKernel(kernel, 3, null, [3, 2, 2], [1, 1, 1]); queue.finish()').not.toThrow();
+        expect('queue.enqueueNDRangeKernel(kernel, 3, null, [3, 2, 2], [1, 2, 2]); queue.finish()').not.toThrow();
+      });
+
+      it("must work if globalWorkOffset and localWorkSize !== null", function() {
+        if (!suite.preconditions) pending();
+        expect('queue.enqueueNDRangeKernel(kernel, 1, [0      ], [7      ], [1      ]); queue.finish()').not.toThrow();
+        expect('queue.enqueueNDRangeKernel(kernel, 1, [1      ], [8      ], [2      ]); queue.finish()').not.toThrow();
+        expect('queue.enqueueNDRangeKernel(kernel, 2, [1, 1   ], [7, 2   ], [1, 1   ]); queue.finish()').not.toThrow();
+        expect('queue.enqueueNDRangeKernel(kernel, 2, [1, 1   ], [6, 2   ], [2, 2   ]); queue.finish()').not.toThrow();
+        expect('queue.enqueueNDRangeKernel(kernel, 3, [0, 1, 1], [3, 2, 2], [1, 1, 1]); queue.finish()').not.toThrow();
+        expect('queue.enqueueNDRangeKernel(kernel, 3, [1, 2, 2], [3, 2, 2], [1, 2, 2]); queue.finish()').not.toThrow();
+      });
+
+      it("must throw if kernel is not a valid WebCLKernel", function() {
+        if (!suite.preconditions) pending();
+        expect('queue.enqueueNDRangeKernel(null, 1, null, [1])').toThrow('INVALID_KERNEL');
+        expect('queue.enqueueNDRangeKernel("foo", 1, null, [1])').toThrow('INVALID_KERNEL');
+        expect('queue.enqueueNDRangeKernel(ctx, 1, null, [1])').toThrow('INVALID_KERNEL');
+      });
+
+      it("must throw if kernel is from another WebCLContext", function() {
+        if (!suite.preconditions) pending();
+        ctx2 = createContext();
+        queue2 = ctx2.createCommandQueue();
+        expect('queue2.enqueueNDRangeKernel(kernel, 1, null, [7]); queue.finish()').toThrow('INVALID_CONTEXT');
+      });
+
+      it("must throw if workDim is not equal to 1, 2, or 3", function() {
+        if (!suite.preconditions) pending();
+        expect('queue.enqueueNDRangeKernel(kernel, 0, null, [])').toThrow('INVALID_WORK_DIMENSION')
+        expect('queue.enqueueNDRangeKernel(kernel, null, null, [1])').toThrow('INVALID_WORK_DIMENSION')
+        expect('queue.enqueueNDRangeKernel(kernel, "1", null, [1])').toThrow('INVALID_WORK_DIMENSION')
+        expect('queue.enqueueNDRangeKernel(kernel, [1], null, [1])').toThrow('INVALID_WORK_DIMENSION')
+        expect('queue.enqueueNDRangeKernel(kernel, 1.001, null, [1])').toThrow('INVALID_WORK_DIMENSION')
+        expect('queue.enqueueNDRangeKernel(kernel, 4, null, [1])').toThrow('INVALID_WORK_DIMENSION');
+      });
+
+      it("must throw if globalWorkSize is not an array", function() {
+        if (!suite.preconditions) pending();
+        expect('queue.enqueueNDRangeKernel(kernel, 1, null, null)').toThrow('INVALID_GLOBAL_WORK_SIZE');
+        expect('queue.enqueueNDRangeKernel(kernel, 1, null, "foo")').toThrow('INVALID_GLOBAL_WORK_SIZE');
+        expect('queue.enqueueNDRangeKernel(kernel, 1, null, {})').toThrow('INVALID_GLOBAL_WORK_SIZE');
+        expect('queue.enqueueNDRangeKernel(kernel, 1, null, 1)').toThrow('INVALID_GLOBAL_WORK_SIZE');
+      });
+
+      it("must throw if globalWorkOffset is not an array", function() {
+        if (!suite.preconditions) pending();
+        expect('queue.enqueueNDRangeKernel(kernel, 1, "", [1])').toThrow('INVALID_GLOBAL_OFFSET');
+        expect('queue.enqueueNDRangeKernel(kernel, 1, {}, [1])').toThrow('INVALID_GLOBAL_OFFSET');
+        expect('queue.enqueueNDRangeKernel(kernel, 1, 1, [1])').toThrow('INVALID_GLOBAL_OFFSET');
+      });
+
+      it("must throw if localWorkSize is not an array", function() {
+        if (!suite.preconditions) pending();
+        expect('queue.enqueueNDRangeKernel(kernel, 1, null, [1], "")').toThrow('INVALID_WORK_GROUP_SIZE');
+        expect('queue.enqueueNDRangeKernel(kernel, 1, null, [1], {})').toThrow('INVALID_WORK_GROUP_SIZE');
+        expect('queue.enqueueNDRangeKernel(kernel, 1, null, [1], 1)').toThrow('INVALID_WORK_GROUP_SIZE');
+      });
+
+      it("must throw if globalWorkSize.length != workDim", function() {
+        if (!suite.preconditions) pending();
+        expect('queue.enqueueNDRangeKernel(kernel, 1, null, [    ])').toThrow('INVALID_GLOBAL_WORK_SIZE');
+        expect('queue.enqueueNDRangeKernel(kernel, 1, null, [1, 1])').toThrow('INVALID_GLOBAL_WORK_SIZE');
+        expect('queue.enqueueNDRangeKernel(kernel, 2, null, [   1])').toThrow('INVALID_GLOBAL_WORK_SIZE');
+        expect('queue.enqueueNDRangeKernel(kernel, 3, null, [1, 1])').toThrow('INVALID_GLOBAL_WORK_SIZE');
+      });
+
+      it("must throw if globalWorkOffset.length != workDim", function() {
+        if (!suite.preconditions) pending();
+        expect('queue.enqueueNDRangeKernel(kernel, 1, [    ], [      1])').toThrow('INVALID_GLOBAL_OFFSET');
+        expect('queue.enqueueNDRangeKernel(kernel, 1, [1, 1], [      1])').toThrow('INVALID_GLOBAL_OFFSET');
+        expect('queue.enqueueNDRangeKernel(kernel, 2, [   1], [   1, 1])').toThrow('INVALID_GLOBAL_OFFSET');
+        expect('queue.enqueueNDRangeKernel(kernel, 3, [   1], [1, 1, 1])').toThrow('INVALID_GLOBAL_OFFSET');
+      });
+
+      it("must throw if localWorkSize.length != workDim", function() {
+        if (!suite.preconditions) pending();
+        expect('queue.enqueueNDRangeKernel(kernel, 1, null, [      1], [    ])').toThrow('INVALID_WORK_GROUP_SIZE');
+        expect('queue.enqueueNDRangeKernel(kernel, 1, null, [      1], [1, 1])').toThrow('INVALID_WORK_GROUP_SIZE');
+        expect('queue.enqueueNDRangeKernel(kernel, 2, null, [   1, 1], [   1])').toThrow('INVALID_WORK_GROUP_SIZE');
+        expect('queue.enqueueNDRangeKernel(kernel, 3, null, [1, 1, 1], [1, 1])').toThrow('INVALID_WORK_GROUP_SIZE');
+      });
+
+      it("must throw if globalWorkSize[i] is not an integer in [1, 2^32)", function() {
+        if (!suite.preconditions) pending();
+        expect('queue.enqueueNDRangeKernel(kernel, 1, null, [0])').toThrow('INVALID_GLOBAL_WORK_SIZE');
+        expect('queue.enqueueNDRangeKernel(kernel, 1, null, [-1])').toThrow('INVALID_GLOBAL_WORK_SIZE');
+        expect('queue.enqueueNDRangeKernel(kernel, 1, null, [1.001])').toThrow('INVALID_GLOBAL_WORK_SIZE');
+        expect('queue.enqueueNDRangeKernel(kernel, 1, null, ["1"])').toThrow('INVALID_GLOBAL_WORK_SIZE');
+        expect('queue.enqueueNDRangeKernel(kernel, 1, null, [null])').toThrow('INVALID_GLOBAL_WORK_SIZE');
+        expect('queue.enqueueNDRangeKernel(kernel, 1, null, ["foo"])').toThrow('INVALID_GLOBAL_WORK_SIZE');
+        expect('queue.enqueueNDRangeKernel(kernel, 1, null, [0xffffffff+1])').toThrow('INVALID_GLOBAL_WORK_SIZE');
+      });
+
+      it("must throw if localWorkSize[i] is not an integer in [1, 2^32)", function() {
+        if (!suite.preconditions) pending();
+        expect('queue.enqueueNDRangeKernel(kernel, 1, null, [7], [0])').toThrow('INVALID_WORK_GROUP_SIZE');
+        expect('queue.enqueueNDRangeKernel(kernel, 1, null, [7], [-1])').toThrow('INVALID_WORK_GROUP_SIZE');
+        expect('queue.enqueueNDRangeKernel(kernel, 1, null, [7], [1.001])').toThrow('INVALID_WORK_GROUP_SIZE');
+        expect('queue.enqueueNDRangeKernel(kernel, 1, null, [7], ["1"])').toThrow('INVALID_WORK_GROUP_SIZE');
+        expect('queue.enqueueNDRangeKernel(kernel, 1, null, [7], [null])').toThrow('INVALID_WORK_GROUP_SIZE');
+        expect('queue.enqueueNDRangeKernel(kernel, 1, null, [7], ["foo"])').toThrow('INVALID_WORK_GROUP_SIZE');
+        expect('queue.enqueueNDRangeKernel(kernel, 1, null, [7], [0xffffffff+1])').toThrow('INVALID_WORK_GROUP_SIZE');
+      });
+
+      it("must throw if globalWorkOffset[i] is not an integer in [0, 2^32)", function() {
+        if (!suite.preconditions) pending();
+        expect('queue.enqueueNDRangeKernel(kernel, 1, [-1], [7])').toThrow('INVALID_GLOBAL_OFFSET');
+        expect('queue.enqueueNDRangeKernel(kernel, 1, [1.001], [7])').toThrow('INVALID_GLOBAL_OFFSET');
+        expect('queue.enqueueNDRangeKernel(kernel, 1, ["1"], [7])').toThrow('INVALID_GLOBAL_OFFSET');
+        expect('queue.enqueueNDRangeKernel(kernel, 1, [null], [7])').toThrow('INVALID_GLOBAL_OFFSET');
+        expect('queue.enqueueNDRangeKernel(kernel, 1, ["foo"], [7])').toThrow('INVALID_GLOBAL_OFFSET');
+        expect('queue.enqueueNDRangeKernel(kernel, 1, [0xffffffff+1], [7])').toThrow('INVALID_GLOBAL_OFFSET');
+      });
+
+      it("must throw if globalWorkOffset[i] + globalWorkSize[i] is not an integer in [1, 2^32)", function() {
+        if (!suite.preconditions) pending();
+        expect('queue instanceof WebCLCommandQueue').toEvalAs(true);
+        expect('queue.enqueueNDRangeKernel(kernel, 1, [0xfffffffe], [2])').toThrow('INVALID_GLOBAL_OFFSET');
+        expect('queue.enqueueNDRangeKernel(kernel, 1, [2], [0xfffffffe])').toThrow('INVALID_GLOBAL_OFFSET');
+      });
+
+      it("must throw if globalWorkSize[i] % localWorkSize[i] !== 0", function() {
+        if (!suite.preconditions) pending();
+        expect('queue.enqueueNDRangeKernel(kernel, 1, null, [3], [2])').toThrow('INVALID_WORK_GROUP_SIZE');
+        expect('queue.enqueueNDRangeKernel(kernel, 3, null, [4, 1, 3], [1, 1, 2])').toThrow('INVALID_WORK_GROUP_SIZE');
+      });
+
+      // This test assumes that the OpenCL device supports work-group sizes up to at most 2048.
+      // Also, the device must allow for at least 16 work-items in each dimension.  Otherwise, the
+      // test is marked pending.
+
+      it("must throw if localWorkSize exceeds device-specific limits", function() {
+        if (!suite.preconditions) pending();
+        if (device.getInfo(WebCL.DEVICE_MAX_WORK_GROUP_SIZE) > 2048) pending();
+        device.getInfo(WebCL.DEVICE_MAX_WORK_ITEM_SIZES).forEach(function(val) { if (val < 16) pending(); });
+        expect('queue.enqueueNDRangeKernel(kernel, 3, null, [256, 256, 256], [16, 16, 16])').toThrow('INVALID_WORK_GROUP_SIZE');
+        expect('queue.enqueueNDRangeKernel(kernel, 1, null, [32768], [4096])').toThrow();
+      });
+
+    });
+
   });
 
 
