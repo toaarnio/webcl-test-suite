@@ -337,14 +337,14 @@ describe("Runtime", function() {
     // 
     describe("createImage", function() {
 
-      it("createImage(<validMemFlags>) must not throw", function() {
+      it("createImage(<validMemFlags>) must work", function() {
         if (!suite.preconditions) pending();
         expect('ctx.createImage(WebCL.MEM_READ_ONLY, { width: 64, height: 64 })').not.toThrow();
         expect('ctx.createImage(WebCL.MEM_WRITE_ONLY, { width: 64, height: 64 })').not.toThrow();
         expect('ctx.createImage(WebCL.MEM_READ_WRITE, { width: 64, height: 64 })').not.toThrow();
       });
 
-      it("createImage(<validDescriptor>) must not throw", function() {
+      it("createImage(<validDescriptor>) must work", function() {
         if (!suite.preconditions) pending();
         expect('desc = new WebCLImageDescriptor()').not.toThrow();
         expect('desc.width = 11; desc.height = 17;').not.toThrow();
@@ -352,19 +352,30 @@ describe("Runtime", function() {
         expect('ctx.createImage(WebCL.MEM_READ_ONLY, { width: 11, height: 17 })').not.toThrow();
       });
 
-      it("createImage(<validDimensions>) must not throw", function() {
+      it("createImage(<anySupportedFormat>) must work", function() {
+        if (!suite.preconditions) pending();
+        formats = ctx.getSupportedImageFormats();
+        for (i=0;  i < formats.length; i++) {
+          formats[i].width = 7;
+          formats[i].height = 11;
+          DEBUG("createImage(" + enumString(formats[i].channelOrder) + ", " + enumString(formats[i].channelType) + ")");
+          expect('ctx.createImage(WebCL.MEM_READ_WRITE, formats[i])').not.toThrow();
+        }
+      });
+
+      it("createImage(<validDimensions>) must work", function() {
         if (!suite.preconditions) pending();
         expect('ctx.createImage(WebCL.MEM_READ_ONLY, { width: 37, height: 1 })').not.toThrow();
         expect('ctx.createImage(WebCL.MEM_WRITE_ONLY, { width: 1, height: 1025 })').not.toThrow();
         expect('ctx.createImage(WebCL.MEM_READ_WRITE, { width: 19, height: 11 })').not.toThrow();
       });
 
-      it("createImage(<validHostPtr>) must not throw", function() {
+      it("createImage(<validHostPtr>) must work", function() {
         if (!suite.preconditions) pending();
         expect('ctx.createImage(WebCL.MEM_READ_ONLY, { width: 11, height: 17 }, new Uint8Array(11*17*4))').not.toThrow();
       });
 
-      it("createImage(<validRowPitch>) must not throw", function() {
+      it("createImage(<validRowPitch>) must work", function() {
         if (!suite.preconditions) pending();
         expect('ctx.createImage(WebCL.MEM_READ_ONLY, { width: 11, height: 17, rowPitch: 0 })').not.toThrow();
         expect('ctx.createImage(WebCL.MEM_READ_ONLY, { width: 11, height: 17, rowPitch: 0 }, new Uint8Array(11*17*4))').not.toThrow();
@@ -518,7 +529,7 @@ describe("Runtime", function() {
     
     beforeEach(enforcePreconditions.bind(this, function() {
       ctx = createContext();
-      buffer = ctx.createBuffer(WebCL.MEM_READ_WRITE, 123);
+      buffer = ctx.createBuffer(WebCL.MEM_READ_WRITE, 128);
     }));
 
     //////////////////////////////////////////////////////////////////////////////
@@ -1279,7 +1290,7 @@ describe("Runtime", function() {
     describe("enqueueNDRangeKernel", function() {
       
       beforeEach(enforcePreconditions.bind(this, function() {
-        buffer = ctx.createBuffer(WebCL.MEM_READ_ONLY, 16);
+        buffer = ctx.createBuffer(WebCL.MEM_READ_ONLY, 128);
         program = ctx.createProgram("kernel void dummy(global uint* buf) { buf[get_global_id(0)]=0xdeadbeef; }");
         devices = ctx.getInfo(WebCL.CONTEXT_DEVICES);
         program.build(devices);
@@ -1300,7 +1311,7 @@ describe("Runtime", function() {
       it("must work if workDim === {1, 2, 3}", function() {
         if (!suite.preconditions) pending();
         expect('queue.enqueueNDRangeKernel(kernel, 1, null, [7      ]); queue.finish()').not.toThrow();
-        expect('queue.enqueueNDRangeKernel(kernel, 2, null, [7, 2   ]); queue.finish()').not.toThrow();
+        expect('queue.enqueueNDRangeKernel(kernel, 2, null, [8, 2   ]); queue.finish()').not.toThrow();
         expect('queue.enqueueNDRangeKernel(kernel, 3, null, [2, 2, 3]); queue.finish()').not.toThrow();
         expect('queue.enqueueNDRangeKernel(kernel, 3.0, null, [2, 2, 3]); queue.finish()').not.toThrow();
       });
@@ -1313,8 +1324,12 @@ describe("Runtime", function() {
         expect('queue.enqueueNDRangeKernel(kernel, 3, [1, 2, 1], [2, 1, 2]); queue.finish()').not.toThrow();
       });
 
+      // This test assumes that the OpenCL device supports a work-group size of at least 2 in each
+      // dimension. Otherwise, the test is marked pending.
+      //
       it("must work if localWorkSize !== null", function() {
         if (!suite.preconditions) pending();
+        if (!supportsWorkGroupSize(2, [2, 2, 2])) pending();
         expect('queue.enqueueNDRangeKernel(kernel, 1, null, [7      ], [1      ]); queue.finish()').not.toThrow();
         expect('queue.enqueueNDRangeKernel(kernel, 1, null, [8      ], [2      ]); queue.finish()').not.toThrow();
         expect('queue.enqueueNDRangeKernel(kernel, 1, null, [9      ], [3      ]); queue.finish()').not.toThrow();
@@ -1324,8 +1339,12 @@ describe("Runtime", function() {
         expect('queue.enqueueNDRangeKernel(kernel, 3, null, [3, 2, 2], [1, 2, 2]); queue.finish()').not.toThrow();
       });
 
+      // This test assumes that the OpenCL device supports a work-group size of at least 2 in each
+      // dimension. Otherwise, the test is marked pending.
+      //
       it("must work if globalWorkOffset and localWorkSize !== null", function() {
         if (!suite.preconditions) pending();
+        if (!supportsWorkGroupSize(4, [2, 2, 2])) pending();
         expect('queue.enqueueNDRangeKernel(kernel, 1, [0      ], [7      ], [1      ]); queue.finish()').not.toThrow();
         expect('queue.enqueueNDRangeKernel(kernel, 1, [1      ], [8      ], [2      ]); queue.finish()').not.toThrow();
         expect('queue.enqueueNDRangeKernel(kernel, 2, [1, 1   ], [7, 2   ], [1, 1   ]); queue.finish()').not.toThrow();
@@ -1413,6 +1432,7 @@ describe("Runtime", function() {
         expect('queue.enqueueNDRangeKernel(kernel, 1, null, [null])').toThrow('INVALID_GLOBAL_WORK_SIZE');
         expect('queue.enqueueNDRangeKernel(kernel, 1, null, ["foo"])').toThrow('INVALID_GLOBAL_WORK_SIZE');
         expect('queue.enqueueNDRangeKernel(kernel, 1, null, [0xffffffff+1])').toThrow('INVALID_GLOBAL_WORK_SIZE');
+        expect('queue.enqueueNDRangeKernel(kernel, 2, null, [7, 0])').toThrow('INVALID_GLOBAL_WORK_SIZE');
       });
 
       it("must throw if localWorkSize[i] is not an integer in [1, 2^32)", function() {
@@ -1424,6 +1444,7 @@ describe("Runtime", function() {
         expect('queue.enqueueNDRangeKernel(kernel, 1, null, [7], [null])').toThrow('INVALID_WORK_GROUP_SIZE');
         expect('queue.enqueueNDRangeKernel(kernel, 1, null, [7], ["foo"])').toThrow('INVALID_WORK_GROUP_SIZE');
         expect('queue.enqueueNDRangeKernel(kernel, 1, null, [7], [0xffffffff+1])').toThrow('INVALID_WORK_GROUP_SIZE');
+        expect('queue.enqueueNDRangeKernel(kernel, 2, null, [7, 2], [1, 0])').toThrow('INVALID_WORK_GROUP_SIZE');
       });
 
       it("must throw if globalWorkOffset[i] is not an integer in [0, 2^32)", function() {
@@ -1443,20 +1464,24 @@ describe("Runtime", function() {
         expect('queue.enqueueNDRangeKernel(kernel, 1, [2], [0xfffffffe])').toThrow('INVALID_GLOBAL_OFFSET');
       });
 
+      // This test assumes that the OpenCL device supports a work-group size of at least 2 in each
+      // dimension. Otherwise, the test is marked pending.
+      //
       it("must throw if globalWorkSize[i] % localWorkSize[i] !== 0", function() {
         if (!suite.preconditions) pending();
+        if (!supportsWorkGroupSize(2, [2, 2, 2])) pending();
         expect('queue.enqueueNDRangeKernel(kernel, 1, null, [3], [2])').toThrow('INVALID_WORK_GROUP_SIZE');
         expect('queue.enqueueNDRangeKernel(kernel, 3, null, [4, 1, 3], [1, 1, 2])').toThrow('INVALID_WORK_GROUP_SIZE');
       });
 
-      // This test assumes that the OpenCL device supports work-group sizes up to at most 2048.
+      // This test assumes that the OpenCL device does NOT support work-group sizes up to 2^12=4096.
       // Also, the device must allow for at least 16 work-items in each dimension.  Otherwise, the
       // test is marked pending.
-
+      //
       it("must throw if localWorkSize exceeds device-specific limits", function() {
         if (!suite.preconditions) pending();
-        if (device.getInfo(WebCL.DEVICE_MAX_WORK_GROUP_SIZE) > 2048) pending();
-        device.getInfo(WebCL.DEVICE_MAX_WORK_ITEM_SIZES).forEach(function(val) { if (val < 16) pending(); });
+        if (supportsWorkGroupSize(4096)) pending();
+        if (!supportsWorkGroupSize(16, [16, 16, 16])) pending();
         expect('queue.enqueueNDRangeKernel(kernel, 3, null, [256, 256, 256], [16, 16, 16])').toThrow('INVALID_WORK_GROUP_SIZE');
         expect('queue.enqueueNDRangeKernel(kernel, 1, null, [32768], [4096])').toThrow();
       });
@@ -1475,7 +1500,7 @@ describe("Runtime", function() {
     beforeEach(enforcePreconditions.bind(this, function() {
       ctx = createContext();
       queue = ctx.createCommandQueue(null, WebCL.QUEUE_PROFILING_ENABLE);
-      buffer = ctx.createBuffer(WebCL.MEM_READ_ONLY, 16);
+      buffer = ctx.createBuffer(WebCL.MEM_READ_ONLY, 128);
       hostPtr = new Uint8Array(16);
       event = new WebCLEvent();
     }));

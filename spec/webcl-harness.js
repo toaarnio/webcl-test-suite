@@ -58,12 +58,26 @@
       precondFunc.call(this);
       this.preconditions = true;
     } catch (e) {
-      ERROR(this.description + " -> beforeEach: Caught exception " + e);
-      ERROR(this.description + " -> beforeEach: Preconditions of the describe() block failed: Skipping all tests.");
+      ERROR(this.parentSuite.description + " -> " + this.description + ": Test preconditions failed: " + e);
       this.preconditions = false;
     }
   };
 
+  supportsWorkGroupSize = function(minimumGroupSize, minimumGroupDims) {
+    if (device.getInfo(WebCL.DEVICE_MAX_WORK_GROUP_SIZE) < minimumGroupSize) {
+      return false;
+    }
+
+    if (minimumGroupDims) {
+      device.getInfo(WebCL.DEVICE_MAX_WORK_ITEM_SIZES).forEach(function(val, i) { 
+        if (val < minimumGroupDims[i])
+          return false;
+      });
+    }
+
+    return true;
+  };
+  
   createContext = function() {
     try {
       DEVICE_INDEX = DEVICE_INDEX || 0;
@@ -240,6 +254,20 @@
 
   };
     
+  // ### enumString() ###
+  //
+  // Returns the human-readable string representation of the given
+  // WebCL enumerated value. For example, `enumString(-10)` will
+  // return the string `"IMAGE_FORMAT_NOT_SUPPORTED"`.
+  //
+  enumString = function(enumValue) {
+    for (var e in WebCL) {
+      if (WebCL[e] === enumValue) {
+        return e;
+      }
+    }
+  };
+
   // ### loadSource() ###
   // 
   // Loads a kernel source code file from the given `uri` via http GET, with a random query string
