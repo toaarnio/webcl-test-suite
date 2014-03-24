@@ -513,7 +513,7 @@ describe("Runtime", function() {
     // 
     describe("createUserEvent", function() {
 
-      xit("createUserEvent() must not throw", function() {
+      it("createUserEvent() must not throw", function() {
         if (!suite.preconditions) pending();
         expect('ctx.createUserEvent()').not.toThrow();
       });
