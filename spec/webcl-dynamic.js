@@ -358,7 +358,8 @@ describe("Runtime", function() {
         for (i=0;  i < formats.length; i++) {
           formats[i].width = 7;
           formats[i].height = 11;
-          DEBUG("createImage(" + enumString(formats[i].channelOrder) + ", " + enumString(formats[i].channelType) + ")");
+          DEBUG("createImage(" + enumString(formats[i].channelOrder) + " [" + formats[i].channelOrder + "], " + 
+                enumString(formats[i].channelType) + " [" + formats[i].channelType + "])");
           expect('ctx.createImage(WebCL.MEM_READ_WRITE, formats[i])').not.toThrow();
         }
       });
@@ -610,14 +611,14 @@ describe("Runtime", function() {
         expect('image1.getInfo().channelType').toEvalAs('WebCL.FLOAT');
       });
 
-      it("getInfo() must work with non-default channelOrder (WebCL.R)", function() {
+      it("getInfo() must work with non-default channelOrder (WebCL.A)", function() {
         if (!suite.preconditions) pending();
-        descriptor = { width: 11, height: 27, channelOrder: WebCL.R, channelType: WebCL.UNORM_INT8 };
+        descriptor = { width: 11, height: 27, channelOrder: WebCL.A, channelType: WebCL.UNORM_INT8 };
         expect('image1 = ctx.createImage(WebCL.MEM_READ_ONLY, descriptor)').not.toThrow();
         expect('image1.getInfo().width').toEvalAs('11');
         expect('image1.getInfo().height').toEvalAs('27');
         expect('image1.getInfo().rowPitch').toEvalAs('11');
-        expect('image1.getInfo().channelOrder').toEvalAs('WebCL.R');
+        expect('image1.getInfo().channelOrder').toEvalAs('WebCL.A');
         expect('image1.getInfo().channelType').toEvalAs('WebCL.UNORM_INT8');
       });
 
