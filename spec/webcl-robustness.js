@@ -134,5 +134,20 @@ describe("Robustness", function() {
     expect('webcl.releaseAll()').not.toThrow();
   });
 
+  // Known failures as of 2014-02-12:
+  //  * Mac OSX 10.9 / CPU driver (crashes)
+  //
+  it("must not throw on enqueueNDRangeKernel if workDim === 2", function() {
+    ctx = createContext();
+    queue = ctx.createCommandQueue();
+    buffer = ctx.createBuffer(WebCL.MEM_READ_ONLY, 128);
+    program = ctx.createProgram("kernel void dummy(global uint* buf) { buf[get_global_id(0)]=0xdeadbeef; }");
+    devices = ctx.getInfo(WebCL.CONTEXT_DEVICES);
+    program.build(devices);
+    kernel = program.createKernelsInProgram()[0];
+    kernel.setArg(0, buffer);
+    expect('queue.enqueueNDRangeKernel(kernel, 2, null, [8, 2   ]); queue.finish()').not.toThrow();
+  });
+
   beforeEach(addCustomMatchers);
 });
