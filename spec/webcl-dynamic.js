@@ -500,9 +500,15 @@ describe("Runtime", function() {
       });
 
       it("createSampler(<invalidArguments>) must throw", function() {
-        if (!suite.preconditions) pending();
         expect('ctx.createSampler(false, WebCL.ADDRESS_REPEAT, WebCL.FILTER_NEAREST)').toThrow('INVALID_VALUE');
         expect('ctx.createSampler(false, WebCL.ADDRESS_MIRRORED_REPEAT, WebCL.FILTER_NEAREST)').toThrow('INVALID_VALUE');
+        expect('ctx.createSampler("", WebCL.ADDRESS_CLAMP, WebCL.FILTER_NEAREST)').toThrow('INVALID_VALUE');
+        expect('ctx.createSampler({}, WebCL.ADDRESS_CLAMP, WebCL.FILTER_NEAREST)').toThrow('INVALID_VALUE');
+        expect('ctx.createSampler([], WebCL.ADDRESS_CLAMP, WebCL.FILTER_NEAREST)').toThrow('INVALID_VALUE');
+        expect('ctx.createSampler(0, WebCL.ADDRESS_CLAMP, WebCL.FILTER_NEAREST)').toThrow('INVALID_VALUE');
+        expect('ctx.createSampler(null, WebCL.ADDRESS_CLAMP, WebCL.FILTER_NEAREST)').toThrow('INVALID_VALUE');
+        expect('ctx.createSampler(true, WebCL.FILTER_NEAREST, WebCL.FILTER_NEAREST)').toThrow('INVALID_VALUE');
+        expect('ctx.createSampler(true, WebCL.ADDRESS_CLAMP, WebCL.ADDRESS_CLAMP)').toThrow('INVALID_VALUE');
       });
 
     });

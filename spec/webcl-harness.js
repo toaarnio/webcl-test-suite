@@ -60,7 +60,7 @@
         if (val < minimumGroupDims[i])
           return false;
       });
-    }
+    } 
 
     return true;
   };
@@ -173,6 +173,7 @@
               message: "Expected '" + actual + "' to throw " + (expected || "any exception") + ", but it threw nothing.",
             };
           } catch(e) {
+            DEBUG(e);
             var result = {};
             result.pass = (expected === undefined) || (e.name === expected);
             if (expected === undefined) {
