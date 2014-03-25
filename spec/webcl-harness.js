@@ -29,26 +29,13 @@
   (function getURLParameters() {
     READY = (getURLParameter('run') === 'true');
     STRICT = (getURLParameter('strict') === 'true');
-    INFO = (getURLParameter('info') === 'true') ? console.info : new Function();
-    ERROR = (getURLParameter('debug') === 'false') ? new Function() : console.error;
-    DEBUG = (getURLParameter('debug') === 'false') ? new Function() : console.log;
-    TRACE = (getURLParameter('trace') === 'true') ? console.log : new Function();
+    INFO = (getURLParameter('info') === 'true') ? console.info.bind(console) : new Function();
+    ERROR = (getURLParameter('debug') === 'false') ? new Function() : console.error.bind(console);
+    DEBUG = (getURLParameter('debug') === 'false') ? new Function() : console.debug.bind(console);
+    TRACE = (getURLParameter('trace') === 'true') ? console.log.bind(console) : new Function();
     var DEVICE = getURLParameter('device');
     DEVICE_INDEX = isNaN(+DEVICE) ? null : +DEVICE;
   })();
-
-  testSuiteTrace = function(testcase) {
-    var resultStr = testcase.results().passed() ? "pass" : "FAIL";
-    TRACE(resultStr + ": " + testSuiteAsString(testcase.suite) + " -> " + testcase.description);
-  };
-
-  testSuiteAsString = function(suite) {
-    if (suite.parentSuite === null) {
-      return suite.description;
-    } else {
-      return testSuiteAsString(suite.parentSuite) + " -> " + suite.description;
-    }
-  };
 
   enforcePreconditions = function(precondFunc) {
     suite = this;
@@ -186,13 +173,12 @@
               message: "Expected '" + actual + "' to throw " + (expected || "any exception") + ", but it threw nothing.",
             };
           } catch(e) {
-            DEBUG(e);
             var result = {};
             result.pass = (expected === undefined) || (e.name === expected);
             if (expected === undefined) {
-              result.message = "Expected '" + actual + "' not to throw any exception, but it threw " + e.name + ".";
+              result.message = "Expected '" + actual + "' not to throw any exception, but it threw " + e.name + ": " + e.message;
             } else if (e.name !== expected) {
-              result.message = "Expected '" + actual + "' to throw " + expected + ", but it threw " + e.name + ".";
+              result.message = "Expected '" + actual + "' to throw " + expected + ", but it threw " + e.name + ": " + e.message;
             }
             return result;
           }
