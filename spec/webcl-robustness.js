@@ -141,7 +141,7 @@ describe("Robustness", function() {
     ctx = createContext();
     queue = ctx.createCommandQueue();
     buffer = ctx.createBuffer(WebCL.MEM_READ_ONLY, 128);
-    program = ctx.createProgram("kernel void dummy(global uint* buf) { buf[get_global_id(0)]=0xdeadbeef; }");
+    program = ctx.createProgram("kernel void dummy(global uint* buf) { buf[0]=0xdeadbeef; }");
     devices = ctx.getInfo(WebCL.CONTEXT_DEVICES);
     program.build(devices);
     kernel = program.createKernelsInProgram()[0];
