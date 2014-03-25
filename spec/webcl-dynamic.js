@@ -513,7 +513,7 @@ describe("Runtime", function() {
     // 
     describe("createUserEvent", function() {
 
-      xit("createUserEvent() must not throw", function() {
+      xit("createUserEvent() must work", function() {
         if (!suite.preconditions) pending();
         expect('ctx.createUserEvent()').not.toThrow();
       });
@@ -1501,8 +1501,6 @@ describe("Runtime", function() {
     beforeEach(enforcePreconditions.bind(this, function() {
       ctx = createContext();
       queue = ctx.createCommandQueue(null, WebCL.QUEUE_PROFILING_ENABLE);
-      buffer = ctx.createBuffer(WebCL.MEM_READ_ONLY, 128);
-      hostPtr = new Uint8Array(16);
       event = new WebCLEvent();
     }));
 
@@ -1519,25 +1517,31 @@ describe("Runtime", function() {
 
       it("enqueue*(<emptyEvent>) must work", function() {
         if (!suite.preconditions) pending();
-        expect('queue.enqueueReadBuffer(buffer, true, 0, 16, hostPtr, null, event)').not.toThrow();
+        expect('queue.enqueueMarker(event)').not.toThrow();
       });
 
       it("enqueue*(<populatedEvent>) must throw", function() {
         if (!suite.preconditions) pending();
-        expect('queue.enqueueReadBuffer(buffer, true, 0, 16, hostPtr, null, event)').not.toThrow();
-        expect('queue.enqueueReadBuffer(buffer, true, 0, 16, hostPtr, null, event)').toThrow('INVALID_EVENT');
+        expect('queue.enqueueMarker(event)').not.toThrow();
+        expect('queue.enqueueMarker(event)').toThrow('INVALID_EVENT');
       });
 
       it("enqueue*(<releasedEvent>) must throw", function() {
         if (!suite.preconditions) pending();
-        expect('queue.enqueueReadBuffer(buffer, true, 0, 16, hostPtr, null, event)').not.toThrow();
+        expect('queue.enqueueMarker(event)').not.toThrow();
         expect('event.release()').not.toThrow();
-        expect('queue.enqueueReadBuffer(buffer, true, 0, 16, hostPtr, null, event)').toThrow('INVALID_EVENT');
+        expect('queue.enqueueMarker(event)').toThrow('INVALID_EVENT');
+      });
+
+      xit("enqueue*(<userEvent>) must throw", function() {
+        if (!suite.preconditions) pending();
+        expect('userEvent = ctx.createUserEvent()').not.toThrow();
+        expect('queue.enqueueMarker(userEvent)').toThrow('INVALID_EVENT');
       });
 
       it("enqueue*(<invalidEvent>) must throw", function() {
         if (!suite.preconditions) pending();
-        expect('queue.enqueueReadBuffer(buffer, true, 0, 16, hostPtr, null, "foo")').toThrow('INVALID_EVENT');
+        expect('queue.enqueueMarker("foo")').toThrow('INVALID_EVENT');
       });
 
     });
@@ -1559,14 +1563,14 @@ describe("Runtime", function() {
 
       it("getInfo(<validEnum>) must work for a populated event", function() {
         if (!suite.preconditions) pending();
-        expect('queue.enqueueReadBuffer(buffer, true, 0, 16, hostPtr, null, event)').not.toThrow();
+        expect('queue.enqueueMarker(event); queue.finish();').not.toThrow();
         expect('event.getInfo(WebCL.EVENT_COMMAND_QUEUE)').not.toThrow();
         expect('event.getInfo(WebCL.EVENT_CONTEXT)').not.toThrow();
         expect('event.getInfo(WebCL.EVENT_COMMAND_TYPE)').not.toThrow();
         expect('event.getInfo(WebCL.EVENT_COMMAND_EXECUTION_STATUS)').not.toThrow();
         expect('event.getInfo(WebCL.EVENT_COMMAND_QUEUE) === queue').toEvalAs(true);
         expect('event.getInfo(WebCL.EVENT_CONTEXT) === ctx').toEvalAs(true);
-        expect('event.getInfo(WebCL.EVENT_COMMAND_TYPE) === WebCL.COMMAND_READ_BUFFER').toEvalAs(true);
+        expect('event.getInfo(WebCL.EVENT_COMMAND_TYPE) === WebCL.COMMAND_MARKER').toEvalAs(true);
         expect('event.getInfo(WebCL.EVENT_COMMAND_EXECUTION_STATUS) === WebCL.COMPLETE').toEvalAs(true);
       });
 
@@ -1584,7 +1588,7 @@ describe("Runtime", function() {
         expect('emptyEvent.getInfo("foo")').toThrow('INVALID_VALUE');
 
         populatedEvent = event;
-        expect('queue.enqueueReadBuffer(buffer, true, 0, 16, hostPtr, null, populatedEvent)').not.toThrow();
+        expect('queue.enqueueMarker(event)').not.toThrow();
         expect('populatedEvent.getInfo(0)').toThrow('INVALID_VALUE');
         expect('populatedEvent.getInfo(1)').toThrow('INVALID_VALUE');
         expect('populatedEvent.getInfo(-1)').toThrow('INVALID_VALUE');
@@ -1606,8 +1610,7 @@ describe("Runtime", function() {
 
       it("getProfilingInfo(<validEnum>) must work for a populated event", function() {
         if (!suite.preconditions) pending();
-        event = new WebCLEvent();
-        expect('queue.enqueueReadBuffer(buffer, true, 0, 16, hostPtr, null, event)').not.toThrow();
+        expect('queue.enqueueMarker(event); queue.finish();').not.toThrow();
         expect('event.getInfo(WebCL.EVENT_COMMAND_EXECUTION_STATUS) === WebCL.COMPLETE').toEvalAs(true);
         expect('event.getProfilingInfo(WebCL.PROFILING_COMMAND_QUEUED)').not.toThrow();
         expect('event.getProfilingInfo(WebCL.PROFILING_COMMAND_SUBMIT)').not.toThrow();
@@ -1617,7 +1620,8 @@ describe("Runtime", function() {
 
       it("getProfilingInfo() return values must be ordered QUEUED <= SUBMIT <= START <= END", function() {
         if (!suite.preconditions) pending();
-        event = new WebCLEvent();
+        buffer = ctx.createBuffer(WebCL.MEM_READ_WRITE, 16);
+        hostPtr = new Uint8Array(16);
         expect('queue.enqueueReadBuffer(buffer, true, 0, 16, hostPtr, null, event)').not.toThrow();
         expect('event.getInfo(WebCL.EVENT_COMMAND_EXECUTION_STATUS) === WebCL.COMPLETE').toEvalAs(true);
         event.queued = event.getProfilingInfo(WebCL.PROFILING_COMMAND_QUEUED);
@@ -1631,8 +1635,7 @@ describe("Runtime", function() {
 
       it("getProfilingInfo(<invalidEnum>) must throw", function() {
         if (!suite.preconditions) pending();
-        expect('event = new WebCLEvent()').not.toThrow();
-        expect('queue.enqueueReadBuffer(buffer, true, 0, 16, hostPtr, null, event)').not.toThrow();
+        expect('queue.enqueueMarker(event)').not.toThrow();
         expect('event.getProfilingInfo(0)').toThrow('INVALID_VALUE');
         expect('event.getProfilingInfo(1)').toThrow('INVALID_VALUE');
         expect('event.getProfilingInfo(-1)').toThrow('INVALID_VALUE');
@@ -1646,7 +1649,6 @@ describe("Runtime", function() {
 
       it("getProfilingInfo(<validEnum>) must throw on an unpopulated event", function() {
         if (!suite.preconditions) pending();
-        expect('event = new WebCLEvent()').not.toThrow();
         expect('event.getProfilingInfo(WebCL.PROFILING_COMMAND_QUEUED)').toThrow('PROFILING_INFO_NOT_AVAILABLE');
         expect('event.getProfilingInfo(WebCL.PROFILING_COMMAND_SUBMIT)').toThrow('PROFILING_INFO_NOT_AVAILABLE');
         expect('event.getProfilingInfo(WebCL.PROFILING_COMMAND_START)').toThrow('PROFILING_INFO_NOT_AVAILABLE');

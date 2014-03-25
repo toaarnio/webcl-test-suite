@@ -52,6 +52,18 @@ describe("Robustness", function() {
     expect('webcl.releaseAll()').not.toThrow();
   });
 
+  // Known failures as of 2014-03-25:
+  //  * Win7 / NVIDIA GPU driver (crashes)
+  //
+  it("must not crash or throw when releasing user events", function() {
+    if (!preconditions) pending();
+    var r = confirm("This test case may crash your browser on NVIDIA OpenCL. Run anyway?");
+    if (r === false) pending();
+    expect('userEvent = ctx.createUserEvent()').not.toThrow();
+    expect('userEvent.release()').not.toThrow();
+    expect('ctx.release()').not.toThrow();
+  });
+
   // Known failures as of 2014-03-05:
   //  * Win7 / NVIDIA GPU driver (crashes)
   //  * Win7 / Intel CPU driver (crashes)
