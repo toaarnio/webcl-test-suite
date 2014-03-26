@@ -20,9 +20,9 @@
 //  * ERROR(msg)
 //  * DEBUG(msg)
 //  * TRACE(msg)
+//  * fuzz()
 //  * createContext()
 //  * loadSource(uri)
-//  * testSuiteAsString(suite)
 //
 (function setup() {
 
@@ -47,6 +47,35 @@
     } catch (e) {
       ERROR(this.parentSuite.description + " -> " + this.description + ": Test preconditions failed: " + e);
       this.preconditions = false;
+    }
+  };
+
+  fuzz = function(funcName, signature, validArgs, customInvalidArgs, exceptionName) {
+
+    var defaultFuzzMap = {
+      Boolean : [ 'undefined', 'null', '0', '1', '-1', '[]', '{}', '""', '"foo"' ],
+      Enum : [ 'undefined', 'null', '0', '0x2001', '-1', '[]', '{}', '""', '"foo"', 'true', 'false' ],
+      EnumOrUndefined : [ 'null', '0', '0x2001', '-1', '[]', '{}', '""', '"foo"', 'true', 'false' ],
+      String : [ 'null', '0', '1', '-1', '[]', '{}', 'true', 'false' ],
+      StringOrNull : [ '0', '1', '-1', '[]', '{}', 'true', 'false' ],
+      NonEmptyArrayOrNull : [ '0', '1', '-1', '[]', '{}', '""', '"foo"', 'true', 'false' ],
+      WebCLObject : [ 'undefined', 'null', '0', '1', '-1', '[]', '{}', '""', '"foo"', 'true', 'false', 'webcl' ],
+      DoNotTest : null,
+    }
+
+    for (var i=0; i < signature.length; i++) {
+      var invalidArgs = defaultFuzzMap[signature[i]];
+      if (invalidArgs) {
+        if (customInvalidArgs && customInvalidArgs[i]) {
+          invalidArgs = invalidArgs.concat(customInvalidArgs[i]);
+        }
+        for (var j=0; j < invalidArgs.length; j++) {
+          var args = validArgs.slice();
+          args[i] = invalidArgs[j];
+          argStr = args.join(", ");
+          expect(funcName + "(" + argStr + ")").toThrow(exceptionName);
+        }
+      }
     }
   };
 

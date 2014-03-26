@@ -154,6 +154,10 @@ describe("Runtime", function() {
     // 
     describe("getInfo", function() {
 
+      var signature = [ 'Enum' ];
+      var valid = [ 'WebCL.CONTEXT_NUM_DEVICES' ];
+      var invalid = [ 'WebCL.CONTEXT_PROPERTIES' ];
+
       it("getInfo(<validEnum>) must work", function() {
         if (!suite.preconditions) pending();
         expect('ctx.getInfo(WebCL.CONTEXT_NUM_DEVICES)').not.toThrow();
@@ -165,18 +169,21 @@ describe("Runtime", function() {
 
       it("getInfo(<invalidEnum>) must throw", function() {
         if (!suite.preconditions) pending();
-        expect('ctx.getInfo()').toThrow('INVALID_VALUE');
-        expect('ctx.getInfo(0)').toThrow('INVALID_VALUE');
-        expect('ctx.getInfo(3)').toThrow('INVALID_VALUE');
-        expect('ctx.getInfo(0x1001)').toThrow('INVALID_VALUE');
-        expect('ctx.getInfo(-1)').toThrow('INVALID_VALUE');
-        expect('ctx.getInfo("")').toThrow('INVALID_VALUE');
-        expect('ctx.getInfo([])').toThrow('INVALID_VALUE');
-        expect('ctx.getInfo({})').toThrow('INVALID_VALUE');
-        expect('ctx.getInfo(ctx)').toThrow('INVALID_VALUE');
-        expect('ctx.getInfo(WebCL.CONTEXT_REFERENCE_COUNT)').toThrow('INVALID_VALUE');
-        expect('ctx.getInfo(WebCL.CONTEXT_PROPERTIES)').toThrow('INVALID_VALUE');
+        fuzz('ctx.getInfo', signature, valid, invalid, 'INVALID_VALUE');
       });
+
+    });
+
+
+    //////////////////////////////////////////////////////////////////////////////
+    //
+    // Runtime -> WebCLContext -> getSupportedImageFormats
+    // 
+
+    describe("getSupportedImageFormats", function() {
+
+      var signature = [ 'EnumOrUndefined' ];
+      var valid = [ 'WebCL.MEM_READ_WRITE' ];
 
       it("getSupportedImageFormats(<validEnum>) must work", function() {
         if (!suite.preconditions) pending();
@@ -214,16 +221,7 @@ describe("Runtime", function() {
 
       it("getSupportedImageFormats(<invalidEnum>) must throw", function() {
         if (!suite.preconditions) pending();
-        expect('ctx.getSupportedImageFormats(0)').toThrow('INVALID_VALUE');
-        expect('ctx.getSupportedImageFormats(3)').toThrow('INVALID_VALUE');
-        expect('ctx.getSupportedImageFormats(5)').toThrow('INVALID_VALUE');
-        expect('ctx.getSupportedImageFormats(6)').toThrow('INVALID_VALUE');
-        expect('ctx.getSupportedImageFormats(0x1001)').toThrow('INVALID_VALUE');
-        expect('ctx.getSupportedImageFormats(-1)').toThrow('INVALID_VALUE');
-        expect('ctx.getSupportedImageFormats("")').toThrow('INVALID_VALUE');
-        expect('ctx.getSupportedImageFormats([])').toThrow('INVALID_VALUE');
-        expect('ctx.getSupportedImageFormats({})').toThrow('INVALID_VALUE');
-        expect('ctx.getSupportedImageFormats(ctx)').toThrow('INVALID_VALUE');
+        fuzz('ctx.getSupportedImageFormats', signature, valid, null, 'INVALID_VALUE');
       });
 
     });
@@ -487,6 +485,10 @@ describe("Runtime", function() {
     // 
     describe("createSampler", function() {
 
+      var signature = [ 'Boolean', 'Enum', 'Enum' ];
+      var valid = [ 'true', 'WebCL.ADDRESS_CLAMP', 'WebCL.FILTER_NEAREST' ];
+      var invalid = [ 'WebCL.FALSE', 'WebCL.FILTER_NEAREST', 'WebCL.ADDRESS_CLAMP' ];
+
       it("createSampler(<validArguments>) must not throw", function() {
         if (!suite.preconditions) pending();
         expect('ctx.createSampler(true, WebCL.ADDRESS_CLAMP, WebCL.FILTER_NEAREST)').not.toThrow();
@@ -500,15 +502,10 @@ describe("Runtime", function() {
       });
 
       it("createSampler(<invalidArguments>) must throw", function() {
+        if (!suite.preconditions) pending();
+        fuzz('ctx.createSampler', signature, valid, invalid, 'INVALID_VALUE');
         expect('ctx.createSampler(false, WebCL.ADDRESS_REPEAT, WebCL.FILTER_NEAREST)').toThrow('INVALID_VALUE');
         expect('ctx.createSampler(false, WebCL.ADDRESS_MIRRORED_REPEAT, WebCL.FILTER_NEAREST)').toThrow('INVALID_VALUE');
-        expect('ctx.createSampler("", WebCL.ADDRESS_CLAMP, WebCL.FILTER_NEAREST)').toThrow('INVALID_VALUE');
-        expect('ctx.createSampler({}, WebCL.ADDRESS_CLAMP, WebCL.FILTER_NEAREST)').toThrow('INVALID_VALUE');
-        expect('ctx.createSampler([], WebCL.ADDRESS_CLAMP, WebCL.FILTER_NEAREST)').toThrow('INVALID_VALUE');
-        expect('ctx.createSampler(0, WebCL.ADDRESS_CLAMP, WebCL.FILTER_NEAREST)').toThrow('INVALID_VALUE');
-        expect('ctx.createSampler(null, WebCL.ADDRESS_CLAMP, WebCL.FILTER_NEAREST)').toThrow('INVALID_VALUE');
-        expect('ctx.createSampler(true, WebCL.FILTER_NEAREST, WebCL.FILTER_NEAREST)').toThrow('INVALID_VALUE');
-        expect('ctx.createSampler(true, WebCL.ADDRESS_CLAMP, WebCL.ADDRESS_CLAMP)').toThrow('INVALID_VALUE');
       });
 
     });
@@ -528,22 +525,60 @@ describe("Runtime", function() {
 
   });
 
+  
   //////////////////////////////////////////////////////////////////////////////
   //
-  // Runtime -> WebCLBuffer
+  // Runtime -> WebCLSampler
   // 
-  describe("WebCLBuffer", function() {
+  describe("WebCLSampler", function() {
     
+    var signature = [ 'Enum' ];
+    var valid = [ 'WebCL.SAMPLER_FILTER_MODE' ];
+
     beforeEach(enforcePreconditions.bind(this, function() {
       ctx = createContext();
-      buffer = ctx.createBuffer(WebCL.MEM_READ_WRITE, 128);
+      sampler = ctx.createSampler(true, WebCL.ADDRESS_CLAMP, WebCL.FILTER_NEAREST);
     }));
+
+    it("getInfo(<validEnum>) must work", function() {
+      if (!suite.preconditions) pending();
+      expect('sampler.getInfo(WebCL.SAMPLER_CONTEXT)').not.toThrow();
+      expect('sampler.getInfo(WebCL.SAMPLER_NORMALIZED_COORDS)').not.toThrow();
+      expect('sampler.getInfo(WebCL.SAMPLER_ADDRESSING_MODE)').not.toThrow();
+      expect('sampler.getInfo(WebCL.SAMPLER_FILTER_MODE)').not.toThrow();
+      expect('sampler.getInfo(WebCL.SAMPLER_CONTEXT) === ctx').toEvalAs(true);
+      expect('sampler.getInfo(WebCL.SAMPLER_NORMALIZED_COORDS) === true').toEvalAs(true);
+      expect('sampler.getInfo(WebCL.SAMPLER_ADDRESSING_MODE) === WebCL.ADDRESS_CLAMP').toEvalAs(true);
+      expect('sampler.getInfo(WebCL.SAMPLER_FILTER_MODE) === WebCL.FILTER_NEAREST').toEvalAs(true);
+    });
+
+    it("getInfo(<invalidEnum>) must throw", function() {
+      if (!suite.preconditions) pending();
+      fuzz('sampler.getInfo', signature, valid, null, 'INVALID_VALUE');
+    });
+
+  });
+
+
+  //////////////////////////////////////////////////////////////////////////////
+  //
+  // Runtime -> WebCLMemoryObject
+  // 
+  describe("WebCLMemoryObject", function() {
 
     //////////////////////////////////////////////////////////////////////////////
     //
-    // Runtime -> WebCLBuffer -> getInfo
+    // Runtime -> WebCLMemoryObject -> WebCLBuffer
     // 
-    describe("getInfo", function() {
+    describe("WebCLBuffer", function() {
+      
+      var signature = [ 'Enum' ];
+      var valid = [ 'WebCL.MEM_TYPE' ];
+
+      beforeEach(enforcePreconditions.bind(this, function() {
+        ctx = createContext();
+        buffer = ctx.createBuffer(WebCL.MEM_READ_WRITE, 128);
+      }));
 
       it("getInfo(<validEnum>) must work", function() {
         if (!suite.preconditions) pending();
@@ -561,39 +596,25 @@ describe("Runtime", function() {
 
       it("getInfo(<invalidEnum>) must throw", function() {
         if (!suite.preconditions) pending();
-        expect('buffer.getInfo()').toThrow('INVALID_VALUE');
-        expect('buffer.getInfo(0)').toThrow('INVALID_VALUE');
-        expect('buffer.getInfo(1)').toThrow('INVALID_VALUE');
-        expect('buffer.getInfo(-1)').toThrow('INVALID_VALUE');
-        expect('buffer.getInfo(WebCL.MEM_OBJECT_BUFFER)').toThrow('INVALID_VALUE');
-        expect('buffer.getInfo(null)').toThrow('INVALID_VALUE');
-        expect('buffer.getInfo({})').toThrow('INVALID_VALUE');
-        expect('buffer.getInfo([])').toThrow('INVALID_VALUE');
-        expect('buffer.getInfo("")').toThrow('INVALID_VALUE');
-        expect('buffer.getInfo("foo")').toThrow('INVALID_VALUE');
+        fuzz('buffer.getInfo', signature, valid, null, 'INVALID_VALUE');
       });
 
     });
-    
-  });
-
-  //////////////////////////////////////////////////////////////////////////////
-  //
-  // Runtime -> WebCLImage
-  // 
-  describe("WebCLImage", function() {
-    
-    beforeEach(enforcePreconditions.bind(this, function() {
-      ctx = createContext();
-      var descriptor = { width : 33, height : 17 };
-      image = ctx.createImage(WebCL.MEM_READ_WRITE, descriptor);
-    }));
 
     //////////////////////////////////////////////////////////////////////////////
     //
-    // Runtime -> WebCLImage -> getInfo
+    // Runtime -> WebCLMemoryObject -> WebCLImage
     // 
-    describe("getInfo", function() {
+    describe("WebCLImage", function() {
+      
+      var signature = [ 'EnumOrUndefined' ];
+      var valid = [ 'WebCL.MEM_TYPE' ];
+
+      beforeEach(enforcePreconditions.bind(this, function() {
+        ctx = createContext();
+        var descriptor = { width : 33, height : 17 };
+        image = ctx.createImage(WebCL.MEM_READ_WRITE, descriptor);
+      }));
 
       it("getInfo() must work", function() {
         if (!suite.preconditions) pending();
@@ -644,18 +665,11 @@ describe("Runtime", function() {
 
       it("getInfo(<invalidEnum>) must throw", function() {
         if (!suite.preconditions) pending();
-        expect('image.getInfo(0)').toThrow('INVALID_VALUE');
-        expect('image.getInfo(1)').toThrow('INVALID_VALUE');
-        expect('image.getInfo(-1)').toThrow('INVALID_VALUE');
-        expect('image.getInfo(WebCL.MEM_OBJECT_IMAGE2D)').toThrow('INVALID_VALUE');
-        expect('image.getInfo({})').toThrow('INVALID_VALUE');
-        expect('image.getInfo([])').toThrow('INVALID_VALUE');
-        expect('image.getInfo("")').toThrow('INVALID_VALUE');
-        expect('image.getInfo("foo")').toThrow('INVALID_VALUE');
+        fuzz('image.getInfo', signature, valid, null, 'INVALID_VALUE');
       });
 
     });
-    
+
   });
 
   //////////////////////////////////////////////////////////////////////////////
@@ -677,6 +691,9 @@ describe("Runtime", function() {
     // 
     describe("getInfo", function() {
 
+      var signature = [ 'Enum' ];
+      var valid = [ 'WebCL.PROGRAM_NUM_DEVICES' ];
+
       it("getInfo(<validEnum>) must work", function() {
         if (!suite.preconditions) pending();
         expect('program.getInfo(WebCL.PROGRAM_NUM_DEVICES)').not.toThrow();
@@ -692,16 +709,7 @@ describe("Runtime", function() {
 
       it("getInfo(<invalidEnum>) must throw", function() {
         if (!suite.preconditions) pending();
-        expect('program.getInfo()').toThrow('INVALID_VALUE');
-        expect('program.getInfo(0)').toThrow('INVALID_VALUE');
-        expect('program.getInfo(1)').toThrow('INVALID_VALUE');
-        expect('program.getInfo(-1)').toThrow('INVALID_VALUE');
-        expect('program.getInfo(WebCL.PROGRAM_BUILD_STATUS)').toThrow('INVALID_VALUE');
-        expect('program.getInfo(null)').toThrow('INVALID_VALUE');
-        expect('program.getInfo({})').toThrow('INVALID_VALUE');
-        expect('program.getInfo([])').toThrow('INVALID_VALUE');
-        expect('program.getInfo("")').toThrow('INVALID_VALUE');
-        expect('program.getInfo("foo")').toThrow('INVALID_VALUE');
+        fuzz('program.getInfo', signature, valid, null, 'INVALID_VALUE');
       });
 
     });
@@ -711,6 +719,10 @@ describe("Runtime", function() {
     // Runtime -> WebCLProgram -> build
     // 
     describe("build", function() {
+
+      var signature = [ 'NonEmptyArrayOrNull', 'StringOrNull' ];
+      var valid = [ 'devices', '"-D foo"' ];
+      var invalid = [ 'device', 'program' ];
 
       it("build(<validDeviceArray>) must not throw", function() {
         if (!suite.preconditions) pending();
@@ -747,16 +759,15 @@ describe("Runtime", function() {
 
       it("build(<invalidDeviceArray>) must throw", function() {
         if (!suite.preconditions) pending();
-        expect('program.build([])').toThrow('INVALID_VALUE');
-        expect('program.build({})').toThrow('INVALID_VALUE');
-        expect('program.build("")').toThrow('INVALID_VALUE');
-        expect('program.build(program)').toThrow('INVALID_VALUE');
-        expect('program.build(device)').toThrow('INVALID_VALUE');
+        var sig = signature.slice(); sig[1] = 'DoNotTest';
+        fuzz('program.build', sig, valid, invalid, 'INVALID_VALUE');
         expect('program.build([program])').toThrow('INVALID_DEVICE');
       });
 
       it("build(<invalidBuildOptions>) must throw", function() {
         if (!suite.preconditions) pending();
+        var sig = signature.slice(); sig[0] = 'DoNotTest';
+        fuzz('program.build', sig, valid, invalid, 'INVALID_BUILD_OPTIONS');
         expect('program.build(devices, "-cl-std=CL1.1")').toThrow('INVALID_BUILD_OPTIONS');
         expect('program.build(devices, "-cl-std=CL1.2")').toThrow('INVALID_BUILD_OPTIONS');
         expect('program.build(devices, "-cl-kernel-arg-info")').toThrow('INVALID_BUILD_OPTIONS');
@@ -767,8 +778,6 @@ describe("Runtime", function() {
         expect('program.build(devices, "-D foo=#include<file.h>")').toThrow('INVALID_BUILD_OPTIONS');
         expect('program.build(devices, "-D foo=")').toThrow('INVALID_BUILD_OPTIONS');
         expect('program.build(devices, "-D =bar")').toThrow('INVALID_BUILD_OPTIONS');
-        expect('program.build(devices, [])').toThrow('INVALID_BUILD_OPTIONS');
-        expect('program.build(devices, program)').toThrow('INVALID_BUILD_OPTIONS');
       });
 
       it("must throw if program source is invalid", function() {
@@ -793,39 +802,18 @@ describe("Runtime", function() {
     // 
     describe("getBuildInfo", function() {
 
-      it("getBuildInfo(<validDevice>, <validEnum>) must not throw", function() {
+      var signature = [ 'WebCLObject', 'Enum' ];
+      var valid = [ 'device', 'WebCL.PROGRAM_BUILD_STATUS' ];
+      var invalid = [ 'program', 'WebCL.PROGRAM_NUM_DEVICES' ];
+
+      it("getBuildInfo(<validDevice>, <validEnum>) must work", function() {
         if (!suite.preconditions) pending();
         expect('program.getBuildInfo(device, WebCL.PROGRAM_BUILD_STATUS)').not.toThrow();
         expect('program.getBuildInfo(device, WebCL.PROGRAM_BUILD_OPTIONS)').not.toThrow();
         expect('program.getBuildInfo(device, WebCL.PROGRAM_BUILD_LOG)').not.toThrow();
       });
 
-      it("getBuildInfo(<invalidDevice>, <validEnum>) must throw", function() {
-        if (!suite.preconditions) pending();
-        expect('program.getBuildInfo("foobar", WebCL.PROGRAM_BUILD_STATUS)').toThrow('INVALID_DEVICE');
-        expect('program.getBuildInfo("", WebCL.PROGRAM_BUILD_STATUS)').toThrow('INVALID_DEVICE');
-        expect('program.getBuildInfo([], WebCL.PROGRAM_BUILD_STATUS)').toThrow('INVALID_DEVICE');
-        expect('program.getBuildInfo(null, WebCL.PROGRAM_BUILD_STATUS)').toThrow('INVALID_DEVICE');
-        expect('program.getBuildInfo(undefined, WebCL.PROGRAM_BUILD_STATUS)').toThrow('INVALID_DEVICE');
-        expect('program.getBuildInfo(program, WebCL.PROGRAM_BUILD_STATUS)').toThrow('INVALID_DEVICE');
-      });
-
-      it("getBuildInfo(<validDevice>, <invalidEnum>) must throw", function() {
-        if (!suite.preconditions) pending();
-        expect('program.getBuildInfo(device)').toThrow('INVALID_VALUE');
-        expect('program.getBuildInfo(device, undefined)').toThrow('INVALID_VALUE');
-        expect('program.getBuildInfo(device, null)').toThrow('INVALID_VALUE');
-        expect('program.getBuildInfo(device, "")').toThrow('INVALID_VALUE');
-        expect('program.getBuildInfo(device, 0)').toThrow('INVALID_VALUE');
-        expect('program.getBuildInfo(device, -1)').toThrow('INVALID_VALUE');
-        expect('program.getBuildInfo(device, 0x1180)').toThrow('INVALID_VALUE');
-        expect('program.getBuildInfo(device, 0x1184)').toThrow('INVALID_VALUE');
-        expect('program.getBuildInfo(device, WebCL.PROGRAM_NUM_DEVICES)').toThrow('INVALID_VALUE');
-        expect('program.getBuildInfo(device, "foobar")').toThrow('INVALID_VALUE');
-        expect('program.getBuildInfo(device, device)').toThrow('INVALID_VALUE');
-      });
-
-      it("getBuildInfo(PROGRAM_BUILD_STATUS) must work", function() {
+      it("getBuildInfo(PROGRAM_BUILD_STATUS) must report the expected status", function() {
         if (!suite.preconditions) pending();
         expect('program.getBuildInfo(device, WebCL.PROGRAM_BUILD_STATUS)').toEvalAs('WebCL.BUILD_NONE');
         expect('program.build(devices)').not.toThrow();
@@ -835,7 +823,7 @@ describe("Runtime", function() {
         expect('program.getBuildInfo(device, WebCL.PROGRAM_BUILD_STATUS)').toEvalAs('WebCL.BUILD_ERROR');
       });
 
-      it("getBuildInfo(PROGRAM_BUILD_OPTIONS) must work", function() {
+      it("getBuildInfo(PROGRAM_BUILD_OPTIONS) must report the given build options", function() {
         if (!suite.preconditions) pending();
         expect('program.build(devices)').not.toThrow();
         expect('program.getBuildInfo(device, WebCL.PROGRAM_BUILD_OPTIONS)').not.toThrow();
@@ -846,7 +834,7 @@ describe("Runtime", function() {
         expect('program.getBuildInfo(device, WebCL.PROGRAM_BUILD_OPTIONS) === "-w -D foo=0xdeadbeef"').toEvalAs(true);
       });
 
-      it("getBuildInfo(PROGRAM_BUILD_LOG) must actually report errors", function() {
+      it("getBuildInfo(PROGRAM_BUILD_LOG) must report the expected build errors", function() {
         if (!suite.preconditions) pending();
         program = ctx.createProgram("obviously invalid");
         expect('program.build(devices)').toThrow();
@@ -854,6 +842,18 @@ describe("Runtime", function() {
         expect('program.getBuildInfo(device, WebCL.PROGRAM_BUILD_LOG).indexOf("error") !== -1').toEvalAs(true);
       });
         
+      it("getBuildInfo(<invalidDevice>, <validEnum>) must throw", function() {
+        if (!suite.preconditions) pending();
+        var sig = signature.slice(); sig[1] = 'DoNotTest';
+        fuzz('program.getBuildInfo', sig, valid, invalid, 'INVALID_DEVICE');
+      });
+
+      it("getBuildInfo(<validDevice>, <invalidEnum>) must throw", function() {
+        if (!suite.preconditions) pending();
+        var sig = signature.slice(); sig[0] = 'DoNotTest';
+        fuzz('program.getBuildInfo', sig, valid, invalid, 'INVALID_VALUE');
+      });
+
     });
 
     //////////////////////////////////////////////////////////////////////////////
@@ -861,6 +861,9 @@ describe("Runtime", function() {
     // Runtime -> WebCLProgram -> createKernel
     // 
     describe("createKernel", function() {
+
+      var signature = [ 'String' ];
+      var valid = [ '"dummy"' ];
 
       it("createKernel(<validName>) must work", function() {
         if (!suite.preconditions) pending();
@@ -871,11 +874,7 @@ describe("Runtime", function() {
       it("createKernel(<invalidName>) must throw", function() {
         if (!suite.preconditions) pending();
         expect('program.build()').not.toThrow();
-        expect('program.createKernel("foobar")').toThrow('INVALID_KERNEL_NAME');
-        expect('program.createKernel()').toThrow('INVALID_KERNEL_NAME');
-        expect('program.createKernel("")').toThrow('INVALID_KERNEL_NAME');
-        expect('program.createKernel({})').toThrow('INVALID_KERNEL_NAME');
-        expect('program.createKernel(program)').toThrow('INVALID_KERNEL_NAME');
+        fuzz('program.createKernel', signature, valid, null, 'INVALID_KERNEL_NAME');
       });
 
       it("createKernelsInProgram() must work", function() {
@@ -911,17 +910,89 @@ describe("Runtime", function() {
 
     //////////////////////////////////////////////////////////////////////////////
     //
+    // Runtime -> WebCLKernel -> getInfo
+    // 
+    describe("getInfo", function() {
+
+      var signature = [ 'Enum' ];
+      var valid = [ 'WebCL.KERNEL_FUNCTION_NAME' ];
+
+      beforeEach(enforcePreconditions.bind(this, function() {
+        program = ctx.createProgram("kernel void dummy(global uint* buf) { buf[0]=0xdeadbeef; }");
+        program.build();
+        kernel = program.createKernel("dummy");
+      }));
+
+      it("getInfo(<validEnum>) must work", function() {
+        if (!suite.preconditions) pending();
+        expect('kernel.getInfo(WebCL.KERNEL_FUNCTION_NAME)').not.toThrow();
+        expect('kernel.getInfo(WebCL.KERNEL_NUM_ARGS)').not.toThrow();
+        expect('kernel.getInfo(WebCL.KERNEL_CONTEXT)').not.toThrow();
+        expect('kernel.getInfo(WebCL.KERNEL_PROGRAM)').not.toThrow();
+        expect('kernel.getInfo(WebCL.KERNEL_FUNCTION_NAME) === "dummy"').toEvalAs(true);
+        expect('kernel.getInfo(WebCL.KERNEL_NUM_ARGS) === 1').toEvalAs(true);
+        expect('kernel.getInfo(WebCL.KERNEL_CONTEXT) === ctx').toEvalAs(true);
+        expect('kernel.getInfo(WebCL.KERNEL_PROGRAM) === program').toEvalAs(true);
+      });
+
+      it("getInfo(<invalidEnum>) must throw", function() {
+        if (!suite.preconditions) pending();
+        fuzz('kernel.getInfo', signature, valid, null, 'INVALID_VALUE');
+      });
+      
+    });
+
+    //////////////////////////////////////////////////////////////////////////////
+    //
     // Runtime -> WebCLKernel -> getWorkGroupInfo
     // 
     describe("getWorkGroupInfo", function() {
 
-      it("must support KERNEL_WORK_GROUP_SIZE", function() {
-        if (!suite.preconditions) pending();
+      var signature = [ 'WebCLObject', 'Enum' ];
+      var valid = [ 'device', 'WebCL.KERNEL_WORK_GROUP_SIZE' ];
+
+      beforeEach(enforcePreconditions.bind(this, function() {
+        ctx = createContext();
+        devices = ctx.getInfo(WebCL.CONTEXT_DEVICES);
+        device = devices[0];
         program = ctx.createProgram("kernel void dummy(global uint* buf) { buf[0]=0xdeadbeef; }");
+        program.build();
+        kernel = program.createKernel("dummy");
+      }));
+
+      it("getWorkGroupInfo(<validEnum>) must work", function() {
+        if (!suite.preconditions) pending();
+        expect('kernel.getWorkGroupInfo(device, WebCL.KERNEL_WORK_GROUP_SIZE)').not.toThrow();
+        expect('kernel.getWorkGroupInfo(device, WebCL.KERNEL_COMPILE_WORK_GROUP_SIZE)').not.toThrow();
+        expect('kernel.getWorkGroupInfo(device, WebCL.KERNEL_LOCAL_MEM_SIZE)').not.toThrow();
+        expect('kernel.getWorkGroupInfo(device, WebCL.KERNEL_PREFERRED_WORK_GROUP_SIZE_MULTIPLE)').not.toThrow();
+        expect('kernel.getWorkGroupInfo(device, WebCL.KERNEL_PRIVATE_MEM_SIZE)').not.toThrow();
+        expect('kernel.getWorkGroupInfo(device, WebCL.KERNEL_WORK_GROUP_SIZE) >= 1').toEvalAs(true);
+        expect('kernel.getWorkGroupInfo(device, WebCL.KERNEL_COMPILE_WORK_GROUP_SIZE) instanceof Array').toEvalAs(true);
+        expect('kernel.getWorkGroupInfo(device, WebCL.KERNEL_COMPILE_WORK_GROUP_SIZE)[0]').toEvalAs(0);
+        expect('kernel.getWorkGroupInfo(device, WebCL.KERNEL_COMPILE_WORK_GROUP_SIZE)[1]').toEvalAs(0);
+        expect('kernel.getWorkGroupInfo(device, WebCL.KERNEL_COMPILE_WORK_GROUP_SIZE)[2]').toEvalAs(0);
+        expect('kernel.getWorkGroupInfo(device, WebCL.KERNEL_LOCAL_MEM_SIZE) >= 0').toEvalAs(true);
+        expect('kernel.getWorkGroupInfo(device, WebCL.KERNEL_PREFERRED_WORK_GROUP_SIZE_MULTIPLE)').not.toEvalAs(0);
+        expect('kernel.getWorkGroupInfo(device, WebCL.KERNEL_PRIVATE_MEM_SIZE) >= 0').toEvalAs(true);
+      });
+
+      it("getWorkGroupInfo(COMPILE_WORK_GROUP_SIZE) must report the expected reqd_work_group_size", function() {
+        if (!suite.preconditions) pending();
+        program = ctx.createProgram("kernel __attribute__((reqd_work_group_size(4, 3, 2))) void dummy(global uint* buf) { buf[0]=0xdeadbeef; }");
         expect('program.build()').not.toThrow();
         expect('kernel = program.createKernel("dummy")').not.toThrow();
-        expect('kernel.getWorkGroupInfo(device, WebCL.KERNEL_WORK_GROUP_SIZE)').not.toThrow();
-        expect('kernel.getWorkGroupInfo(device, WebCL.KERNEL_WORK_GROUP_SIZE) >= 1').toEvalAs(true);
+        expect('kernel.getWorkGroupInfo(device, WebCL.KERNEL_COMPILE_WORK_GROUP_SIZE)').not.toThrow();
+        expect('kernel.getWorkGroupInfo(device, WebCL.KERNEL_COMPILE_WORK_GROUP_SIZE) instanceof Array').toEvalAs(true);
+        expect('kernel.getWorkGroupInfo(device, WebCL.KERNEL_COMPILE_WORK_GROUP_SIZE)[0]').toEvalAs(4);
+        expect('kernel.getWorkGroupInfo(device, WebCL.KERNEL_COMPILE_WORK_GROUP_SIZE)[1]').toEvalAs(3);
+        expect('kernel.getWorkGroupInfo(device, WebCL.KERNEL_COMPILE_WORK_GROUP_SIZE)[2]').toEvalAs(2);
+      });
+
+      it("getWorkGroupInfo(<invalidEnum>) must throw", function() {
+        if (!suite.preconditions) pending();
+        var sig = signature.slice(); sig[0] = 'DoNotTest';
+        fuzz('kernel.getWorkGroupInfo', sig, valid, null, 'INVALID_VALUE');
       });
 
     });
@@ -1138,6 +1209,9 @@ describe("Runtime", function() {
     // 
     describe("getInfo", function() {
 
+      var signature = [ 'Enum' ];
+      var valid = [ 'WebCL.QUEUE_PROPERTIES' ];
+
       it("getInfo(<validEnum>) must work", function() {
         if (!suite.preconditions) pending();
         expect('queue.getInfo(WebCL.QUEUE_CONTEXT)').not.toThrow();
@@ -1150,16 +1224,7 @@ describe("Runtime", function() {
 
       it("getInfo(<invalidEnum>) must throw", function() {
         if (!suite.preconditions) pending();
-        expect('queue.getInfo()').toThrow('INVALID_VALUE');
-        expect('queue.getInfo(0)').toThrow('INVALID_VALUE');
-        expect('queue.getInfo(1)').toThrow('INVALID_VALUE');
-        expect('queue.getInfo(-1)').toThrow('INVALID_VALUE');
-        expect('queue.getInfo(WebCL.QUEUE_PROFILING_ENABLE)').toThrow('INVALID_VALUE');
-        expect('queue.getInfo(null)').toThrow('INVALID_VALUE');
-        expect('queue.getInfo({})').toThrow('INVALID_VALUE');
-        expect('queue.getInfo([])').toThrow('INVALID_VALUE');
-        expect('queue.getInfo("")').toThrow('INVALID_VALUE');
-        expect('queue.getInfo("foo")').toThrow('INVALID_VALUE');
+        fuzz('queue.getInfo', signature, valid, null, 'INVALID_VALUE');
       });
 
     });
@@ -1558,6 +1623,10 @@ describe("Runtime", function() {
     // 
     describe("getInfo", function() {
 
+      var signature = [ 'Enum' ];
+      var valid = [ 'WebCL.EVENT_COMMAND_TYPE' ];
+      var invalid = [ 'WebCL.PROFILING_COMMAND_SUBMIT' ]
+
       it("getInfo(<validEnum>) must work for an empty event", function() {
         if (!suite.preconditions) pending();
         expect('event.getInfo(WebCL.EVENT_COMMAND_QUEUE)').not.toThrow();
@@ -1582,28 +1651,9 @@ describe("Runtime", function() {
 
       it("getInfo(<invalidEnum>) must throw", function() {
         if (!suite.preconditions) pending();
-        emptyEvent = event;
-        expect('emptyEvent.getInfo(0)').toThrow('INVALID_VALUE');
-        expect('emptyEvent.getInfo(1)').toThrow('INVALID_VALUE');
-        expect('emptyEvent.getInfo(-1)').toThrow('INVALID_VALUE');
-        expect('emptyEvent.getInfo(WebCL.PROFILING_COMMAND_QUEUED)').toThrow('INVALID_VALUE');
-        expect('emptyEvent.getInfo(null)').toThrow('INVALID_VALUE');
-        expect('emptyEvent.getInfo({})').toThrow('INVALID_VALUE');
-        expect('emptyEvent.getInfo([])').toThrow('INVALID_VALUE');
-        expect('emptyEvent.getInfo("")').toThrow('INVALID_VALUE');
-        expect('emptyEvent.getInfo("foo")').toThrow('INVALID_VALUE');
-
-        populatedEvent = event;
+        fuzz('event.getInfo', signature, valid, invalid, 'INVALID_VALUE');
         expect('queue.enqueueMarker(event)').not.toThrow();
-        expect('populatedEvent.getInfo(0)').toThrow('INVALID_VALUE');
-        expect('populatedEvent.getInfo(1)').toThrow('INVALID_VALUE');
-        expect('populatedEvent.getInfo(-1)').toThrow('INVALID_VALUE');
-        expect('populatedEvent.getInfo(WebCL.PROFILING_COMMAND_QUEUED)').toThrow('INVALID_VALUE');
-        expect('populatedEvent.getInfo(null)').toThrow('INVALID_VALUE');
-        expect('populatedEvent.getInfo({})').toThrow('INVALID_VALUE');
-        expect('populatedEvent.getInfo([])').toThrow('INVALID_VALUE');
-        expect('populatedEvent.getInfo("")').toThrow('INVALID_VALUE');
-        expect('populatedEvent.getInfo("foo")').toThrow('INVALID_VALUE');
+        fuzz('event.getInfo', signature, valid, invalid, 'INVALID_VALUE');
       });
 
     });
@@ -1613,6 +1663,10 @@ describe("Runtime", function() {
     // Runtime -> WebCLEvent -> getProfilingInfo
     // 
     describe("getProfilingInfo", function() {
+
+      var signature = [ 'Enum' ];
+      var valid = [ 'WebCL.PROFILING_COMMAND_SUBMIT' ];
+      var invalid = [ 'WebCL.EVENT_CONTEXT' ]
 
       it("getProfilingInfo(<validEnum>) must work for a populated event", function() {
         if (!suite.preconditions) pending();
@@ -1624,7 +1678,7 @@ describe("Runtime", function() {
         expect('event.getProfilingInfo(WebCL.PROFILING_COMMAND_END)').not.toThrow();
       });
 
-      it("getProfilingInfo() return values must be ordered QUEUED <= SUBMIT <= START <= END", function() {
+      it("getProfilingInfo(<validEnum>) return values must be ordered QUEUED <= SUBMIT <= START <= END", function() {
         if (!suite.preconditions) pending();
         buffer = ctx.createBuffer(WebCL.MEM_READ_WRITE, 16);
         hostPtr = new Uint8Array(16);
@@ -1637,20 +1691,6 @@ describe("Runtime", function() {
         expect(event.queued).not.toBeGreaterThan(event.submit);
         expect(event.submit).not.toBeGreaterThan(event.start);
         expect(event.start).not.toBeGreaterThan(event.end);
-      });
-
-      it("getProfilingInfo(<invalidEnum>) must throw", function() {
-        if (!suite.preconditions) pending();
-        expect('queue.enqueueMarker(event)').not.toThrow();
-        expect('event.getProfilingInfo(0)').toThrow('INVALID_VALUE');
-        expect('event.getProfilingInfo(1)').toThrow('INVALID_VALUE');
-        expect('event.getProfilingInfo(-1)').toThrow('INVALID_VALUE');
-        expect('event.getProfilingInfo(WebCL.EVENT_CONTEXT)').toThrow('INVALID_VALUE');
-        expect('event.getProfilingInfo(null)').toThrow('INVALID_VALUE');
-        expect('event.getProfilingInfo({})').toThrow('INVALID_VALUE');
-        expect('event.getProfilingInfo([])').toThrow('INVALID_VALUE');
-        expect('event.getProfilingInfo("")').toThrow('INVALID_VALUE');
-        expect('event.getProfilingInfo("foo")').toThrow('INVALID_VALUE');
       });
 
       it("getProfilingInfo(<validEnum>) must throw on an unpopulated event", function() {
@@ -1668,6 +1708,12 @@ describe("Runtime", function() {
         expect('userEvent.getProfilingInfo(WebCL.PROFILING_COMMAND_SUBMIT)').toThrow('PROFILING_INFO_NOT_AVAILABLE');
         expect('userEvent.getProfilingInfo(WebCL.PROFILING_COMMAND_START)').toThrow('PROFILING_INFO_NOT_AVAILABLE');
         expect('userEvent.getProfilingInfo(WebCL.PROFILING_COMMAND_END)').toThrow('PROFILING_INFO_NOT_AVAILABLE');
+      });
+
+      it("getProfilingInfo(<invalidEnum>) must throw", function() {
+        if (!suite.preconditions) pending();
+        expect('queue.enqueueMarker(event)').not.toThrow();
+        fuzz('event.getProfilingInfo', signature, valid, invalid, 'INVALID_VALUE');
       });
 
     });
