@@ -720,7 +720,7 @@ describe("Runtime", function() {
     // 
     describe("build", function() {
 
-      var signature = [ 'NonEmptyArrayOrNull', 'StringOrNull' ];
+      var signature = [ 'OptionalArray', 'OptionalString' ];
       var valid = [ 'devices', '"-D foo"' ];
       var invalid = [ 'device', 'program' ];
 
@@ -759,15 +759,13 @@ describe("Runtime", function() {
 
       it("build(<invalidDeviceArray>) must throw", function() {
         if (!suite.preconditions) pending();
-        var sig = signature.slice(); sig[1] = 'DoNotTest';
-        fuzz('program.build', sig, valid, invalid, 'INVALID_VALUE');
+        fuzz('program.build', signature, valid, invalid, [0], 'INVALID_VALUE');
         expect('program.build([program])').toThrow('INVALID_DEVICE');
       });
 
       it("build(<invalidBuildOptions>) must throw", function() {
         if (!suite.preconditions) pending();
-        var sig = signature.slice(); sig[0] = 'DoNotTest';
-        fuzz('program.build', sig, valid, invalid, 'INVALID_BUILD_OPTIONS');
+        fuzz('program.build', signature, valid, invalid, [1], 'INVALID_BUILD_OPTIONS');
         expect('program.build(devices, "-cl-std=CL1.1")').toThrow('INVALID_BUILD_OPTIONS');
         expect('program.build(devices, "-cl-std=CL1.2")').toThrow('INVALID_BUILD_OPTIONS');
         expect('program.build(devices, "-cl-kernel-arg-info")').toThrow('INVALID_BUILD_OPTIONS');
@@ -844,14 +842,12 @@ describe("Runtime", function() {
         
       it("getBuildInfo(<invalidDevice>, <validEnum>) must throw", function() {
         if (!suite.preconditions) pending();
-        var sig = signature.slice(); sig[1] = 'DoNotTest';
-        fuzz('program.getBuildInfo', sig, valid, invalid, 'INVALID_DEVICE');
+        fuzz('program.getBuildInfo', signature, valid, invalid, [0], 'INVALID_DEVICE');
       });
 
       it("getBuildInfo(<validDevice>, <invalidEnum>) must throw", function() {
         if (!suite.preconditions) pending();
-        var sig = signature.slice(); sig[0] = 'DoNotTest';
-        fuzz('program.getBuildInfo', sig, valid, invalid, 'INVALID_VALUE');
+        fuzz('program.getBuildInfo', signature, valid, invalid, [1], 'INVALID_VALUE');
       });
 
     });
@@ -874,7 +870,7 @@ describe("Runtime", function() {
       it("createKernel(<invalidName>) must throw", function() {
         if (!suite.preconditions) pending();
         expect('program.build()').not.toThrow();
-        fuzz('program.createKernel', signature, valid, null, 'INVALID_KERNEL_NAME');
+        fuzz('program.createKernel', signature, valid, null, [0], 'INVALID_KERNEL_NAME');
       });
 
       it("createKernelsInProgram() must work", function() {
@@ -937,7 +933,7 @@ describe("Runtime", function() {
 
       it("getInfo(<invalidEnum>) must throw", function() {
         if (!suite.preconditions) pending();
-        fuzz('kernel.getInfo', signature, valid, null, 'INVALID_VALUE');
+        fuzz('kernel.getInfo', signature, valid, null, [0], 'INVALID_VALUE');
       });
       
     });
@@ -991,8 +987,7 @@ describe("Runtime", function() {
 
       it("getWorkGroupInfo(<invalidEnum>) must throw", function() {
         if (!suite.preconditions) pending();
-        var sig = signature.slice(); sig[0] = 'DoNotTest';
-        fuzz('kernel.getWorkGroupInfo', sig, valid, null, 'INVALID_VALUE');
+        fuzz('kernel.getWorkGroupInfo', signature, valid, null, [1], 'INVALID_VALUE');
       });
 
     });
@@ -1224,16 +1219,36 @@ describe("Runtime", function() {
 
       it("getInfo(<invalidEnum>) must throw", function() {
         if (!suite.preconditions) pending();
-        fuzz('queue.getInfo', signature, valid, null, 'INVALID_VALUE');
+        fuzz('queue.getInfo', signature, valid, null, [0], 'INVALID_VALUE');
       });
 
     });
 
     //////////////////////////////////////////////////////////////////////////////
     //
-    // Runtime -> WebCLCommandQueue -> enqueueRead
+    // Runtime -> WebCLCommandQueue -> enqueueReadImage
     // 
-    describe("enqueueRead", function() {
+    describe("enqueueReadImage", function() {
+
+      var signature = [ 'WebCLObject',            // image
+                        'Boolean',                // blockingRead
+                        'NonEmptyArray',          // origin (TODO: change spec to allow null!)
+                        'NonEmptyArray',          // region (TODO: change spec to allow null!)
+                        'Uint',                   // hostRowPitch
+                        'TypedArray',             // hostPtr
+                        'OptionalArray',          // eventWaitList (TODO: change spec to explicitly allow empty array)
+                        'OptionalWebCLObject'     // event
+                      ];
+
+      var valid = [ 'image', 
+                    'true',
+                    '[0, 0]',
+                    '[W, H]',
+                    '0',
+                    'pixels',
+                    'undefined',
+                    'undefined'
+                  ];
 
       beforeEach(enforcePreconditions.bind(this, function() {
         W = 32;
@@ -1267,13 +1282,8 @@ describe("Runtime", function() {
       });
 
       it("enqueueReadImage(<invalid image>) must throw", function() {
-        if (!suite.preconditions) pending();
-        expect('queue.enqueueReadImage(undefined, true, [0,0], [W, H], 0, pixels)').toThrow('INVALID_MEM_OBJECT');
-        expect('queue.enqueueReadImage(null, true, [0,0], [W, H], 0, pixels)').toThrow('INVALID_MEM_OBJECT');
-        expect('queue.enqueueReadImage({}, true, [0,0], [W, H], 0, pixels)').toThrow('INVALID_MEM_OBJECT');
-        expect('queue.enqueueReadImage([], true, [0,0], [W, H], 0, pixels)').toThrow('INVALID_MEM_OBJECT');
-        expect('queue.enqueueReadImage(ctx, true, [0,0], [W, H], 0, pixels)').toThrow('INVALID_MEM_OBJECT');
-        expect('queue.enqueueReadImage(queue, true, [0,0], [W, H], 0, pixels)').toThrow('INVALID_MEM_OBJECT');
+        if (!suite.preconditions) pending(); 
+        fuzz('queue.enqueueReadImage', signature, valid, null, [0], 'INVALID_MEM_OBJECT');
         expect('queue.enqueueReadImage(buffer, true, [0,0], [W, H], 0, pixels)').toThrow('INVALID_MEM_OBJECT');
       });
 
@@ -1284,19 +1294,14 @@ describe("Runtime", function() {
         expect('queue2.enqueueReadImage(image, true, [0,0], [W, H], 0, pixels)').toThrow('INVALID_CONTEXT');
       });
 
-      it("enqueueReadImage(<invalid blockingRead>) must throw", function() { // TODO what exception type?
+      it("enqueueReadImage(<invalid blockingRead>) must throw", function() {
         if (!suite.preconditions) pending();
-        expect('queue.enqueueReadImage(image, undefined, [0,0], [W, H], 0, pixels)').toThrow();
-        expect('queue.enqueueReadImage(image, null, [0,0], [W, H], 0, pixels)').toThrow();
-        expect('queue.enqueueReadImage(image, "foo", [0,0], [W, H], 0, pixels)').toThrow();
-        expect('queue.enqueueReadImage(image, 0, [0,0], [W, H], 0, pixels)').toThrow();
+        fuzz('queue.enqueueReadImage', signature, valid, null, [1], 'INVALID_VALUE');
       });
 
       it("enqueueReadImage(<invalid origin>) must throw", function() {
         if (!suite.preconditions) pending();
-        expect('queue.enqueueReadImage(image, true, undefined, [W, H], 0, pixels)').toThrow('INVALID_VALUE');
-        expect('queue.enqueueReadImage(image, true, null, [W, H], 0, pixels)').toThrow('INVALID_VALUE');
-        expect('queue.enqueueReadImage(image, true, [], [W, H], 0, pixels)').toThrow('INVALID_VALUE');
+        fuzz('queue.enqueueReadImage', signature, valid, null, [2], 'INVALID_VALUE');
         expect('queue.enqueueReadImage(image, true, [0], [W, H], 0, pixels)').toThrow('INVALID_VALUE');
         expect('queue.enqueueReadImage(image, true, [0, 0, 0], [W, H], 0, pixels)').toThrow('INVALID_VALUE');
         expect('queue.enqueueReadImage(image, true, [0, null], [W, H], 0, pixels)').toThrow('INVALID_VALUE');
@@ -1306,9 +1311,7 @@ describe("Runtime", function() {
 
       it("enqueueReadImage(<invalid region>) must throw", function() {
         if (!suite.preconditions) pending();
-        expect('queue.enqueueReadImage(image, true, [0,0], undefined, 0, pixels)').toThrow('INVALID_VALUE');
-        expect('queue.enqueueReadImage(image, true, [0,0], null, 0, pixels)').toThrow('INVALID_VALUE');
-        expect('queue.enqueueReadImage(image, true, [0,0], [], 0, pixels)').toThrow('INVALID_VALUE');
+        fuzz('queue.enqueueReadImage', signature, valid, null, [3], 'INVALID_VALUE');
         expect('queue.enqueueReadImage(image, true, [0,0], [W], 0, pixels)').toThrow('INVALID_VALUE');
         expect('queue.enqueueReadImage(image, true, [0,0], [W, H, 1], 0, pixels)').toThrow('INVALID_VALUE');
         expect('queue.enqueueReadImage(image, true, [0,0], [W, null], 0, pixels)').toThrow('INVALID_VALUE');
@@ -1318,22 +1321,14 @@ describe("Runtime", function() {
 
       it("enqueueReadImage(<invalid hostRowPitch>) must throw", function() {
         if (!suite.preconditions) pending();
-        expect('queue.enqueueReadImage(image, true, [0,0], [W, H], -1, pixels)').toThrow('INVALID_VALUE');
+        fuzz('queue.enqueueReadImage', signature, valid, null, [4], 'INVALID_VALUE');
         expect('queue.enqueueReadImage(image, true, [0,0], [W, H], bytesPerRow-1, pixels)').toThrow('INVALID_VALUE');
         expect('queue.enqueueReadImage(image, true, [0,0], [W, H], bytesPerRow+1, new Uint16Array(2*W*H*C))').toThrow('INVALID_VALUE');
-        expect('queue.enqueueReadImage(image, true, [0,0], [W, H], undefined, pixels)').toThrow('INVALID_VALUE');
-        expect('queue.enqueueReadImage(image, true, [0,0], [W, H], null, pixels)').toThrow('INVALID_VALUE');
-        expect('queue.enqueueReadImage(image, true, [0,0], [W, H], "foo", pixels)').toThrow('INVALID_VALUE');
-        expect('queue.enqueueReadImage(image, true, [0,0], [W, H], [], pixels)').toThrow('INVALID_VALUE');
-        expect('queue.enqueueReadImage(image, true, [0,0], [W, H], {}, pixels)').toThrow('INVALID_VALUE');
       });
 
       it("enqueueReadImage(<invalid hostPtr>) must throw", function() {
         if (!suite.preconditions) pending();
-        expect('queue.enqueueReadImage(image, true, [0,0], [W, H], 0, undefined)').toThrow('INVALID_VALUE');
-        expect('queue.enqueueReadImage(image, true, [0,0], [W, H], 0, null)').toThrow('INVALID_VALUE');
-        expect('queue.enqueueReadImage(image, true, [0,0], [W, H], 0, [])').toThrow('INVALID_VALUE');
-        expect('queue.enqueueReadImage(image, true, [0,0], [W, H], 0, {})').toThrow('INVALID_VALUE');
+        fuzz('queue.enqueueReadImage', signature, valid, null, [5], 'INVALID_VALUE');
         expect('queue.enqueueReadImage(image, true, [0,0], [W, H], 0, new Uint8Array(2))').toThrow('INVALID_VALUE');
       });
 
