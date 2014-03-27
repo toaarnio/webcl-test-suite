@@ -59,6 +59,7 @@
       Boolean :             [ 'undefined', 'null', '-1', '0', '1',              '[]', '{}', '""', '"foo"'                               ],
       Int :                 [ 'undefined', 'null',                      '1.01', '[]', '{}', '""', '"foo"', 'true', 'new Uint32Array(1)' ],
       Uint :                [ 'undefined', 'null', '-1',                '1.01', '[]', '{}', '""', '"foo"', 'true', 'new Uint32Array(1)' ],
+      UintNonZero :         [ 'undefined', 'null', '-1', '0',           '1.01', '[]', '{}', '""', '"foo"', 'true', 'new Uint32Array(1)' ],
       Enum :                [ 'undefined', 'null', '-1', '0', '0x2001', '1.01', '[]', '{}', '""', '"foo"', 'true', 'new Uint32Array(1)' ],
       OptionalEnum :        [              'null', '-1', '0', '0x2001', '1.01', '[]', '{}', '""', '"foo"', 'true', 'new Uint32Array(1)' ],
       String :              [ 'undefined', 'null', '-1', '0',                   '[]', '{}',                'true',                      ],

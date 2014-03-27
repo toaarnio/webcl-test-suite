@@ -1226,6 +1226,188 @@ describe("Runtime", function() {
 
     //////////////////////////////////////////////////////////////////////////////
     //
+    // Runtime -> WebCLCommandQueue -> enqueueReadBuffer
+    // 
+    describe("enqueueReadBuffer", function() {
+
+      var signature = [ 'WebCLObject',            // buffer
+                        'Boolean',                // blockingRead
+                        'Uint',                   // bufferOffset
+                        'UintNonZero',            // numBytes
+                        'TypedArray',             // hostPtr
+                        'OptionalArray',          // eventWaitList
+                        'OptionalWebCLObject'     // event
+                      ];
+
+      var valid = [ 'buffer', 
+                    'true',
+                    '0',
+                    'numBytes',
+                    'hostPtr',
+                    'undefined',
+                    'undefined'
+                  ];
+
+      beforeEach(enforcePreconditions.bind(this, function() {
+        numBytes = 1024;
+        hostPtr = new Uint8Array(numBytes);
+        hostPtr32f = new Float32Array(numBytes/4);
+        buffer = ctx.createBuffer(WebCL.MEM_READ_WRITE, numBytes);
+        image = ctx.createImage(WebCL.MEM_READ_WRITE, { width: 32, height: 32 });
+      }));
+
+      it("enqueueReadBuffer(<valid arguments>) must work", function() {
+        if (!suite.preconditions) pending();
+        expect('queue.enqueueReadBuffer(buffer, true, 0, numBytes, hostPtr)').not.toThrow();
+        expect('queue.enqueueReadBuffer(buffer, true, 0, numBytes, hostPtr32f)').not.toThrow();
+        expect('queue.enqueueReadBuffer(buffer, true, 1, numBytes-1, hostPtr)').not.toThrow();
+        expect('queue.enqueueReadBuffer(buffer, true, numBytes-1, 1, hostPtr)').not.toThrow();
+        expect('queue.enqueueReadBuffer(buffer, true, 0, 1, new Uint8Array(1))').not.toThrow();
+        expect('queue.enqueueReadBuffer(buffer, false, 0, numBytes, hostPtr); queue.finish();').not.toThrow();
+      });
+
+      it("enqueueReadBuffer(<invalid buffer>) must throw", function() {
+        if (!suite.preconditions) pending();
+        fuzz('queue.enqueueReadBuffer', signature, valid, null, [0], 'INVALID_MEM_OBJECT');
+        expect('queue.enqueueReadBuffer(image, true, 0, 32, hostPtr)').toThrow('INVALID_MEM_OBJECT');
+      });
+
+      it("enqueueReadBuffer(<buffer from another context>) must throw", function() {
+        if (!suite.preconditions) pending();
+        ctx2 = createContext();
+        queue2 = ctx2.createCommandQueue();
+        expect('queue2.enqueueReadBuffer(buffer, true, 0, numBytes, hostPtr)').toThrow('INVALID_CONTEXT');
+      });
+
+      it("enqueueReadBuffer(<invalid blockingRead>) must throw", function() {
+        if (!suite.preconditions) pending();
+        fuzz('queue.enqueueReadBuffer', signature, valid, null, [1], 'INVALID_VALUE');
+      });
+
+      it("enqueueReadBuffer(<invalid bufferOffset>) must throw", function() {
+        if (!suite.preconditions) pending();
+        fuzz('queue.enqueueReadBuffer', signature, valid, null, [2], 'INVALID_VALUE');
+      });
+
+      it("enqueueReadBuffer(<invalid numBytes>) must throw", function() {
+        if (!suite.preconditions) pending();
+        fuzz('queue.enqueueReadBuffer', signature, valid, null, [3], 'INVALID_VALUE');
+        expect('queue.enqueueReadBuffer(buffer, true, 0, numBytes-1, hostPtr32f)').toThrow('INVALID_VALUE');
+      });
+
+      it("enqueueReadBuffer(<invalid hostPtr>) must throw", function() {
+        if (!suite.preconditions) pending();
+        fuzz('queue.enqueueReadBuffer', signature, valid, null, [4], 'INVALID_VALUE');
+      });
+
+      it("enqueueReadBuffer(<buffer region out of bounds>) must throw", function() {
+        if (!suite.preconditions) pending();
+        expect('queue.enqueueReadBuffer(buffer, true, 1, numBytes, hostPtr)').toThrow('INVALID_VALUE');
+        expect('queue.enqueueReadBuffer(buffer, true, numBytes, 1, hostPtr)').toThrow('INVALID_VALUE');
+        expect('queue.enqueueReadBuffer(buffer, true, numBytes-1, 2, hostPtr)').toThrow('INVALID_VALUE');
+      });
+
+      it("enqueueReadBuffer(<hostPtr region out of bounds>) must throw", function() {
+        if (!suite.preconditions) pending();
+        expect('queue.enqueueReadBuffer(buffer, true, 0, numBytes, hostPtr.subarray(0,-1))').toThrow('INVALID_VALUE');
+        expect('queue.enqueueReadBuffer(buffer, true, 0, 1, new Uint8Array(0))').toThrow('INVALID_VALUE');
+      });
+
+    });
+
+    //////////////////////////////////////////////////////////////////////////////
+    //
+    // Runtime -> WebCLCommandQueue -> enqueueWriteBuffer
+    // 
+    describe("enqueueWriteBuffer", function() {
+
+      var signature = [ 'WebCLObject',            // buffer
+                        'Boolean',                // blockingWrite
+                        'Uint',                   // bufferOffset
+                        'UintNonZero',            // numBytes
+                        'TypedArray',             // hostPtr
+                        'OptionalArray',          // eventWaitList
+                        'OptionalWebCLObject'     // event
+                      ];
+
+      var valid = [ 'buffer', 
+                    'true',
+                    '0',
+                    'numBytes',
+                    'hostPtr',
+                    'undefined',
+                    'undefined'
+                  ];
+
+      beforeEach(enforcePreconditions.bind(this, function() {
+        numBytes = 1024;
+        hostPtr = new Uint8Array(numBytes);
+        hostPtr32f = new Float32Array(numBytes/4);
+        buffer = ctx.createBuffer(WebCL.MEM_READ_WRITE, numBytes);
+        image = ctx.createImage(WebCL.MEM_READ_WRITE, { width: 32, height: 32 });
+      }));
+
+      it("enqueueWriteBuffer(<valid arguments>) must work", function() {
+        if (!suite.preconditions) pending();
+        expect('queue.enqueueWriteBuffer(buffer, true, 0, numBytes, hostPtr)').not.toThrow();
+        expect('queue.enqueueWriteBuffer(buffer, true, 0, numBytes, hostPtr32f)').not.toThrow();
+        expect('queue.enqueueWriteBuffer(buffer, true, 1, numBytes-1, hostPtr)').not.toThrow();
+        expect('queue.enqueueWriteBuffer(buffer, true, numBytes-1, 1, hostPtr)').not.toThrow();
+        expect('queue.enqueueWriteBuffer(buffer, true, 0, 1, new Uint8Array(1))').not.toThrow();
+        expect('queue.enqueueWriteBuffer(buffer, false, 0, numBytes, hostPtr); queue.finish();').not.toThrow();
+      });
+
+      it("enqueueWriteBuffer(<invalid buffer>) must throw", function() {
+        if (!suite.preconditions) pending();
+        fuzz('queue.enqueueWriteBuffer', signature, valid, null, [0], 'INVALID_MEM_OBJECT');
+        expect('queue.enqueueWriteBuffer(image, true, 0, 32, hostPtr)').toThrow('INVALID_MEM_OBJECT');
+      });
+
+      it("enqueueWriteBuffer(<buffer from another context>) must throw", function() {
+        if (!suite.preconditions) pending();
+        ctx2 = createContext();
+        queue2 = ctx2.createCommandQueue();
+        expect('queue2.enqueueWriteBuffer(buffer, true, 0, numBytes, hostPtr)').toThrow('INVALID_CONTEXT');
+      });
+
+      it("enqueueWriteBuffer(<invalid blockingWrite>) must throw", function() {
+        if (!suite.preconditions) pending();
+        fuzz('queue.enqueueWriteBuffer', signature, valid, null, [1], 'INVALID_VALUE');
+      });
+
+      it("enqueueWriteBuffer(<invalid bufferOffset>) must throw", function() {
+        if (!suite.preconditions) pending();
+        fuzz('queue.enqueueWriteBuffer', signature, valid, null, [2], 'INVALID_VALUE');
+      });
+
+      it("enqueueWriteBuffer(<invalid numBytes>) must throw", function() {
+        if (!suite.preconditions) pending();
+        fuzz('queue.enqueueWriteBuffer', signature, valid, null, [3], 'INVALID_VALUE');
+        expect('queue.enqueueWriteBuffer(buffer, true, 0, numBytes-1, hostPtr32f)').toThrow('INVALID_VALUE');
+      });
+
+      it("enqueueWriteBuffer(<invalid hostPtr>) must throw", function() {
+        if (!suite.preconditions) pending();
+        fuzz('queue.enqueueWriteBuffer', signature, valid, null, [4], 'INVALID_VALUE');
+      });
+
+      it("enqueueWriteBuffer(<buffer region out of bounds>) must throw", function() {
+        if (!suite.preconditions) pending();
+        expect('queue.enqueueWriteBuffer(buffer, true, 1, numBytes, hostPtr)').toThrow('INVALID_VALUE');
+        expect('queue.enqueueWriteBuffer(buffer, true, numBytes, 1, hostPtr)').toThrow('INVALID_VALUE');
+        expect('queue.enqueueWriteBuffer(buffer, true, numBytes-1, 2, hostPtr)').toThrow('INVALID_VALUE');
+      });
+
+      it("enqueueWriteBuffer(<hostPtr region out of bounds>) must throw", function() {
+        if (!suite.preconditions) pending();
+        expect('queue.enqueueWriteBuffer(buffer, true, 0, numBytes, hostPtr.subarray(0,-1))').toThrow('INVALID_VALUE');
+        expect('queue.enqueueWriteBuffer(buffer, true, 0, 1, new Uint8Array(0))').toThrow('INVALID_VALUE');
+      });
+
+    });
+
+    //////////////////////////////////////////////////////////////////////////////
+    //
     // Runtime -> WebCLCommandQueue -> enqueueReadImage
     // 
     describe("enqueueReadImage", function() {
@@ -1269,16 +1451,21 @@ describe("Runtime", function() {
 
       it("enqueueReadImage(<valid arguments>) must work with RGBA8", function() {
         if (!suite.preconditions) pending();
-        expect('queue.enqueueReadImage(image, true, [0,0], [W, H], 0, pixels)').not.toThrow();
-        expect('queue.enqueueReadImage(image, true, [0,0], [W, H], bytesPerRow, pixels)').not.toThrow();
-        expect('queue.enqueueReadImage(image, true, [0,0], [W, H], bytesPerRow, pixels)').not.toThrow();
+        expect('queue.enqueueReadImage(image, true, [0, 0], [W, H], 0, pixels)').not.toThrow();
+        expect('queue.enqueueReadImage(image, true, [0, 0], [W, H], bytesPerRow, pixels)').not.toThrow();
+        expect('queue.enqueueReadImage(image, true, [0, 0], [W, H], bytesPerRow, pixels)').not.toThrow();
+        expect('queue.enqueueReadImage(image, true, [W-1, 0], [1, H], 0, pixels)').not.toThrow();
+        expect('queue.enqueueReadImage(image, true, [0, H-1], [W, 1], 0, pixels)').not.toThrow();
+        expect('queue.enqueueReadImage(image, true, [W-1, 0], [1, H], bytesPerRow, pixels)').not.toThrow();
+        expect('queue.enqueueReadImage(image, false, [0, 0], [W, H], 0, pixels); queue.finish();').not.toThrow();
       });
 
       it("enqueueReadImage(<valid arguments>) must work with RGBAf32", function() {
         if (!suite.preconditions) pending();
-        expect('queue.enqueueReadImage(imagef32, true, [0,0], [W, H], 0, pixelsf32)').not.toThrow();
-        expect('queue.enqueueReadImage(imagef32, true, [0,0], [W, H], bytesPerRowf32, pixelsf32)').not.toThrow();
-        expect('queue.enqueueReadImage(imagef32, true, [0,0], [W, H], bytesPerRowf32, pixelsf32)').not.toThrow();
+        expect('queue.enqueueReadImage(imagef32, true, [0, 0], [W, H], 0, pixelsf32)').not.toThrow();
+        expect('queue.enqueueReadImage(imagef32, true, [0, 0], [W, H], bytesPerRowf32, pixelsf32)').not.toThrow();
+        expect('queue.enqueueReadImage(imagef32, true, [0, 0], [W, H], bytesPerRowf32, pixelsf32)').not.toThrow();
+        expect('queue.enqueueReadImage(imagef32, true, [W-1, 0], [1, H], 0, pixelsf32)').not.toThrow();
       });
 
       it("enqueueReadImage(<invalid image>) must throw", function() {
