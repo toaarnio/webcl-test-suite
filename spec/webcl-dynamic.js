@@ -28,7 +28,7 @@ describe("Runtime", function() {
     it("createContext() must not throw", function() {
       if (!suite.preconditions) pending();
       expect('webcl.createContext()').not.toThrow();
-      expect('webcl.createContext(undefined)').not.toThrow();
+      expect('webcl.createContext() instanceof WebCLContext').toEvalAs(true);
     });
 
     it("createContext(DEVICE_TYPE_DEFAULT) must not throw", function() {
@@ -241,6 +241,7 @@ describe("Runtime", function() {
         expect('ctx.createCommandQueue(undefined, 0)').not.toThrow();
         expect('ctx.createCommandQueue(null, 0)').not.toThrow();
         expect('ctx.createCommandQueue(device, 0)').not.toThrow();
+        expect('ctx.createCommandQueue() instanceof WebCLCommandQueue').toEvalAs(true);
       });
 
       it("createCommandQueue(<validDevice>, <supportedProperties>) must not throw", function() {
@@ -289,6 +290,7 @@ describe("Runtime", function() {
       it("createProgram(<validString>) must not throw", function() {
         if (!suite.preconditions) pending();
         expect('ctx.createProgram("foobar")').not.toThrow();
+        expect('ctx.createProgram("foobar") instanceof WebCLProgram').toEvalAs(true);
       });
 
       it("createProgram(<invalidString>) must throw", function() {
@@ -315,6 +317,7 @@ describe("Runtime", function() {
         expect('ctx.createBuffer(WebCL.MEM_READ_ONLY, 1024)').not.toThrow();
         expect('ctx.createBuffer(WebCL.MEM_WRITE_ONLY, 1024)').not.toThrow();
         expect('ctx.createBuffer(WebCL.MEM_READ_WRITE, 1024)').not.toThrow();
+        expect('ctx.createBuffer(WebCL.MEM_READ_WRITE, 1024) instanceof WebCLBuffer').toEvalAs(true);
       });
 
       it("createBuffer(<invalidMemFlags>) must throw", function() {
@@ -340,6 +343,7 @@ describe("Runtime", function() {
         expect('ctx.createImage(WebCL.MEM_READ_ONLY, { width: 64, height: 64 })').not.toThrow();
         expect('ctx.createImage(WebCL.MEM_WRITE_ONLY, { width: 64, height: 64 })').not.toThrow();
         expect('ctx.createImage(WebCL.MEM_READ_WRITE, { width: 64, height: 64 })').not.toThrow();
+        expect('ctx.createImage(WebCL.MEM_READ_WRITE, { width: 64, height: 64 }) instanceof WebCLImage').toEvalAs(true);
       });
 
       it("createImage(<validDescriptor>) must work", function() {
@@ -499,6 +503,7 @@ describe("Runtime", function() {
         expect('ctx.createSampler(true, WebCL.ADDRESS_REPEAT, WebCL.FILTER_LINEAR)').not.toThrow();
         expect('ctx.createSampler(true, WebCL.ADDRESS_MIRRORED_REPEAT, WebCL.FILTER_NEAREST)').not.toThrow();
         expect('ctx.createSampler(true, WebCL.ADDRESS_MIRRORED_REPEAT, WebCL.FILTER_LINEAR)').not.toThrow();
+        expect('ctx.createSampler(true, WebCL.ADDRESS_MIRRORED_REPEAT, WebCL.FILTER_LINEAR) instanceof WebCLSampler').toEvalAs(true);
       });
 
       it("createSampler(<invalidArguments>) must throw", function() {
@@ -516,9 +521,10 @@ describe("Runtime", function() {
     // 
     describe("createUserEvent", function() {
 
-      xit("createUserEvent() must work", function() {
+      it("createUserEvent() must work", function() {
         if (!suite.preconditions) pending();
         expect('ctx.createUserEvent()').not.toThrow();
+        expect('ctx.createUserEvent() instanceof WebCLUserEvent').toEvalAs(true);
       });
 
     });
@@ -985,7 +991,12 @@ describe("Runtime", function() {
         expect('kernel.getWorkGroupInfo(device, WebCL.KERNEL_COMPILE_WORK_GROUP_SIZE)[2]').toEvalAs(2);
       });
 
-      it("getWorkGroupInfo(<invalidEnum>) must throw", function() {
+      it("getWorkGroupInfo(<invalid device>) must throw", function() {
+        if (!suite.preconditions) pending();
+        fuzz('kernel.getWorkGroupInfo', signature, valid, null, [0], 'INVALID_DEVICE');
+      });
+
+      it("getWorkGroupInfo(<invalid enum>) must throw", function() {
         if (!suite.preconditions) pending();
         fuzz('kernel.getWorkGroupInfo', signature, valid, null, [1], 'INVALID_VALUE');
       });
@@ -1543,6 +1554,24 @@ describe("Runtime", function() {
     // 
     describe("enqueueNDRangeKernel", function() {
       
+      var signature = [ 'WebCLObject',            // kernel
+                        'Uint',                   // workDim
+                        'OptionalArray',          // globalOffset
+                        'NonEmptyArray',          // globalWorkSize
+                        'OptionalArray',          // localWorkSize
+                        'OptionalArray',          // eventWaitList (TODO: change spec to explicitly allow empty array)
+                        'OptionalWebCLObject'     // event
+                      ];
+
+      var valid = [ 'kernel', 
+                    '1',
+                    'null',
+                    '[7]',
+                    'null',
+                    'undefined',
+                    'undefined'
+                  ];
+
       beforeEach(enforcePreconditions.bind(this, function() {
         buffer = ctx.createBuffer(WebCL.MEM_READ_ONLY, 128);
         program = ctx.createProgram("kernel void dummy(global uint* buf) { buf[get_global_id(0)]=0xdeadbeef; }");
@@ -1551,6 +1580,11 @@ describe("Runtime", function() {
         kernel = program.createKernelsInProgram()[0];
         kernel.setArg(0, buffer);
       }));
+
+      it("enqueueNDRangeKernel(<invalid kernel> must throw", function() {
+        if (!suite.preconditions) pending();
+        fuzz('queue.enqueueNDRangeKernel', signature, valid, null, [0], 'INVALID_KERNEL');
+      });
 
       it("must work with minimal/default arguments", function() {
         if (!suite.preconditions) pending();
@@ -1786,7 +1820,7 @@ describe("Runtime", function() {
         expect('queue.enqueueMarker(event)').toThrow('INVALID_EVENT');
       });
 
-      xit("enqueue*(<userEvent>) must throw", function() {
+      it("enqueue*(<userEvent>) must throw", function() {
         if (!suite.preconditions) pending();
         expect('userEvent = ctx.createUserEvent()').not.toThrow();
         expect('queue.enqueueMarker(userEvent)').toThrow('INVALID_EVENT');
@@ -1809,16 +1843,7 @@ describe("Runtime", function() {
       var valid = [ 'WebCL.EVENT_COMMAND_TYPE' ];
       var invalid = [ 'WebCL.PROFILING_COMMAND_SUBMIT' ]
 
-      it("getInfo(<validEnum>) must work for an empty event", function() {
-        if (!suite.preconditions) pending();
-        expect('event.getInfo(WebCL.EVENT_COMMAND_QUEUE)').not.toThrow();
-        expect('event.getInfo(WebCL.EVENT_CONTEXT)').not.toThrow();
-        expect('event.getInfo(WebCL.EVENT_COMMAND_TYPE)').not.toThrow();
-        expect('event.getInfo(WebCL.EVENT_COMMAND_EXECUTION_STATUS)').not.toThrow();
-        expect('event.getInfo(WebCL.EVENT_COMMAND_EXECUTION_STATUS) === -1').toEvalAs(true);
-      });
-
-      it("getInfo(<validEnum>) must work for a populated event", function() {
+      it("getInfo(<validEnum>) must work on a populated event", function() {
         if (!suite.preconditions) pending();
         expect('queue.enqueueMarker(event); queue.finish();').not.toThrow();
         expect('event.getInfo(WebCL.EVENT_COMMAND_QUEUE)').not.toThrow();
@@ -1831,9 +1856,16 @@ describe("Runtime", function() {
         expect('event.getInfo(WebCL.EVENT_COMMAND_EXECUTION_STATUS) === WebCL.COMPLETE').toEvalAs(true);
       });
 
+      it("getInfo(<validEnum>) must throw on an unpopulated event", function() {
+        if (!suite.preconditions) pending();
+        expect('event.getInfo(WebCL.EVENT_COMMAND_QUEUE)').toThrow('INVALID_EVENT');
+        expect('event.getInfo(WebCL.EVENT_CONTEXT)').toThrow('INVALID_EVENT');
+        expect('event.getInfo(WebCL.EVENT_COMMAND_TYPE)').toThrow('INVALID_EVENT');
+        expect('event.getInfo(WebCL.EVENT_COMMAND_EXECUTION_STATUS)').toThrow('INVALID_EVENT');
+      });
+
       it("getInfo(<invalidEnum>) must throw", function() {
         if (!suite.preconditions) pending();
-        fuzz('event.getInfo', signature, valid, invalid, 'INVALID_VALUE');
         expect('queue.enqueueMarker(event)').not.toThrow();
         fuzz('event.getInfo', signature, valid, invalid, 'INVALID_VALUE');
       });
@@ -1850,7 +1882,7 @@ describe("Runtime", function() {
       var valid = [ 'WebCL.PROFILING_COMMAND_SUBMIT' ];
       var invalid = [ 'WebCL.EVENT_CONTEXT' ]
 
-      it("getProfilingInfo(<validEnum>) must work for a populated event", function() {
+      it("getProfilingInfo(<validEnum>) must work on a populated event", function() {
         if (!suite.preconditions) pending();
         expect('queue.enqueueMarker(event); queue.finish();').not.toThrow();
         expect('event.getInfo(WebCL.EVENT_COMMAND_EXECUTION_STATUS) === WebCL.COMPLETE').toEvalAs(true);
@@ -1883,7 +1915,7 @@ describe("Runtime", function() {
         expect('event.getProfilingInfo(WebCL.PROFILING_COMMAND_END)').toThrow('PROFILING_INFO_NOT_AVAILABLE');
       });
 
-      xit("getProfilingInfo(<validEnum>) must throw on a user event", function() {
+      it("getProfilingInfo(<validEnum>) must throw on a user event", function() {
         if (!suite.preconditions) pending();
         expect('userEvent = ctx.createUserEvent()').not.toThrow();
         expect('userEvent.getProfilingInfo(WebCL.PROFILING_COMMAND_QUEUED)').toThrow('PROFILING_INFO_NOT_AVAILABLE');
