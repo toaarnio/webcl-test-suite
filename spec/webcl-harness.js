@@ -56,20 +56,20 @@
     // 1.01 must not be accepted as an integer.
     //
     var defaultFuzzMap = {
-      Boolean :             [ 'undefined', 'null', '-1', '0', '1',              '[]', '{}', '""', '"foo"'                               ],
-      Int :                 [ 'undefined', 'null',                      '1.01', '[]', '{}', '""', '"foo"', 'true', 'new Uint32Array(1)' ],
-      Uint :                [ 'undefined', 'null', '-1',                '1.01', '[]', '{}', '""', '"foo"', 'true', 'new Uint32Array(1)' ],
-      UintNonZero :         [ 'undefined', 'null', '-1', '0',           '1.01', '[]', '{}', '""', '"foo"', 'true', 'new Uint32Array(1)' ],
-      Enum :                [ 'undefined', 'null', '-1', '0', '0x2001', '1.01', '[]', '{}', '""', '"foo"', 'true', 'new Uint32Array(1)' ],
-      OptionalEnum :        [              'null', '-1', '0', '0x2001', '1.01', '[]', '{}', '""', '"foo"', 'true', 'new Uint32Array(1)' ],
-      String :              [ 'undefined', 'null', '-1', '0',                   '[]', '{}',                'true',                      ],
-      OptionalString :      [                      '-1', '0', '1',              '[]', '{}',                'true',                      ],
-      Array :               [ 'undefined', 'null', '-1', '0', '1',                    '{}', '""', '"foo"', 'true', 'new Uint32Array(8)' ],
-      OptionalArray :       [                      '-1', '0', '1',                    '{}', '""', '"foo"', 'true', 'new Uint32Array(8)' ],
-      NonEmptyArray :       [ 'undefined', 'null', '-1', '0', '1',              '[]', '{}', '""', '"foo"', 'true', 'new Uint32Array(8)' ],
-      TypedArray :          [ 'undefined', 'null', '-1', '0', '1',              '[]', '{}', '""', '"foo"', 'true', 'new ArrayBuffer(8)' ],
-      WebCLObject :         [ 'undefined', 'null', '-1', '0', '1',              '[]', '{}', '""', '"foo"', 'true', 'new Uint32Array(8)', 'webcl'],
-      OptionalWebCLObject : [                      '-1', '0', '1',              '[]', '{}', '""', '"foo"', 'true', 'new Uint32Array(8)', 'webcl'],
+      Boolean :             [ 'undefined', 'null', '-1', '0', '1',              '[]', '[1]', '{}', '""', '"foo"'                               ],
+      Int :                 [ 'undefined', 'null',                      '1.01', '[]', '[1]', '{}', '""', '"foo"', 'true', 'new Uint32Array(1)' ],
+      Uint :                [ 'undefined', 'null', '-1',                '1.01', '[]', '[1]', '{}', '""', '"foo"', 'true', 'new Uint32Array(1)' ],
+      UintNonZero :         [ 'undefined', 'null', '-1', '0',           '1.01', '[]', '[1]', '{}', '""', '"foo"', 'true', 'new Uint32Array(1)' ],
+      Enum :                [ 'undefined', 'null', '-1', '0', '0x2001', '1.01', '[]', '[1]', '{}', '""', '"foo"', 'true', 'new Uint32Array(1)' ],
+      OptionalEnum :        [              'null', '-1', '0', '0x2001', '1.01', '[]', '[1]', '{}', '""', '"foo"', 'true', 'new Uint32Array(1)' ],
+      String :              [ 'undefined', 'null', '-1', '0',                   '[]', '[1]', '{}',                'true',                      ],
+      OptionalString :      [                      '-1', '0', '1',              '[]', '[1]', '{}',                'true',                      ],
+      Array :               [ 'undefined', 'null', '-1', '0', '1',                           '{}', '""', '"foo"', 'true', 'new Uint32Array(8)' ],
+      OptionalArray :       [                      '-1', '0', '1',                           '{}', '""', '"foo"', 'true', 'new Uint32Array(8)' ],
+      NonEmptyArray :       [ 'undefined', 'null', '-1', '0', '1',              '[]',        '{}', '""', '"foo"', 'true', 'new Uint32Array(8)' ],
+      TypedArray :          [ 'undefined', 'null', '-1', '0', '1',              '[]', '[1]', '{}', '""', '"foo"', 'true', 'new ArrayBuffer(8)' ],
+      WebCLObject :         [ 'undefined', 'null', '-1', '0', '1',              '[]', '[1]', '{}', '""', '"foo"', 'true', 'new Uint32Array(8)', 'webcl'],
+      OptionalWebCLObject : [                      '-1', '0', '1',              '[]', '[1]', '{}', '""', '"foo"', 'true', 'new Uint32Array(8)', 'webcl'],
     };
 
     for (var i=0; i < signature.length; i++) {
