@@ -457,12 +457,12 @@ describe("Runtime", function() {
 
       it("createImage(<invalid hostPtr>) must throw", function() {
         if (!suite.preconditions) pending();
-        //fuzz('ctx.createImage', signature, valid, invalid, [2], 'INVALID_HOST_PTR');
+        fuzz('ctx.createImage', signature, valid, invalid, [2], 'INVALID_HOST_PTR');
         expect('ctx.createImage(WebCL.MEM_READ_ONLY, { width:1, height:1, channelType: WebCL.FLOAT }, new Uint8Array(15))').toThrow('INVALID_HOST_PTR');
-        //expect('ctx.createImage(WebCL.MEM_READ_ONLY, { width:4, height:4, rowPitch: 0 }, new Uint8Array(4*4*4-1))').toThrow('INVALID_HOST_PTR');
-        //expect('ctx.createImage(WebCL.MEM_READ_ONLY, { width:4, height:4, rowPitch: 100 }, new Uint8Array(4*4*4-1))').toThrow('INVALID_HOST_PTR');
-        //expect('ctx.createImage(WebCL.MEM_READ_ONLY, { width:4, height:4, rowPitch: 0 }, new Uint8Array(4*4*4-1))').toThrow('INVALID_HOST_PTR');
-        //expect('ctx.createImage(WebCL.MEM_READ_ONLY, { width:4, height:4 }, new Uint8Array(0))').toThrow('INVALID_HOST_PTR');
+        expect('ctx.createImage(WebCL.MEM_READ_ONLY, { width:4, height:4, rowPitch: 0 }, new Uint8Array(4*4*4-1))').toThrow('INVALID_HOST_PTR');
+        expect('ctx.createImage(WebCL.MEM_READ_ONLY, { width:4, height:4, rowPitch: 100 }, new Uint8Array(4*4*4-1))').toThrow('INVALID_HOST_PTR');
+        expect('ctx.createImage(WebCL.MEM_READ_ONLY, { width:4, height:4, rowPitch: 0 }, new Uint8Array(4*4*4-1))').toThrow('INVALID_HOST_PTR');
+        expect('ctx.createImage(WebCL.MEM_READ_ONLY, { width:4, height:4 }, new Uint8Array(0))').toThrow('INVALID_HOST_PTR');
       });
 
       it("createImage(<invalid channelOrder>) must throw", function() {
