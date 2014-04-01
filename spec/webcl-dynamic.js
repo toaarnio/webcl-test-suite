@@ -305,10 +305,11 @@ describe("Runtime", function() {
     // 
     describe("createBuffer", function() {
 
-      var signature = [ 'Enum', 'Uint', 'OptionalTypedArray' ];
+      var signature = [ 'Enum', 'UintNonZero', 'OptionalTypedArray' ];
       var valid = [ 'WebCL.MEM_READ_WRITE', '1024', 'undefined' ];
+      var invalid = [ 'WebCL.MEM_TYPE', '0x10000000000', 'new Uint8Array(1023)' ];
 
-      it("createBuffer(<validMemFlags>) must not throw", function() {
+      it("createBuffer(<valid memFlags>) must work", function() {
         if (!suite.preconditions) pending();
         expect('ctx.createBuffer(WebCL.MEM_READ_ONLY, 1024)').not.toThrow();
         expect('ctx.createBuffer(WebCL.MEM_WRITE_ONLY, 1024)').not.toThrow();
@@ -316,19 +317,28 @@ describe("Runtime", function() {
         expect('ctx.createBuffer(WebCL.MEM_READ_WRITE, 1024) instanceof WebCLBuffer').toEvalAs(true);
       });
 
-      it("createBuffer(<invalidMemFlags>) must throw", function() {
+      it("createBuffer(<valid hostPtr>) must work", function() {
+        if (!suite.preconditions) pending();
+        expect('ctx.createBuffer(WebCL.MEM_READ_ONLY, 1024, new Uint8Array(1024))').not.toThrow();
+        expect('ctx.createBuffer(WebCL.MEM_READ_ONLY, 1024, new Uint8Array(1025))').not.toThrow();
+        expect('ctx.createBuffer(WebCL.MEM_WRITE_ONLY, 1024, new Uint16Array(512))').not.toThrow();
+        expect('ctx.createBuffer(WebCL.MEM_READ_WRITE, 1024, new Float32Array(256))').not.toThrow();
+        expect('ctx.createBuffer(WebCL.MEM_READ_WRITE, 1024, new Float64Array(128)) instanceof WebCLBuffer').toEvalAs(true);
+      });
+
+      it("createBuffer(<invalid memFlags>) must throw", function() {
         if (!suite.preconditions) pending();
         fuzz('ctx.createBuffer', signature, valid, null, [0], 'INVALID_VALUE');
       });
 
-      it("createBuffer(<invalidSize>) must throw", function() {
+      it("createBuffer(<invalid size>) must throw", function() {
         if (!suite.preconditions) pending();
-        fuzz('ctx.createBuffer', signature, valid, null, [1], 'INVALID_BUFFER_SIZE');
+        fuzz('ctx.createBuffer', signature, valid, invalid, [1], 'INVALID_BUFFER_SIZE');
       });
 
-      it("createBuffer(<invalidHostPtr>) must throw", function() {
+      it("createBuffer(<invalid hostPtr>) must throw", function() {
         if (!suite.preconditions) pending();
-        fuzz('ctx.createBuffer', signature, valid, null, [2], 'INVALID_HOST_PTR');
+        fuzz('ctx.createBuffer', signature, valid, invalid, [2], 'INVALID_HOST_PTR');
       });
 
     });
@@ -339,7 +349,11 @@ describe("Runtime", function() {
     // 
     describe("createImage", function() {
 
-      it("createImage(<validMemFlags>) must work", function() {
+      var signature = [ 'Enum', 'WebCLObject', 'OptionalTypedArray' ];
+      var valid = [ 'WebCL.MEM_READ_WRITE', '{ width: 4, height: 4 }', 'new Uint8Array(4*4*4)' ];
+      var invalid = [ 'WebCL.MEM_TYPE', '{ width: 0, height: 4 }', 'new Uint8Array(4*4*4-1)' ];
+
+      it("createImage(<valid memFlags>) must work", function() {
         if (!suite.preconditions) pending();
         expect('ctx.createImage(WebCL.MEM_READ_ONLY, { width: 64, height: 64 })').not.toThrow();
         expect('ctx.createImage(WebCL.MEM_WRITE_ONLY, { width: 64, height: 64 })').not.toThrow();
@@ -347,7 +361,7 @@ describe("Runtime", function() {
         expect('ctx.createImage(WebCL.MEM_READ_WRITE, { width: 64, height: 64 }) instanceof WebCLImage').toEvalAs(true);
       });
 
-      it("createImage(<validDescriptor>) must work", function() {
+      it("createImage(<valid descriptor>) must work", function() {
         if (!suite.preconditions) pending();
         expect('desc = new WebCLImageDescriptor()').not.toThrow();
         expect('desc.width = 11; desc.height = 17;').not.toThrow();
@@ -355,7 +369,7 @@ describe("Runtime", function() {
         expect('ctx.createImage(WebCL.MEM_READ_ONLY, { width: 11, height: 17 })').not.toThrow();
       });
 
-      it("createImage(<anySupportedFormat>) must work", function() {
+      it("createImage(<any supported format>) must work", function() {
         if (!suite.preconditions) pending();
         formats = ctx.getSupportedImageFormats();
         for (i=0;  i < formats.length; i++) {
@@ -367,19 +381,19 @@ describe("Runtime", function() {
         }
       });
 
-      it("createImage(<validDimensions>) must work", function() {
+      it("createImage(<valid dimensions>) must work", function() {
         if (!suite.preconditions) pending();
         expect('ctx.createImage(WebCL.MEM_READ_ONLY, { width: 37, height: 1 })').not.toThrow();
         expect('ctx.createImage(WebCL.MEM_WRITE_ONLY, { width: 1, height: 1025 })').not.toThrow();
         expect('ctx.createImage(WebCL.MEM_READ_WRITE, { width: 19, height: 11 })').not.toThrow();
       });
 
-      it("createImage(<validHostPtr>) must work", function() {
+      it("createImage(<valid hostPtr>) must work", function() {
         if (!suite.preconditions) pending();
         expect('ctx.createImage(WebCL.MEM_READ_ONLY, { width: 11, height: 17 }, new Uint8Array(11*17*4))').not.toThrow();
       });
 
-      it("createImage(<validRowPitch>) must work", function() {
+      it("createImage(<valid rowPitch>) must work", function() {
         if (!suite.preconditions) pending();
         expect('ctx.createImage(WebCL.MEM_READ_ONLY, { width: 11, height: 17, rowPitch: 0 })').not.toThrow();
         expect('ctx.createImage(WebCL.MEM_READ_ONLY, { width: 11, height: 17, rowPitch: 0 }, new Uint8Array(11*17*4))').not.toThrow();
@@ -391,20 +405,12 @@ describe("Runtime", function() {
         expect('ctx.createImage()').toThrow();
       });
 
-      it("createImage(<invalidMemFlags>) must throw", function() {
+      it("createImage(<invalid memFlags>) must throw", function() {
         if (!suite.preconditions) pending();
-        descriptor = { width: 64, height: 64 };
-        expect('ctx.createImage(undefined, descriptor)').toThrow('INVALID_VALUE');
-        expect('ctx.createImage(null, descriptor)').toThrow('INVALID_VALUE');
-        expect('ctx.createImage(0, descriptor)').toThrow('INVALID_VALUE');
-        expect('ctx.createImage(-1, descriptor)').toThrow('INVALID_VALUE');
-        expect('ctx.createImage("", descriptor)').toThrow('INVALID_VALUE');
-        expect('ctx.createImage([], descriptor)').toThrow('INVALID_VALUE');
-        expect('ctx.createImage(ctx, descriptor)').toThrow('INVALID_VALUE');
-        expect('ctx.createImage(WebCL.RGBA, descriptor)').toThrow('INVALID_VALUE');
+        fuzz('ctx.createImage', signature, valid, invalid, [0], 'INVALID_VALUE');
       });
 
-      it("createImage(<invalidDescriptor>) must throw", function() {
+      it("createImage(<invalid descriptor>) must throw", function() {
         if (!suite.preconditions) pending();
         expect('ctx.createImage(WebCL.MEM_READ_ONLY)').toThrow('INVALID_IMAGE_DESCRIPTOR');
         expect('ctx.createImage(WebCL.MEM_READ_ONLY, null)').toThrow('INVALID_IMAGE_DESCRIPTOR');
@@ -435,33 +441,31 @@ describe("Runtime", function() {
         expect('ctx.createImage(WebCL.MEM_READ_ONLY, { width: 4, height: 4, channelType: ctx })').toThrow('INVALID_IMAGE_DESCRIPTOR');
       });
 
-      it("createImage(<invalidDimensions>) must throw", function() {
+      it("createImage(<invalid dimensions>) must throw", function() {
         if (!suite.preconditions) pending();
         expect('ctx.createImage(WebCL.MEM_READ_ONLY, { width: 4, height: 0 })').toThrow('INVALID_IMAGE_SIZE');
         expect('ctx.createImage(WebCL.MEM_READ_ONLY, { width: 4, height: -4 })').toThrow('INVALID_IMAGE_SIZE');
         expect('ctx.createImage(WebCL.MEM_READ_ONLY, { width: 1024*1024, height: 1 })').toThrow('INVALID_IMAGE_SIZE');
       });
 
-      it("createImage(<invalidRowPitch>) must throw", function() {
+      it("createImage(<invalid rowPitch>) must throw", function() {
         if (!suite.preconditions) pending();
         expect('ctx.createImage(WebCL.MEM_READ_ONLY, { width: 4, height: 4, rowPitch: -1 })').toThrow('INVALID_IMAGE_SIZE');
         expect('ctx.createImage(WebCL.MEM_READ_ONLY, { width: 4, height: 4, rowPitch: 1 })').toThrow('INVALID_IMAGE_SIZE');
         expect('ctx.createImage(WebCL.MEM_READ_ONLY, { width: 4, height: 4, rowPitch: 15 }, new Uint8Array(4*4*4))').toThrow('INVALID_IMAGE_SIZE');
       });
 
-      it("createImage(<invalidHostPtr>) must throw", function() {
+      it("createImage(<invalid hostPtr>) must throw", function() {
         if (!suite.preconditions) pending();
-        expect('ctx.createImage(WebCL.MEM_READ_ONLY, { width: 4, height: 4, rowPitch: 0 }, new Uint8Array(4*4*4-1))').toThrow('INVALID_HOST_PTR');
-        expect('ctx.createImage(WebCL.MEM_READ_ONLY, { width: 4, height: 4, rowPitch: 100 }, new Uint8Array(4*4*4-1))').toThrow('INVALID_HOST_PTR');
-        expect('ctx.createImage(WebCL.MEM_READ_ONLY, { width: 4, height: 4, rowPitch: 0 }, new Uint8Array(4*4*4-1))').toThrow('INVALID_HOST_PTR');
-        expect('ctx.createImage(WebCL.MEM_READ_ONLY, { width: 4, height: 4 }, new Uint8Array(0))').toThrow('INVALID_HOST_PTR');
-        expect('ctx.createImage(WebCL.MEM_READ_ONLY, { width: 4, height: 4 }, [])').toThrow('INVALID_HOST_PTR');
-        expect('ctx.createImage(WebCL.MEM_READ_ONLY, { width: 4, height: 4 }, ctx)').toThrow('INVALID_HOST_PTR');
-        expect('ctx.createImage(WebCL.MEM_READ_ONLY, { width: 4, height: 4 }, 1024)').toThrow('INVALID_HOST_PTR');
-        expect('ctx.createImage(WebCL.MEM_READ_ONLY, { width: 4, height: 4 }, 0)').toThrow('INVALID_HOST_PTR');
+        //fuzz('ctx.createImage', signature, valid, invalid, [2], 'INVALID_HOST_PTR');
+        expect('ctx.createImage(WebCL.MEM_READ_ONLY, { width:1, height:1, channelType: WebCL.FLOAT }, new Uint8Array(15))').toThrow('INVALID_HOST_PTR');
+        //expect('ctx.createImage(WebCL.MEM_READ_ONLY, { width:4, height:4, rowPitch: 0 }, new Uint8Array(4*4*4-1))').toThrow('INVALID_HOST_PTR');
+        //expect('ctx.createImage(WebCL.MEM_READ_ONLY, { width:4, height:4, rowPitch: 100 }, new Uint8Array(4*4*4-1))').toThrow('INVALID_HOST_PTR');
+        //expect('ctx.createImage(WebCL.MEM_READ_ONLY, { width:4, height:4, rowPitch: 0 }, new Uint8Array(4*4*4-1))').toThrow('INVALID_HOST_PTR');
+        //expect('ctx.createImage(WebCL.MEM_READ_ONLY, { width:4, height:4 }, new Uint8Array(0))').toThrow('INVALID_HOST_PTR');
       });
 
-      it("createImage(<invalidChannelOrder>) must throw", function() {
+      it("createImage(<invalid channelOrder>) must throw", function() {
         if (!suite.preconditions) pending();
         expect('ctx.createImage(WebCL.MEM_READ_ONLY, { width: 4, height: 4, channelOrder: WebCL.RGBA })').not.toThrow();
         expect('ctx.createImage(WebCL.MEM_READ_ONLY, { width: 4, height: 4, channelOrder: WebCL.FLOAT })').toThrow('INVALID_IMAGE_FORMAT_DESCRIPTOR');
@@ -469,14 +473,21 @@ describe("Runtime", function() {
         expect('ctx.createImage(WebCL.MEM_READ_ONLY, { width: 4, height: 4, channelOrder: -1 })').toThrow('INVALID_IMAGE_FORMAT_DESCRIPTOR');
       });
 
-      it("createImage(<invalidChannelType>) must throw", function() {
+      it("createImage(<invalid channelType>) must throw", function() {
         if (!suite.preconditions) pending();
+        expect('ctx.createImage(WebCL.MEM_READ_ONLY, { width: 4, height: 4, channelType: WebCL.FLOAT })').not.toThrow();
         expect('ctx.createImage(WebCL.MEM_READ_ONLY, { width: 4, height: 4, channelType: WebCL.RGBA })').toThrow('INVALID_IMAGE_FORMAT_DESCRIPTOR');
         expect('ctx.createImage(WebCL.MEM_READ_ONLY, { width: 4, height: 4, channelType: 0 })').toThrow('INVALID_IMAGE_FORMAT_DESCRIPTOR');
         expect('ctx.createImage(WebCL.MEM_READ_ONLY, { width: 4, height: 4, channelType: -1 })').toThrow('INVALID_IMAGE_FORMAT_DESCRIPTOR');
       });
 
-      it("createImage(<unsupportedImageFormat>) must throw", function() {
+      it("createImage(<invalid channelOrder/channelType combination>) must throw", function() {
+        if (!suite.preconditions) pending();
+        invalidFormat = { width: 4, height: 4, channelOrder: WebCL.RGBA, channelType: WebCL.UNORM_SHORT_555 };
+        expect('ctx.createImage(WebCL.MEM_READ_ONLY, invalidFormat)').toThrow('INVALID_IMAGE_FORMAT_DESCRIPTOR');
+      });
+
+      it("createImage(<unsupported image format>) must throw", function() {
         if (!suite.preconditions) pending();
         unsupportedFormat = { width: 4, height: 4, channelOrder: WebCL.RGB, channelType: WebCL.UNORM_SHORT_555 };
         expect('ctx.createImage(WebCL.MEM_READ_ONLY, unsupportedFormat)').toThrow('IMAGE_FORMAT_NOT_SUPPORTED');
