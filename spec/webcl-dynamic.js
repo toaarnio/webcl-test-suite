@@ -169,7 +169,7 @@ describe("Runtime", function() {
 
       it("getInfo(<invalidEnum>) must throw", function() {
         if (!suite.preconditions) pending();
-        fuzz('ctx.getInfo', signature, valid, invalid, 'INVALID_VALUE');
+        fuzz('ctx.getInfo', signature, valid, invalid, [0], 'INVALID_VALUE');
       });
 
     });
@@ -182,7 +182,7 @@ describe("Runtime", function() {
 
     describe("getSupportedImageFormats", function() {
 
-      var signature = [ 'EnumOrUndefined' ];
+      var signature = [ 'OptionalEnum' ];
       var valid = [ 'WebCL.MEM_READ_WRITE' ];
 
       it("getSupportedImageFormats(<validEnum>) must work", function() {
@@ -221,7 +221,7 @@ describe("Runtime", function() {
 
       it("getSupportedImageFormats(<invalidEnum>) must throw", function() {
         if (!suite.preconditions) pending();
-        fuzz('ctx.getSupportedImageFormats', signature, valid, null, 'INVALID_VALUE');
+        fuzz('ctx.getSupportedImageFormats', signature, valid, null, [0], 'INVALID_VALUE');
       });
 
     });
@@ -232,10 +232,13 @@ describe("Runtime", function() {
     // 
     describe("createCommandQueue", function() {
 
-      it("createCommandQueue(<validDevice>) must not throw", function() {
+      var signature = [ 'OptionalWebCLObject', 'OptionalUint' ];
+      var valid = [ 'null', '0' ];
+      var invalid = [ 'ctx', '0x4', ];
+
+      it("createCommandQueue(<validDevice>) must work", function() {
         if (!suite.preconditions) pending();
         expect('ctx.createCommandQueue()').not.toThrow();
-        expect('ctx.createCommandQueue(undefined)').not.toThrow();
         expect('ctx.createCommandQueue(null)').not.toThrow();
         expect('ctx.createCommandQueue(device)').not.toThrow();
         expect('ctx.createCommandQueue(undefined, 0)').not.toThrow();
@@ -244,22 +247,22 @@ describe("Runtime", function() {
         expect('ctx.createCommandQueue() instanceof WebCLCommandQueue').toEvalAs(true);
       });
 
-      it("createCommandQueue(<validDevice>, <supportedProperties>) must not throw", function() {
+      it("createCommandQueue(<validDevice>, <supportedProperties>) must work", function() {
         if (!suite.preconditions) pending();
         supportedProperties = device.getInfo(WebCL.DEVICE_QUEUE_PROPERTIES);
         expect('ctx.createCommandQueue(device, supportedProperties)').not.toThrow();
+        expect('ctx.createCommandQueue(null, supportedProperties)').not.toThrow();
+        expect('ctx.createCommandQueue(undefined, supportedProperties)').not.toThrow();
+      });
+
+      it("createCommandQueue(<invalidDevice>) must throw", function() {
+        if (!suite.preconditions) pending();
+        fuzz('ctx.createCommandQueue', signature, valid, invalid, [0], 'INVALID_DEVICE');
       });
 
       it("createCommandQueue(<validDevice>, <invalidProperties>) must throw", function() {
         if (!suite.preconditions) pending();
-        expect('ctx.createCommandQueue(null, "foobar")').toThrow('INVALID_VALUE');
-        expect('ctx.createCommandQueue(null, "")').toThrow('INVALID_VALUE');
-        expect('ctx.createCommandQueue(null, [])').toThrow('INVALID_VALUE');
-        expect('ctx.createCommandQueue(null, 0x4)').toThrow('INVALID_VALUE');
-        expect('ctx.createCommandQueue(device, "foobar")').toThrow('INVALID_VALUE');
-        expect('ctx.createCommandQueue(device, "")').toThrow('INVALID_VALUE');
-        expect('ctx.createCommandQueue(device, [])').toThrow('INVALID_VALUE');
-        expect('ctx.createCommandQueue(device, 0x4)').toThrow('INVALID_VALUE');
+        fuzz('ctx.createCommandQueue', signature, valid, invalid, [1], 'INVALID_VALUE');
       });
 
       it("createCommandQueue(<validDevice>, <unsupportedProperties>) must throw", function() {
@@ -272,13 +275,6 @@ describe("Runtime", function() {
           expect('ctx.createCommandQueue(device, allProperties)').not.toThrow();
       });
 
-      it("createCommandQueue(<invalidDevice>) must throw", function() {
-        if (!suite.preconditions) pending();
-        expect('ctx.createCommandQueue("foobar")').toThrow('INVALID_DEVICE');
-        expect('ctx.createCommandQueue([])').toThrow('INVALID_DEVICE');
-        expect('ctx.createCommandQueue(ctx)').toThrow('INVALID_DEVICE');
-      });
-
     });
 
     //////////////////////////////////////////////////////////////////////////////
@@ -286,6 +282,9 @@ describe("Runtime", function() {
     // Runtime -> WebCLContext -> createProgram
     // 
     describe("createProgram", function() {
+
+      var signature = [ 'NonEmptyString' ];
+      var valid = [ '"foo"' ];
 
       it("createProgram(<validString>) must not throw", function() {
         if (!suite.preconditions) pending();
@@ -295,13 +294,7 @@ describe("Runtime", function() {
 
       it("createProgram(<invalidString>) must throw", function() {
         if (!suite.preconditions) pending();
-        expect('ctx instanceof WebCLContext').toEvalAs(true);
-        expect('ctx.createProgram("")').toThrow('INVALID_VALUE');
-        expect('ctx.createProgram(null)').toThrow('INVALID_VALUE');
-        expect('ctx.createProgram(undefined)').toThrow('INVALID_VALUE');
-        expect('ctx.createProgram(ctx)').toThrow('INVALID_VALUE');
-        expect('ctx.createProgram([])').toThrow('INVALID_VALUE');
-        expect('ctx.createProgram()').toThrow('INVALID_VALUE');
+        fuzz('ctx.createProgram', signature, valid, null, [0], 'INVALID_VALUE');
       });
 
     });
@@ -311,6 +304,9 @@ describe("Runtime", function() {
     // Runtime -> WebCLContext -> createBuffer
     // 
     describe("createBuffer", function() {
+
+      var signature = [ 'Enum', 'Uint', 'OptionalTypedArray' ];
+      var valid = [ 'WebCL.MEM_READ_WRITE', '1024', 'undefined' ];
 
       it("createBuffer(<validMemFlags>) must not throw", function() {
         if (!suite.preconditions) pending();
@@ -322,12 +318,17 @@ describe("Runtime", function() {
 
       it("createBuffer(<invalidMemFlags>) must throw", function() {
         if (!suite.preconditions) pending();
-        expect('ctx.createBuffer(0, 1024)').toThrow('INVALID_VALUE');
-        expect('ctx.createBuffer(-1, 1024)').toThrow('INVALID_VALUE');
-        expect('ctx.createBuffer("", 1024)').toThrow('INVALID_VALUE');
-        expect('ctx.createBuffer([], 1024)').toThrow('INVALID_VALUE');
-        expect('ctx.createBuffer(ctx, 1024)').toThrow('INVALID_VALUE');
-        expect('ctx.createBuffer(WebCL.RGBA, 1024)').toThrow('INVALID_VALUE');
+        fuzz('ctx.createBuffer', signature, valid, null, [0], 'INVALID_VALUE');
+      });
+
+      it("createBuffer(<invalidSize>) must throw", function() {
+        if (!suite.preconditions) pending();
+        fuzz('ctx.createBuffer', signature, valid, null, [1], 'INVALID_BUFFER_SIZE');
+      });
+
+      it("createBuffer(<invalidHostPtr>) must throw", function() {
+        if (!suite.preconditions) pending();
+        fuzz('ctx.createBuffer', signature, valid, null, [2], 'INVALID_HOST_PTR');
       });
 
     });
@@ -508,7 +509,7 @@ describe("Runtime", function() {
 
       it("createSampler(<invalidArguments>) must throw", function() {
         if (!suite.preconditions) pending();
-        fuzz('ctx.createSampler', signature, valid, invalid, 'INVALID_VALUE');
+        fuzz('ctx.createSampler', signature, valid, invalid, [0], 'INVALID_VALUE');
         expect('ctx.createSampler(false, WebCL.ADDRESS_REPEAT, WebCL.FILTER_NEAREST)').toThrow('INVALID_VALUE');
         expect('ctx.createSampler(false, WebCL.ADDRESS_MIRRORED_REPEAT, WebCL.FILTER_NEAREST)').toThrow('INVALID_VALUE');
       });
@@ -560,7 +561,7 @@ describe("Runtime", function() {
 
     it("getInfo(<invalidEnum>) must throw", function() {
       if (!suite.preconditions) pending();
-      fuzz('sampler.getInfo', signature, valid, null, 'INVALID_VALUE');
+      fuzz('sampler.getInfo', signature, valid, null, [0], 'INVALID_VALUE');
     });
 
   });
@@ -583,7 +584,7 @@ describe("Runtime", function() {
 
       beforeEach(enforcePreconditions.bind(this, function() {
         ctx = createContext();
-        buffer = ctx.createBuffer(WebCL.MEM_READ_WRITE, 128);
+        buffer = ctx.createBuffer(WebCL.MEM_READ_WRITE, 128, new Uint8Array(128));
       }));
 
       it("getInfo(<validEnum>) must work", function() {
@@ -602,7 +603,7 @@ describe("Runtime", function() {
 
       it("getInfo(<invalidEnum>) must throw", function() {
         if (!suite.preconditions) pending();
-        fuzz('buffer.getInfo', signature, valid, null, 'INVALID_VALUE');
+        fuzz('buffer.getInfo', signature, valid, null, [0], 'INVALID_VALUE');
       });
 
     });
@@ -613,7 +614,7 @@ describe("Runtime", function() {
     // 
     describe("WebCLImage", function() {
       
-      var signature = [ 'EnumOrUndefined' ];
+      var signature = [ 'OptionalEnum' ];
       var valid = [ 'WebCL.MEM_TYPE' ];
 
       beforeEach(enforcePreconditions.bind(this, function() {
@@ -671,7 +672,7 @@ describe("Runtime", function() {
 
       it("getInfo(<invalidEnum>) must throw", function() {
         if (!suite.preconditions) pending();
-        fuzz('image.getInfo', signature, valid, null, 'INVALID_VALUE');
+        fuzz('image.getInfo', signature, valid, null, [0], 'INVALID_VALUE');
       });
 
     });
@@ -715,7 +716,7 @@ describe("Runtime", function() {
 
       it("getInfo(<invalidEnum>) must throw", function() {
         if (!suite.preconditions) pending();
-        fuzz('program.getInfo', signature, valid, null, 'INVALID_VALUE');
+        fuzz('program.getInfo', signature, valid, null, [0], 'INVALID_VALUE');
       });
 
     });
@@ -1887,7 +1888,7 @@ describe("Runtime", function() {
       it("getInfo(<invalidEnum>) must throw", function() {
         if (!suite.preconditions) pending();
         expect('queue.enqueueMarker(event)').not.toThrow();
-        fuzz('event.getInfo', signature, valid, invalid, 'INVALID_VALUE');
+        fuzz('event.getInfo', signature, valid, invalid, [0], 'INVALID_VALUE');
       });
 
     });
@@ -1946,8 +1947,8 @@ describe("Runtime", function() {
 
       it("getProfilingInfo(<invalidEnum>) must throw", function() {
         if (!suite.preconditions) pending();
-        expect('queue.enqueueMarker(event)').not.toThrow();
-        fuzz('event.getProfilingInfo', signature, valid, invalid, 'INVALID_VALUE');
+        expect('queue.enqueueMarker(event); queue.finish();').not.toThrow();
+        fuzz('event.getProfilingInfo', signature, valid, invalid, [0], 'INVALID_VALUE');
       });
 
     });
