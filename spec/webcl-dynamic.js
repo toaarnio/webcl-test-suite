@@ -25,18 +25,18 @@ describe("Runtime", function() {
       aDevice = aPlatform.getDevices()[0];
     }));
 
-    it("createContext() must not throw", function() {
+    it("createContext() must work", function() {
       if (!suite.preconditions) pending();
       expect('webcl.createContext()').not.toThrow();
       expect('webcl.createContext() instanceof WebCLContext').toEvalAs(true);
     });
 
-    it("createContext(DEVICE_TYPE_DEFAULT) must not throw", function() {
+    it("createContext(DEVICE_TYPE_DEFAULT) must work", function() {
       if (!suite.preconditions) pending();
       expect('webcl.createContext(WebCL.DEVICE_TYPE_DEFAULT)').not.toThrow();
     });
 
-    it("createContext(CPU || GPU || ACCELERATOR) must not throw", function() {
+    it("createContext(CPU || GPU || ACCELERATOR) must work", function() {
       if (!suite.preconditions) pending();
       var types = [ WebCL.DEVICE_TYPE_CPU, WebCL.DEVICE_TYPE_GPU, WebCL.DEVICE_TYPE_ACCELERATOR ];
       for (var t=0, found=false; t < types.length && !found; t++) {
@@ -49,12 +49,12 @@ describe("Runtime", function() {
       expect(ctx instanceof WebCLContext).toBeTruthy();
     });
 
-    it("createContext(aPlatform) must not throw", function() {
+    it("createContext(aPlatform) must work", function() {
       if (!suite.preconditions) pending();
       expect('webcl.createContext(aPlatform)').not.toThrow();
     });
 
-    it("createContext(aPlatform, CPU || GPU || ACCELERATOR) must not throw", function() {
+    it("createContext(aPlatform, CPU || GPU || ACCELERATOR) must work", function() {
       if (!suite.preconditions) pending();
       var types = [ WebCL.DEVICE_TYPE_CPU, WebCL.DEVICE_TYPE_GPU, WebCL.DEVICE_TYPE_ACCELERATOR ];
       for (var t=0, found=false; t < types.length && !found; t++) {
@@ -67,17 +67,17 @@ describe("Runtime", function() {
       expect(ctx instanceof WebCLContext).toBeTruthy();
     });
 
-    it("createContext(aDevice) must not throw", function() {
+    it("createContext(aDevice) must work", function() {
       if (!suite.preconditions) pending();
       expect('webcl.createContext(aDevice)').not.toThrow();
     });
 
-    it("createContext([aDevice]) must not throw", function() {
+    it("createContext([aDevice]) must work", function() {
       if (!suite.preconditions) pending();
       expect('webcl.createContext([aDevice])').not.toThrow();
     });
 
-    it("createContext(aPlatform, DEVICE_TYPE_ALL) must not throw", function() {
+    it("createContext(aPlatform, DEVICE_TYPE_ALL) must work", function() {
       if (!suite.preconditions) pending();
       expect('webcl.createContext(aPlatform, WebCL.DEVICE_TYPE_ALL)').not.toThrow();
     });
@@ -400,9 +400,11 @@ describe("Runtime", function() {
         expect('ctx.createImage(WebCL.MEM_READ_ONLY, { width: 11, height: 17, rowPitch: 11*4 }, new Uint8Array(11*17*4))').not.toThrow();
       });
 
-      it("createImage() must throw", function() {
+      it("createImage(<invalid # of arguments>) must throw", function() {
         if (!suite.preconditions) pending();
-        expect('ctx.createImage()').toThrow();
+        expect('ctx.createImage()').toThrow('WEBCL_SYNTAX_ERROR');
+        expect('ctx.createImage(WebCL.MEM_READ_ONLY)').toThrow('WEBCL_SYNTAX_ERROR');
+        expect('ctx.createImage(WebCL.MEM_READ_ONLY, { width: 4, height: 4 }, new Uint8Array(4*4*4), null)').toThrow('WEBCL_SYNTAX_ERROR');
       });
 
       it("createImage(<invalid memFlags>) must throw", function() {
@@ -412,7 +414,6 @@ describe("Runtime", function() {
 
       it("createImage(<invalid descriptor>) must throw", function() {
         if (!suite.preconditions) pending();
-        expect('ctx.createImage(WebCL.MEM_READ_ONLY)').toThrow('INVALID_IMAGE_DESCRIPTOR');
         expect('ctx.createImage(WebCL.MEM_READ_ONLY, null)').toThrow('INVALID_IMAGE_DESCRIPTOR');
         expect('ctx.createImage(WebCL.MEM_READ_ONLY, {})').toThrow('INVALID_IMAGE_DESCRIPTOR');
         expect('ctx.createImage(WebCL.MEM_READ_ONLY, [])').toThrow('INVALID_IMAGE_DESCRIPTOR');
@@ -424,33 +425,36 @@ describe("Runtime", function() {
         expect('ctx.createImage(WebCL.MEM_READ_ONLY, { width: 4, height: [] })').toThrow('INVALID_IMAGE_DESCRIPTOR');
         expect('ctx.createImage(WebCL.MEM_READ_ONLY, { width: 4, height: "" })').toThrow('INVALID_IMAGE_DESCRIPTOR');
         expect('ctx.createImage(WebCL.MEM_READ_ONLY, { width: 4, height: ctx })').toThrow('INVALID_IMAGE_DESCRIPTOR');
+        expect('ctx.createImage(WebCL.MEM_READ_ONLY, { width: 4, height: -4 })').toThrow('INVALID_IMAGE_DESCRIPTOR');
         expect('ctx.createImage(WebCL.MEM_READ_ONLY, { width: 4, height: 4, rowPitch: null })').toThrow('INVALID_IMAGE_DESCRIPTOR');
         expect('ctx.createImage(WebCL.MEM_READ_ONLY, { width: 4, height: 4, rowPitch: {} })').toThrow('INVALID_IMAGE_DESCRIPTOR');
         expect('ctx.createImage(WebCL.MEM_READ_ONLY, { width: 4, height: 4, rowPitch: [] })').toThrow('INVALID_IMAGE_DESCRIPTOR');
         expect('ctx.createImage(WebCL.MEM_READ_ONLY, { width: 4, height: 4, rowPitch: "" })').toThrow('INVALID_IMAGE_DESCRIPTOR');
         expect('ctx.createImage(WebCL.MEM_READ_ONLY, { width: 4, height: 4, rowPitch: ctx })').toThrow('INVALID_IMAGE_DESCRIPTOR');
-        expect('ctx.createImage(WebCL.MEM_READ_ONLY, { width: 4, height: 4, channelOrder: null })').toThrow('INVALID_IMAGE_DESCRIPTOR');
-        expect('ctx.createImage(WebCL.MEM_READ_ONLY, { width: 4, height: 4, channelOrder: {} })').toThrow('INVALID_IMAGE_DESCRIPTOR');
-        expect('ctx.createImage(WebCL.MEM_READ_ONLY, { width: 4, height: 4, channelOrder: [] })').toThrow('INVALID_IMAGE_DESCRIPTOR');
-        expect('ctx.createImage(WebCL.MEM_READ_ONLY, { width: 4, height: 4, channelOrder: "" })').toThrow('INVALID_IMAGE_DESCRIPTOR');
-        expect('ctx.createImage(WebCL.MEM_READ_ONLY, { width: 4, height: 4, channelOrder: ctx })').toThrow('INVALID_IMAGE_DESCRIPTOR');
-        expect('ctx.createImage(WebCL.MEM_READ_ONLY, { width: 4, height: 4, channelType: null })').toThrow('INVALID_IMAGE_DESCRIPTOR');
-        expect('ctx.createImage(WebCL.MEM_READ_ONLY, { width: 4, height: 4, channelType: {} })').toThrow('INVALID_IMAGE_DESCRIPTOR');
-        expect('ctx.createImage(WebCL.MEM_READ_ONLY, { width: 4, height: 4, channelType: [] })').toThrow('INVALID_IMAGE_DESCRIPTOR');
-        expect('ctx.createImage(WebCL.MEM_READ_ONLY, { width: 4, height: 4, channelType: "" })').toThrow('INVALID_IMAGE_DESCRIPTOR');
-        expect('ctx.createImage(WebCL.MEM_READ_ONLY, { width: 4, height: 4, channelType: ctx })').toThrow('INVALID_IMAGE_DESCRIPTOR');
+        expect('ctx.createImage(WebCL.MEM_READ_ONLY, { width: 4, height: 4, rowPitch: -1 })').toThrow('INVALID_IMAGE_DESCRIPTOR');
+      });
+
+      it("createImage(<invalid image format>) must throw", function() {
+        expect('ctx.createImage(WebCL.MEM_READ_ONLY, { width: 4, height: 4, channelOrder: null })').toThrow('INVALID_IMAGE_FORMAT_DESCRIPTOR');
+        expect('ctx.createImage(WebCL.MEM_READ_ONLY, { width: 4, height: 4, channelOrder: {} })').toThrow('INVALID_IMAGE_FORMAT_DESCRIPTOR');
+        expect('ctx.createImage(WebCL.MEM_READ_ONLY, { width: 4, height: 4, channelOrder: [] })').toThrow('INVALID_IMAGE_FORMAT_DESCRIPTOR');
+        expect('ctx.createImage(WebCL.MEM_READ_ONLY, { width: 4, height: 4, channelOrder: "" })').toThrow('INVALID_IMAGE_FORMAT_DESCRIPTOR');
+        expect('ctx.createImage(WebCL.MEM_READ_ONLY, { width: 4, height: 4, channelOrder: ctx })').toThrow('INVALID_IMAGE_FORMAT_DESCRIPTOR');
+        expect('ctx.createImage(WebCL.MEM_READ_ONLY, { width: 4, height: 4, channelType: null })').toThrow('INVALID_IMAGE_FORMAT_DESCRIPTOR');
+        expect('ctx.createImage(WebCL.MEM_READ_ONLY, { width: 4, height: 4, channelType: {} })').toThrow('INVALID_IMAGE_FORMAT_DESCRIPTOR');
+        expect('ctx.createImage(WebCL.MEM_READ_ONLY, { width: 4, height: 4, channelType: [] })').toThrow('INVALID_IMAGE_FORMAT_DESCRIPTOR');
+        expect('ctx.createImage(WebCL.MEM_READ_ONLY, { width: 4, height: 4, channelType: "" })').toThrow('INVALID_IMAGE_FORMAT_DESCRIPTOR');
+        expect('ctx.createImage(WebCL.MEM_READ_ONLY, { width: 4, height: 4, channelType: ctx })').toThrow('INVALID_IMAGE_FORMAT_DESCRIPTOR');
       });
 
       it("createImage(<invalid dimensions>) must throw", function() {
         if (!suite.preconditions) pending();
         expect('ctx.createImage(WebCL.MEM_READ_ONLY, { width: 4, height: 0 })').toThrow('INVALID_IMAGE_SIZE');
-        expect('ctx.createImage(WebCL.MEM_READ_ONLY, { width: 4, height: -4 })').toThrow('INVALID_IMAGE_SIZE');
         expect('ctx.createImage(WebCL.MEM_READ_ONLY, { width: 1024*1024, height: 1 })').toThrow('INVALID_IMAGE_SIZE');
       });
 
       it("createImage(<invalid rowPitch>) must throw", function() {
         if (!suite.preconditions) pending();
-        expect('ctx.createImage(WebCL.MEM_READ_ONLY, { width: 4, height: 4, rowPitch: -1 })').toThrow('INVALID_IMAGE_SIZE');
         expect('ctx.createImage(WebCL.MEM_READ_ONLY, { width: 4, height: 4, rowPitch: 1 })').toThrow('INVALID_IMAGE_SIZE');
         expect('ctx.createImage(WebCL.MEM_READ_ONLY, { width: 4, height: 4, rowPitch: 15 }, new Uint8Array(4*4*4))').toThrow('INVALID_IMAGE_SIZE');
       });
