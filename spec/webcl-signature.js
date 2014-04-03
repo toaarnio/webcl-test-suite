@@ -18,8 +18,10 @@
 // 
 describe("Signature", function() {
 
-  var self = {};
-  self.preconditions = (window.webcl !== undefined || window.WebCL !== undefined);
+  beforeEach(enforcePreconditions.bind(this, function() {
+    if (window.webcl === undefined && window.WebCL === undefined)
+      throw "Both window.webcl and window.WebCL are undefined."
+  }));
 
   it("must have the singleton 'webcl' object", function() {
     expect(window).toHaveProperty('webcl');
@@ -32,15 +34,22 @@ describe("Signature", function() {
   });
 
   it("must have all the expected member functions and properties", function() {
-    if (!self.preconditions) pending();
+    if (!suite.preconditions) pending();
     checkSignature('webcl', true);
     for (var className in expectedClasses) {
       expect(checkSignature(className, true)).toEqual(true);
     }
   });
 
+  it("must have the same set of enums in both 'webcl' and 'WebCL'", function() {
+    if (!suite.preconditions) pending();
+    for (var name in WebCL) {
+      expect('WebCL.'+name+' === webcl.'+name).toEvalAs(true);
+    }
+  });
+
   it("must have error code enums ranging from 0 to -64", function() {
-    if (!self.preconditions) pending();
+    if (!suite.preconditions) pending();
     for (var enumName in errorEnums) {
       var actualValue = WebCL[enumName];
       var expectedValue = errorEnums[enumName];
@@ -50,7 +59,7 @@ describe("Signature", function() {
   });
 
   it("must have device info enums ranging from 0x1000 to 0x103D", function() {
-    if (!self.preconditions) pending();
+    if (!suite.preconditions) pending();
     for (var enumName in deviceInfoEnums) {
       var actualValue = WebCL[enumName];
       var expectedValue = deviceInfoEnums[enumName];
@@ -60,7 +69,7 @@ describe("Signature", function() {
   });
 
   it("must not have any disallowed member functions", function() {
-    if (!self.preconditions) pending();
+    if (!suite.preconditions) pending();
     checkSignature('webcl', false);
     for (var className in expectedClasses) {
       checkSignature(className, false);
@@ -68,14 +77,14 @@ describe("Signature", function() {
   });
 
   it("must not have any disallowed device info enums", function() {
-    if (!self.preconditions) pending();
+    if (!suite.preconditions) pending();
     for (var enumName in removedDeviceInfoEnums) {
       expect('webcl').not.toHaveProperty(enumName);
     }
   });
 
   it("must not have error code enums that have been removed", function() {
-    if (!self.preconditions) pending();
+    if (!suite.preconditions) pending();
     for (var enumName in removedErrorEnums) {
       expect(WebCL[enumName]).not.toBeDefined();
     }
@@ -127,7 +136,11 @@ describe("Signature", function() {
     return true;
   };
 
-  //////////////////////////////////////////////////////////////
+  //////////////////////////////////////////////////////////////////////////////
+
+  beforeEach(addCustomMatchers);
+
+  //////////////////////////////////////////////////////////////////////////////
 
   var expectedClasses = {
     WebCL : true,
@@ -234,11 +247,13 @@ describe("Signature", function() {
 
     WebCLBuffer : {
       createSubBuffer : true,
+      release : true,
       releaseCLResources : false,       // renamed to release
     },
 
     WebCLImage : {
       getInfo : true,
+      release : true,
       getImageInfo: false,              // renamed to getInfo
       releaseCLResources : false,       // renamed to release
     },
@@ -288,6 +303,7 @@ describe("Signature", function() {
 
     WebCLUserEvent : {
       setStatus : true,
+      release : true,
       setUserEventStatus : false,       // renamed to setStatus
       releaseCLResources : false,       // renamed to release
     },
