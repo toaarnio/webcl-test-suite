@@ -826,8 +826,16 @@ describe("Runtime", function() {
       var valid = [ 'device', 'WebCL.PROGRAM_BUILD_STATUS' ];
       var invalid = [ 'program', 'WebCL.PROGRAM_NUM_DEVICES' ];
 
-      it("getBuildInfo(<validDevice>, <validEnum>) must work", function() {
+      it("getBuildInfo(<validDevice>, <validEnum>) must work before build()", function() {
         if (!suite.preconditions) pending();
+        expect('program.getBuildInfo(device, WebCL.PROGRAM_BUILD_STATUS)').not.toThrow();
+        expect('program.getBuildInfo(device, WebCL.PROGRAM_BUILD_OPTIONS)').not.toThrow();
+        expect('program.getBuildInfo(device, WebCL.PROGRAM_BUILD_LOG)').not.toThrow();
+      });
+
+      it("getBuildInfo(<validDevice>, <validEnum>) must work after build()", function() {
+        if (!suite.preconditions) pending();
+        expect('program.build(devices)').not.toThrow();
         expect('program.getBuildInfo(device, WebCL.PROGRAM_BUILD_STATUS)').not.toThrow();
         expect('program.getBuildInfo(device, WebCL.PROGRAM_BUILD_OPTIONS)').not.toThrow();
         expect('program.getBuildInfo(device, WebCL.PROGRAM_BUILD_LOG)').not.toThrow();
@@ -1280,7 +1288,7 @@ describe("Runtime", function() {
       var signature = [ 'WebCLObject',            // buffer
                         'Boolean',                // blockingRead
                         'Uint',                   // bufferOffset
-                        'UintNonZero',            // numBytes
+                        'Uint',                   // numBytes
                         'TypedArray',             // hostPtr
                         'OptionalArray',          // eventWaitList
                         'OptionalWebCLObject'     // event
@@ -1371,7 +1379,7 @@ describe("Runtime", function() {
       var signature = [ 'WebCLObject',            // buffer
                         'Boolean',                // blockingWrite
                         'Uint',                   // bufferOffset
-                        'UintNonZero',            // numBytes
+                        'Uint',                   // numBytes
                         'TypedArray',             // hostPtr
                         'OptionalArray',          // eventWaitList
                         'OptionalWebCLObject'     // event
