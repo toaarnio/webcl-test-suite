@@ -20,6 +20,9 @@ describe("Robustness", function() {
     ctx = createContext();
   }));
 
+  // RESOLVED: Some OpenCL drivers screw up reference counting if using clRetain.
+  // WORKAROUND: Do not use clRetain in the WebCL layer.
+  //
   it("must not crash or throw on releaseAll()", function() {
     if (!suite.preconditions) pending();
     program = ctx.createProgram("kernel void dummy(global uint* buf) { buf[0]=0xdeadbeef; }");
@@ -28,6 +31,9 @@ describe("Robustness", function() {
     expect('webcl.releaseAll()').not.toThrow();
   });
 
+  // RESOLVED: Some OpenCL drivers screw up reference counting if using clRetain.
+  // WORKAROUND: Do not use clRetain in the WebCL layer.
+  //
   it("must not crash or throw when calling release() more than once", function()  {
     if (!suite.preconditions) pending();
     ctx.release();
@@ -35,6 +41,9 @@ describe("Robustness", function() {
     expect('webcl.releaseAll()').not.toThrow();
   });
 
+  // RESOLVED: Some OpenCL drivers screw up reference counting if using clRetain.
+  // WORKAROUND: Do not use clRetain in the WebCL layer.
+  //
   it("must not crash or throw when manually releasing objects in 'wrong' order", function() {
     if (!suite.preconditions) pending();
     program = ctx.createProgram("kernel void dummy(global uint* buf) { buf[0]=0xdeadbeef; }");
@@ -45,6 +54,23 @@ describe("Robustness", function() {
     expect('webcl.releaseAll()').not.toThrow();
   });
 
+  // RESOLVED: Some OpenCL drivers screw up reference counting if using clRetain.
+  // WORKAROUND: Do not use clRetain in the WebCL layer.
+  //
+  it("must throw when trying to use an object that has been released", function() {
+    if (!suite.preconditions) pending();
+    program = ctx.createProgram("kernel void dummy(global uint* buf) { buf[0]=0xdeadbeef; }");
+    expect('program.build()').not.toThrow();
+    expect('kernel = program.createKernel("dummy")').not.toThrow();
+    expect('webcl.releaseAll()').not.toThrow();
+    expect('ctx.getInfo(WebCL.CONTEXT_NUM_DEVICES)').toThrow('WEBCL_IMPLEMENTATION_FAILURE');
+    expect('kernel.getInfo(WebCL.PROGRAM_CONTEXT)').toThrow('WEBCL_IMPLEMENTATION_FAILURE');
+    expect('webcl.releaseAll()').not.toThrow();
+  });
+
+  // RESOLVED: Intel CPU driver crashes when releasing an unfinished user event.
+  // WORKAROUND: Force user event status to -1 before clReleaseEvent.
+  //
   it("must not crash or throw when releasing user events", function() {
     if (!suite.preconditions) pending();
     expect('userEvent = ctx.createUserEvent()').not.toThrow();
@@ -74,13 +100,10 @@ describe("Robustness", function() {
     }
   });
 
-  // Known failures as of 2014-02-12:
-  //  * Mac OSX 10.9 / CPU driver (crashes)
+  // RESOLVED: Erroneous typecast in WebCL bindings (lib_ocl/commandqueue.jsm).
   //
   it("must not crash or throw on enqueueNDRangeKernel if workDim === 2", function() {
     if (!suite.preconditions) pending();
-    var r = confirm("This test case will crash your browser on Apple OpenCL. Run anyway?");
-    if (r === false) pending();
     ctx = createContext();
     queue = ctx.createCommandQueue();
     buffer = ctx.createBuffer(WebCL.MEM_READ_ONLY, 128);
@@ -126,17 +149,6 @@ describe("Robustness", function() {
     if (r === false) pending();
     expect('kernels/largeArrayLocal.cl').not.toBuild();
     expect('kernels/largeArrayLocal.cl').not.toBuild();
-    expect('webcl.releaseAll()').not.toThrow();
-  });
-
-  it("must throw when trying to use an object that has been released", function() {
-    if (!suite.preconditions) pending();
-    program = ctx.createProgram("kernel void dummy(global uint* buf) { buf[0]=0xdeadbeef; }");
-    expect('program.build()').not.toThrow();
-    expect('kernel = program.createKernel("dummy")').not.toThrow();
-    expect('webcl.releaseAll()').not.toThrow();
-    expect('ctx.getInfo(WebCL.CONTEXT_NUM_DEVICES)').toThrow('WEBCL_IMPLEMENTATION_FAILURE');
-    expect('kernel.getInfo(WebCL.PROGRAM_CONTEXT)').toThrow('WEBCL_IMPLEMENTATION_FAILURE');
     expect('webcl.releaseAll()').not.toThrow();
   });
 
