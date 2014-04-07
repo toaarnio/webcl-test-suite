@@ -1659,6 +1659,13 @@ describe("Runtime", function() {
           expect('queue.enqueueWriteImage(image, true, [0,0], [1, 1], 0, pixels.subarray(0, 3))').toThrow('INVALID_VALUE');
         });
 
+        it("enqueueWriteImage(<valid eventWaitList>) must work", function() {
+          if (!suite.preconditions) pending();
+          event = new WebCLEvent();
+          expect('queue.enqueueWriteImage(image, false, [0, 0], [W, H], 0, pixels, null, event)').not.toThrow();
+          expect('queue.enqueueWriteImage(image, true, [0, 0], [W, H], 0, pixels, [event])').not.toThrow();
+        });
+
       });
 
     });
@@ -1891,6 +1898,21 @@ describe("Runtime", function() {
 
     });
 
+    //////////////////////////////////////////////////////////////////////////////
+    //
+    // Runtime -> WebCLCommandQueue -> enqueueWaitForEvents
+    // 
+    xdescribe("enqueueWaitForEvents", function() {
+
+      it("enqueueWaitForEvents(<valid eventWaitList>) must work", function() {
+        if (!suite.preconditions) pending();
+        event = new WebCLEvent();
+        expect('queue.enqueueMarker(event)').not.toThrow();
+        expect('queue.enqueueWaitForEvents([event]); queue.finish();').not.toThrow();
+      });
+
+    });
+
   });
 
 
@@ -1908,7 +1930,7 @@ describe("Runtime", function() {
 
     //////////////////////////////////////////////////////////////////////////////
     //
-    // Runtime -> WebCLEvent -> initialization
+    // Runtime -> WebCLEvent -> Initialization
     // 
     describe("Initialization", function() {
 
@@ -1944,6 +1966,20 @@ describe("Runtime", function() {
       it("enqueue*(<invalidEvent>) must throw", function() {
         if (!suite.preconditions) pending();
         expect('queue.enqueueMarker("foo")').toThrow('INVALID_EVENT');
+      });
+
+    });
+
+    //////////////////////////////////////////////////////////////////////////////
+    //
+    // Runtime -> WebCLEvent -> Wait lists
+    // 
+    xdescribe("Wait lists", function() {
+
+      it("enqueue*(<valid eventWaitList>) must work", function() {
+        if (!suite.preconditions) pending();
+        expect('queue.enqueueMarker(event)').not.toThrow();
+        expect('queue.enqueueWaitForEvents([event]); queue.finish();').not.toThrow();
       });
 
     });
