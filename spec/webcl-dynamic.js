@@ -435,6 +435,7 @@ describe("Runtime", function() {
       });
 
       it("createImage(<invalid image format>) must throw", function() {
+        if (!suite.preconditions) pending();
         expect('ctx.createImage(WebCL.MEM_READ_ONLY, { width: 4, height: 4, channelOrder: null })').toThrow('INVALID_IMAGE_FORMAT_DESCRIPTOR');
         expect('ctx.createImage(WebCL.MEM_READ_ONLY, { width: 4, height: 4, channelOrder: {} })').toThrow('INVALID_IMAGE_FORMAT_DESCRIPTOR');
         expect('ctx.createImage(WebCL.MEM_READ_ONLY, { width: 4, height: 4, channelOrder: [] })').toThrow('INVALID_IMAGE_FORMAT_DESCRIPTOR');
