@@ -55,7 +55,7 @@
     // For each input type, define a list of values that are to be considered invalid.  For example,
     // 1.01 must not be accepted as an integer.
     //
-    var defaultFuzzMap = {
+    var fuzzMap = {
       Boolean :             [ 'undefined', 'null', '-1', '0', '1',              '[]', '[1]', '{}', '""', '"foo"'                               ],
       Int :                 [ 'undefined', 'null',                      '1.01', '[]', '[1]', '{}', '""', '"foo"', 'true', 'new Uint32Array(1)' ],
       Uint :                [ 'undefined', 'null', '-1',                '1.01', '[]', '[1]', '{}', '""', '"foo"', 'true', 'new Uint32Array(1)' ],
@@ -69,6 +69,7 @@
       Array :               [ 'undefined', 'null', '-1', '0', '1',                           '{}', '""', '"foo"', 'true', 'new Uint32Array(8)' ],
       OptionalArray :       [                      '-1', '0', '1',                           '{}', '""', '"foo"', 'true', 'new Uint32Array(8)' ],
       NonEmptyArray :       [ 'undefined', 'null', '-1', '0', '1',              '[]',        '{}', '""', '"foo"', 'true', 'new Uint32Array(8)' ],
+      UintArray3 :          [ 'undefined', 'null', '-1', '0', '1', '[0,0]',     '[]', '[1]', '{}', '""', '"foo"', 'true', 'new Uint32Array(3)' ],
       TypedArray :          [ 'undefined', 'null', '-1', '0', '1',              '[]', '[1]', '{}', '""', '"foo"', 'true', 'new ArrayBuffer(8)' ],
       OptionalTypedArray :  [                      '-1', '0', '1',              '[]', '[1]', '{}', '""', '"foo"', 'true', 'new ArrayBuffer(8)' ],
       WebCLObject :         [ 'undefined', 'null', '-1', '0', '1',              '[]', '[1]', '{}', '""', '"foo"', 'true', 'new Uint32Array(8)', 'webcl'],
@@ -79,8 +80,19 @@
     expect(signature.length).toBeGreaterThan(0);
 
     for (var i=0; i < signature.length; i++) {
-      var invalidArgs = defaultFuzzMap[signature[i]];
-      expect(invalidArgs).not.toBeUndefined();
+      var invalidArgs = undefined;
+      if (Array.isArray(signature[i])) {
+        var arrayElementTypes = signature[i];
+        invalidArgs = [ '[0]', '[0, 0]', '[0, 0, 0, 0]' ];
+        var invalidArgsForElement0 = fuzzMap[arrayElementTypes[0]];
+        var invalidArgsForElement1 = fuzzMap[arrayElementTypes[1]];
+        var invalidArgsForElement2 = fuzzMap[arrayElementTypes[2]];
+        var invalidArrayArgs = "'["+invalidArgsForElement0+", "+invalidArgsForElement1+", "+invalidArgsForElement2+"]'";
+        DEBUG("fuzz args for UintArray3: ", invalidArrayArgs);
+      } else {
+        invalidArgs = fuzzMap[signature[i]];
+        expect(invalidArgs).not.toBeUndefined();
+      }
       if (argsToTest.indexOf(i) !== -1) {
         if (customInvalidArgs && customInvalidArgs[i]) {
           invalidArgs = invalidArgs.concat(customInvalidArgs[i]);

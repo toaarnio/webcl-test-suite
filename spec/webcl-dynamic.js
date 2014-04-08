@@ -1487,6 +1487,56 @@ describe("Runtime", function() {
 
       });
 
+      describe("enqueueCopyBufferRect", function() {
+        
+        var signature = [ 'WebCLObject',            // srcBuffer
+                          'WebCLObject',            // dstBuffer
+                          ['Uint', 'Uint', 'Uint'], // srcOrigin
+                          'UintArray3',             // dstOrigin
+                          'UintArray3',             // region
+                          'Uint',                   // srcRowPitch
+                          'Uint',                   // srcSlicePitch
+                          'Uint',                   // dstRowPitch
+                          'Uint',                   // dstSlicePitch
+                          'OptionalArray',          // eventWaitList
+                          'OptionalWebCLObject'     // event
+                        ];
+
+        var valid = [ 'buffer1', 
+                      'buffer2',
+                      '[0,0,0]',
+                      '[0,0,0]',
+                      '[3,4,5]',
+                      0, 0, 0, 0,
+                      'undefined',
+                      'undefined'
+                    ];
+
+        beforeEach(enforcePreconditions.bind(this, function() {
+          numBytes = 1024;
+          buffer1 = ctx.createBuffer(WebCL.MEM_READ_WRITE, numBytes);
+          buffer2 = ctx.createBuffer(WebCL.MEM_READ_WRITE, numBytes);
+        }));
+
+        it("enqueueCopyBufferRect(<valid arguments>) must work", function() {
+          if (!suite.preconditions) pending();
+          event = new WebCLEvent();
+          expect('queue.enqueueCopyBufferRect(buffer1, buffer2, [0,0,0], [0,0,0], [32,32,1], 0, 0, 0, 0)').not.toThrow();
+          expect('queue.enqueueCopyBufferRect(buffer1, buffer2, [0,0,0], [0,0,0], [32,32,1], 0, 0, 0, 0, null, event)').not.toThrow();
+          expect('queue.enqueueCopyBufferRect(buffer1, buffer2, [0,0,0], [0,0,0], [32,32,1], 0, 0, 0, 0, [event])').not.toThrow();
+        });
+
+        it("enqueueCopyBufferRect(<invalid arguments>) must throw", function() {
+          if (!suite.preconditions) pending();
+          fuzz('queue.enqueueCopyBufferRect', signature, valid, null, [0, 1], 'INVALID_MEM_OBJECT');
+          fuzz('queue.enqueueCopyBufferRect', signature, valid, null, [2, 3, 4], 'INVALID_VALUE');
+          fuzz('queue.enqueueCopyBufferRect', signature, valid, null, [5, 6, 7, 8], 'INVALID_VALUE');
+          fuzz('queue.enqueueCopyBufferRect', signature, valid, null, [9], 'INVALID_EVENT_WAIT_LIST');
+          fuzz('queue.enqueueCopyBufferRect', signature, valid, null, [10], 'INVALID_EVENT');
+        });
+
+      });
+
     });
 
     //////////////////////////////////////////////////////////////////////////////
