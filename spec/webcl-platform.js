@@ -285,42 +285,54 @@ describe("Platform", function() {
 
     it(".toThrow()", function() {
       expect('illegalStatement').toThrow();
+      expect(function() { illegalStatement; }).toThrow();
     });
 
     it(".not.toThrow()", function() {
       expect('var validStatement').not.toThrow();
+      expect(function() { var validStatement; }).not.toThrow();
     });
 
     it(".toThrow('EXCEPTION_NAME')", function() {
       customException = { name: 'CUSTOM_EXCEPTION' };
       expect('illegalStatement').toThrow('ReferenceError');
       expect('throw customException').toThrow('CUSTOM_EXCEPTION');
+      expect(function() { illegalStatement; }).toThrow('ReferenceError');
+      expect(function() { throw customException; }).toThrow('CUSTOM_EXCEPTION');
     });
 
     it(".not.toThrow('EXCEPTION_NAME')", function() {
       customException = { name: 'CUSTOM_EXCEPTION' }
       expect('var validStatement').not.toThrow('ReferenceError');
       expect('throw customException').not.toThrow('ReferenceError');
+      expect(function() { var validStatement; }).not.toThrow('ReferenceError');
+      expect(function() { throw customException; }).not.toThrow('ReferenceError');
     });
 
     it(".toThrow() [MUST FAIL]", function() {
       expect('var validStatement').toThrow();
+      expect(function() { var validStatement; }).toThrow();
     });
 
     it(".not.toThrow() [MUST FAIL]", function() {
       expect('illegalStatement').not.toThrow();
+      expect(function() { illegalStatement; }).not.toThrow();
     });
 
     it(".toThrow('EXCEPTION_NAME') [MUST FAIL]", function() {
       customException = { name: 'CUSTOM_EXCEPTION' };
       expect('var validStatement').toThrow('ReferenceError');
       expect('throw customException').toThrow('ReferenceError');
+      expect(function() { var validStatement; }).toThrow('ReferenceError');
+      expect(function() { throw customException; }).toThrow('ReferenceError');
     });
 
     it(".not.toThrow('EXCEPTION_NAME') [MUST FAIL]", function() {
       customException = { name: 'CUSTOM_EXCEPTION' };
       expect('illegalStatement').not.toThrow('ReferenceError');
       expect('throw customException').not.toThrow('CUSTOM_EXCEPTION');
+      expect(function() { illegalStatement; }).not.toThrow('ReferenceError');
+      expect(function() { throw customException; }).not.toThrow('CUSTOM_EXCEPTION');
     });
 
   });

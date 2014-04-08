@@ -211,7 +211,7 @@
       return {
         compare: function(actual, expected) {
           try {
-            var wrapper = new Function(actual);
+            var wrapper = typeof(actual) === 'function' ? actual : new Function(actual);
             wrapper.apply(this, arguments);
             return { 
               pass: false,
