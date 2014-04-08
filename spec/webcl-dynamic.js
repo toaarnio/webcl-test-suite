@@ -1289,9 +1289,9 @@ describe("Runtime", function() {
 
     //////////////////////////////////////////////////////////////////////////////
     //
-    // Runtime -> WebCLCommandQueue -> enqueue[Read,Write]Buffer
+    // Runtime -> WebCLCommandQueue -> enqueue[Read,Write,Copy]Buffer
     // 
-    describe("enqueue[Read,Write]Buffer", function() {
+    describe("enqueue[*]Buffer", function() {
 
       var signature = [ 'WebCLObject',            // buffer
                         'Boolean',                // blockingRead/Write
@@ -1442,13 +1442,58 @@ describe("Runtime", function() {
 
       });
 
+
+      describe("enqueueCopyBuffer", function() {
+        
+        var signature = [ 'WebCLObject',            // srcBuffer
+                          'WebCLObject',            // dstBuffer
+                          'Uint',                   // srcOffset
+                          'Uint',                   // dstOffset
+                          'Uint',                   // numBytes
+                          'OptionalArray',          // eventWaitList
+                          'OptionalWebCLObject'     // event
+                        ];
+
+        var valid = [ 'buffer1', 
+                      'buffer2',
+                      '0',
+                      '0',
+                      'numBytes',
+                      'undefined',
+                      'undefined'
+                    ];
+
+        beforeEach(enforcePreconditions.bind(this, function() {
+          numBytes = 1024;
+          buffer1 = ctx.createBuffer(WebCL.MEM_READ_WRITE, numBytes);
+          buffer2 = ctx.createBuffer(WebCL.MEM_READ_WRITE, numBytes);
+        }));
+
+        it("enqueueCopyBuffer(<valid arguments>) must work", function() {
+          if (!suite.preconditions) pending();
+          event = new WebCLEvent();
+          expect('queue.enqueueCopyBuffer(buffer1, buffer2, 0, 0, numBytes)').not.toThrow();
+          expect('queue.enqueueCopyBuffer(buffer1, buffer2, 0, 0, numBytes, null, event)').not.toThrow();
+          expect('queue.enqueueCopyBuffer(buffer2, buffer1, 0, 0, numBytes, [event]); queue.finish();').not.toThrow();
+        });
+
+        it("enqueueCopyBuffer(<invalid arguments>) must throw", function() {
+          if (!suite.preconditions) pending();
+          fuzz('queue.enqueueCopyBuffer', signature, valid, null, [0, 1], 'INVALID_MEM_OBJECT');
+          fuzz('queue.enqueueCopyBuffer', signature, valid, null, [2, 3, 4], 'INVALID_VALUE');
+          fuzz('queue.enqueueCopyBuffer', signature, valid, null, [5], 'INVALID_EVENT_WAIT_LIST');
+          fuzz('queue.enqueueCopyBuffer', signature, valid, null, [6], 'INVALID_EVENT');
+        });
+
+      });
+
     });
 
     //////////////////////////////////////////////////////////////////////////////
     //
     // Runtime -> WebCLCommandQueue -> enqueue[Read,Write]Image
     // 
-    describe("enqueue[Read,Write]Image", function() {
+    describe("enqueue[*]Image", function() {
 
       var signature = [ 'WebCLObject',            // image
                         'Boolean',                // blockingRead/Write
@@ -1671,6 +1716,68 @@ describe("Runtime", function() {
           event = new WebCLEvent();
           expect('queue.enqueueWriteImage(image, false, [0, 0], [W, H], 0, pixels, null, event)').not.toThrow();
           expect('queue.enqueueWriteImage(image, true, [0, 0], [W, H], 0, pixels, [event])').not.toThrow();
+        });
+
+      });
+
+
+      describe("enqueueCopyImage", function() {
+        
+        var signature = [ 'WebCLObject',            // srcImage
+                          'WebCLObject',            // dstImage
+                          'NonEmptyArray',          // srcOrigin (TODO change spec to allow null)
+                          'NonEmptyArray',          // dstOrigin (TODO change spec to allow null)
+                          'NonEmptyArray',          // region (TODO change spec to allow null)
+                          'OptionalArray',          // eventWaitList
+                          'OptionalWebCLObject'     // event
+                        ];
+
+        var valid = [ 'image1', 
+                      'image2',
+                      '[0, 0]',
+                      '[0, 0]',
+                      '[W, H]',
+                      'undefined',
+                      'undefined'
+                    ];
+
+        beforeEach(enforcePreconditions.bind(this, function() {
+          W = 32;
+          H = 32;
+          C = 4;
+          BPP = C*1;
+          bytesPerRow = BPP * W;
+          BPPf32 = C*4;
+          bytesPerRowf32 = BPPf32 * W;
+          var descriptorRGBA8 = { width : W, height : H };
+          var descriptorRGBAf32 = { width : W, height : H, channelOrder : WebCL.RGBA, channelType: WebCL.FLOAT };
+          image1 = ctx.createImage(WebCL.MEM_READ_WRITE, descriptorRGBA8);
+          image2 = ctx.createImage(WebCL.MEM_READ_WRITE, descriptorRGBA8);
+          imagef32 = ctx.createImage(WebCL.MEM_READ_WRITE, descriptorRGBAf32);
+          buffer = ctx.createBuffer(WebCL.MEM_READ_WRITE, W*H*C);
+        }));
+
+        it("enqueueCopyImage(<valid arguments>) must work", function() {
+          if (!suite.preconditions) pending();
+          event = new WebCLEvent();
+          expect('queue.enqueueCopyImage(image1, image2, [0,0], [0,0], [W,H])').not.toThrow();
+          expect('queue.enqueueCopyImage(image1, image2, [0,0], [0,0], [W,H], null, event)').not.toThrow();
+          expect('queue.enqueueCopyImage(image2, image1, [0,0], [0,0], [W,H], [event]); queue.finish();').not.toThrow();
+        });
+
+        it("enqueueCopyImage(<invalid arguments>) must throw", function() {
+          if (!suite.preconditions) pending();
+          fuzz('queue.enqueueCopyImage', signature, valid, null, [0, 1], 'INVALID_MEM_OBJECT');
+          fuzz('queue.enqueueCopyImage', signature, valid, null, [2, 3, 4], 'INVALID_VALUE');
+          fuzz('queue.enqueueCopyImage', signature, valid, null, [5], 'INVALID_EVENT_WAIT_LIST');
+          fuzz('queue.enqueueCopyImage', signature, valid, null, [6], 'INVALID_EVENT');
+          expect('queue.enqueueCopyImage(image1, image2, [0,0,0], [0,0], [W,H])').toThrow('INVALID_VALUE');
+          expect('queue.enqueueCopyImage(image1, image2, [0,0], [0,0,0], [W,H])').toThrow('INVALID_VALUE');
+          expect('queue.enqueueCopyImage(image1, image2, [0,0], [0,0], [W,H,1])').toThrow('INVALID_VALUE');
+          expect('queue.enqueueCopyImage(image1, image2, ["0",0], [0,0], [W,H])').toThrow('INVALID_VALUE');
+          expect('queue.enqueueCopyImage(image1, image2, [-1,0], [0,0], [W,H])').toThrow('INVALID_VALUE');
+          expect('queue.enqueueCopyImage(image1, image2, [0,0], [0,.1], [W,H])').toThrow('INVALID_VALUE');
+          expect('queue.enqueueCopyImage(image1, image2, [0,0], [0,0], [W,H-0.5])').toThrow('INVALID_VALUE');
         });
 
       });
