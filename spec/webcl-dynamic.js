@@ -14,6 +14,13 @@
 
 describe("Runtime", function() {
 
+  // Inject a 5-millisecond "sleep" between each test to avoid freezing
+  // the browser on slow machines.
+
+  beforeEach(function(done) {
+    setTimeout(done, 5);
+  });
+
   //////////////////////////////////////////////////////////////////////////////
   //
   // Runtime -> createContext
