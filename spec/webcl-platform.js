@@ -36,12 +36,9 @@ describe("Platform", function() {
       expect('webcl.getPlatforms()[0] instanceof WebCLPlatform').toEvalAs(true)
     });
 
-    it("getPlatforms(invalidArgument) must throw", function() {
+    it("getPlatforms(<invalid arguments>) must throw", function() {
       if (!suite.preconditions) pending();
-      expect('webcl.getPlatforms()').not.toThrow();
-      expect('webcl.getPlatforms("foo")').toThrow();
-      expect('webcl.getPlatforms(0x1234)').toThrow();
-      expect('webcl.getPlatforms({})').toThrow();
+      argc('webcl.getPlatforms', [], [], 'WEBCL_SYNTAX_ERROR');
     });
     
   });
@@ -134,18 +131,12 @@ describe("Platform", function() {
       }
     });
 
-    it("getDevices(invalidArgument) must throw", function() {
+    it("getDevices(<invalid arguments>) must throw", function() {
       if (!suite.preconditions) pending();
       platforms = webcl.getPlatforms();
       for (i=0; i < platforms.length; i++) {
-        expect('platforms['+i+'].getDevices()').not.toThrow();
-        expect('platforms['+i+'].getDevices(0)').toThrow('INVALID_DEVICE_TYPE');
-        expect('platforms['+i+'].getDevices(3)').toThrow('INVALID_DEVICE_TYPE');
-        expect('platforms['+i+'].getDevices(5)').toThrow('INVALID_DEVICE_TYPE');
-        expect('platforms['+i+'].getDevices(9)').toThrow('INVALID_DEVICE_TYPE');
-        expect('platforms['+i+'].getDevices(null)').toThrow('INVALID_DEVICE_TYPE');
-        expect('platforms['+i+'].getDevices({})').toThrow('INVALID_DEVICE_TYPE');
-        expect('platforms['+i+'].getDevices(platforms[0])').toThrow('INVALID_DEVICE_TYPE');
+        argc('platforms['+i+'].getDevices', ['UintNonZero'], ['undefined'], 'WEBCL_SYNTAX_ERROR');
+        fuzz('platforms['+i+'].getDevices', ['UintNonZero'], ['undefined'], null, [0], 'INVALID_DEVICE_TYPE');
       }
     });
   });
@@ -185,20 +176,15 @@ describe("Platform", function() {
       expect(checkInfo).not.toThrow();
     });
 
-    it("platform.getInfo(<invalidEnum>) must throw", function() {
+    it("platform.getInfo(<invalid arguments>) must throw", function() {
       if (!suite.preconditions) pending();
       platform = webcl.getPlatforms()[0];
+      argc('platform.getInfo', ['UintNonZero'], ['WebCL.PLATFORM_VENDOR'], 'WEBCL_SYNTAX_ERROR');
       expect('platform.getInfo(WebCL.PLATFORM_VENDOR)').not.toThrow();
       expect('platform.getInfo(WebCL.DEVICE_VENDOR)').toThrow('INVALID_VALUE');
       expect('platform.getInfo(WebCL.CONTEXT_PLATFORM)').toThrow('INVALID_VALUE');
       expect('platform.getInfo(WebCL.BUILD_ERROR)').toThrow('INVALID_VALUE');
       expect('platform.getInfo(0x101A)').toThrow('INVALID_VALUE'); // DEVICE_MIN_DATA_TYPE_ALIGN_SIZE
-      expect('platform.getInfo(-1)').toThrow('INVALID_VALUE');
-      expect('platform.getInfo(0)').toThrow('INVALID_VALUE');
-      expect('platform.getInfo("foo")').toThrow('INVALID_VALUE');
-      expect('platform.getInfo({})').toThrow('INVALID_VALUE');
-      expect('platform.getInfo(device)').toThrow('INVALID_VALUE');
-      expect('platform.getInfo()').toThrow('INVALID_VALUE');
     });
 
     it("device.getInfo(<validEnum>) must not throw", function() {
@@ -220,20 +206,15 @@ describe("Platform", function() {
       }
     });
 
-    it("device.getInfo(<invalidEnum>) must throw", function() {
+    it("device.getInfo(<invalid arguments>) must throw", function() {
       if (!suite.preconditions) pending();
       device = getDeviceAtIndex(DEVICE_INDEX);
+      argc('device.getInfo', ['UintNonZero'], ['WebCL.DEVICE_VENDOR'], 'WEBCL_SYNTAX_ERROR');
       expect('device.getInfo(WebCL.DEVICE_VENDOR)').not.toThrow();
       expect('device.getInfo(WebCL.PLATFORM_VENDOR)').toThrow('INVALID_VALUE');
       expect('device.getInfo(WebCL.CONTEXT_PLATFORM)').toThrow('INVALID_VALUE');
       expect('device.getInfo(WebCL.BUILD_ERROR)').toThrow('INVALID_VALUE');
       expect('device.getInfo(0x101A)').toThrow('INVALID_VALUE'); // DEVICE_MIN_DATA_TYPE_ALIGN_SIZE
-      expect('device.getInfo(-1)').toThrow('INVALID_VALUE');
-      expect('device.getInfo(0)').toThrow('INVALID_VALUE');
-      expect('device.getInfo("foo")').toThrow('INVALID_VALUE');
-      expect('device.getInfo({})').toThrow('INVALID_VALUE');
-      expect('device.getInfo(device)').toThrow('INVALID_VALUE');
-      expect('device.getInfo()').toThrow('INVALID_VALUE');
     });
 
     it("device.getInfo(<nonEnabledExtensionEnum>) must throw", function() {

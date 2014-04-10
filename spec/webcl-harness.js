@@ -50,6 +50,31 @@
     }
   };
 
+  // Call the given function with an invalid number of arguments and check that the given exception
+  // is thrown.  The number of arguments accepted by a function are determined from its signature,
+  // with any optional arguments at the end taken into account.
+  //
+  argc = function(funcName, signature, validArgs, exceptionName) {
+    
+    expect(arguments.length).toEqual(4);
+    expect(signature.length).toEqual(validArgs.length);
+    
+    var maxArgs = validArgs.length;
+    var minArgs = validArgs.indexOf('undefined');
+    minArgs = (minArgs === -1) ? maxArgs : minArgs;
+    
+    for (var i=0; i < minArgs; i++) {
+      var args = validArgs.slice(0, i);
+      var argStr = args.join(", ");
+      var callStr = funcName + "(" + argStr + ")";
+      expect(callStr).toThrow(exceptionName);
+    }
+    var argStr = validArgs.concat('null').join(", ");
+    var callStr = funcName + "(" + argStr + ")";
+    expect(callStr).toThrow(exceptionName);
+
+  };
+
   fuzz = function(funcName, signature, validArgs, customInvalidArgs, argsToTest, exceptionName) {
 
     // For each input type, define a list of values that are to be considered invalid.  For example,
@@ -78,6 +103,7 @@
     
     expect(arguments.length).toEqual(6);
     expect(signature.length).toBeGreaterThan(0);
+    expect(signature.length).toEqual(validArgs.length);
 
     for (var i=0; i < signature.length; i++) {
       var invalidArgs = undefined;
