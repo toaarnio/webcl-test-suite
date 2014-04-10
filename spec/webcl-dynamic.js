@@ -337,7 +337,7 @@ describe("Runtime", function() {
         if (!suite.preconditions) pending();
         argc('ctx.createBuffer', signature, valid, 'WEBCL_SYNTAX_ERROR');
         fuzz('ctx.createBuffer', signature, valid, null, [0], 'INVALID_VALUE');
-        fuzz('ctx.createBuffer', signature, valid, invalid, [1], 'INVALID_BUFFER_SIZE');
+        fuzz('ctx.createBuffer', signature, valid, invalid, [1], 'INVALID_VALUE');
         fuzz('ctx.createBuffer', signature, valid, invalid, [2], 'INVALID_HOST_PTR');
       });
 
