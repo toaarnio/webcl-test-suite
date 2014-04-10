@@ -625,8 +625,8 @@ describe("Runtime", function() {
 
         it("createSubBuffer(<invalid origin/size>) must throw", function() {
           if (!suite.preconditions) pending();
-          expect('buffer.createSubBuffer(WebCL.MEM_READ_ONLY, 0, 0)').toThrow('INVALID_VALUE');
-          expect('buffer.createSubBuffer(WebCL.MEM_READ_ONLY, 0, -1)').toThrow('INVALID_VALUE');
+          expect('buffer.createSubBuffer(WebCL.MEM_READ_ONLY, size, 1)').toThrow('INVALID_VALUE');
+          expect('buffer.createSubBuffer(WebCL.MEM_READ_ONLY, align, align+1)').toThrow('INVALID_VALUE');
           expect('buffer.createSubBuffer(WebCL.MEM_READ_ONLY, 0, size+1)').toThrow('INVALID_VALUE');
           expect('buffer.createSubBuffer(WebCL.MEM_READ_ONLY, align-1, 1)').toThrow('MISALIGNED_SUB_BUFFER_OFFSET');
         });
