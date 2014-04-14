@@ -203,12 +203,7 @@
             DEBUG("Building '" + actual + "' did not throw any exceptions");
             return { pass: true };
           } catch(e) {
-            DEBUG("Building '" + actual + "' threw " + e.name);
-            try {
-              DEBUG("Build log: " + program.getBuildInfo(devices[0], WebCL.PROGRAM_BUILD_LOG));
-            } catch (e2) {
-              DEBUG("Failed to get BUILD_LOG: ", e2);
-            }
+            DEBUG("Building '" + actual + "' threw " + e.name + ":\n" + e.message);
             return { pass: false };
           }
         },
@@ -225,12 +220,7 @@
             return { pass: false };
           } catch(e) {
             if (program instanceof WebCLProgram) {
-              DEBUG("Building '" + actual + "' threw " + e.name);
-              try {
-                DEBUG("Build log: " + program.getBuildInfo(devices[0], WebCL.PROGRAM_BUILD_LOG));
-              } catch (e2) {
-                DEBUG("Failed to get BUILD_LOG: ", e2);
-              }
+              DEBUG("Building '" + actual + "' threw " + e.name + ":\n" + e.message);
               return { pass: true };
             }
             return { 
