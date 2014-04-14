@@ -1,4 +1,4 @@
-extern void externFunc(global float *a); 
+extern float externFunc(global float *a); 
 
 kernel void externFunction(global float *a) 
 {
