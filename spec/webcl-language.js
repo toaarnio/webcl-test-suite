@@ -34,7 +34,6 @@ describe("Kernel language", function() {
       if (!suite.preconditions) pending();
       expect('program = ctx.createProgram("obviously invalid")').not.toThrow();
       expect('program.build()').toThrow('BUILD_PROGRAM_FAILURE');
-      expect('program.build(null, "-w")').toThrow('BUILD_PROGRAM_FAILURE');
     });
 
     it("must not allow slightly invalid kernel source", function() {
@@ -42,7 +41,6 @@ describe("Kernel language", function() {
       src = "kernel int dummy(global uint* buf) { buf[0]=0xdeadbeef; }";
       expect('program = ctx.createProgram(src)').not.toThrow();
       expect('program.build()').toThrow('BUILD_PROGRAM_FAILURE');
-      expect('program.build(null, "-w")').toThrow('BUILD_PROGRAM_FAILURE');
     });
 
     // Known failures as of 2014-02-12:
@@ -122,6 +120,14 @@ describe("Kernel language", function() {
       expect('kernels/constantWrite.cl').not.toBuild();
     });
 
+    // Known failures as of 2014-04-14:
+    //  * Win7 / NVIDIA GPU driver
+    //
+    it("must not allow uninitialized variables in 'constant' address space", function() {
+      if (!suite.preconditions) pending();
+      expect('kernels/uninitializedConstant.cl').not.toBuild();
+    });
+
     // Known failures as of 2014-02-05:
     //  * Win7 / NVIDIA GPU driver
     //  * Win7 / Intel CPU driver
@@ -138,14 +144,6 @@ describe("Kernel language", function() {
     xit("must not allow allocating 6 GB of 'local' memory", function() {
       if (!suite.preconditions) pending();
       expect('kernels/largeArrayLocal.cl').not.toBuild();
-    });
-
-    // Known failures as of 2014-02-12:
-    //  * <none>
-    //
-    it("must not allow allocating 6 GB of 'global' memory", function() {
-      if (!suite.preconditions) pending();
-      expect('kernels/largeArrayGlobal.cl').not.toBuild();
     });
 
   });
