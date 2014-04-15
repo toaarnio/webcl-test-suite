@@ -14,7 +14,7 @@
 
 describe("Robustness", function() {
 
-  beforeEach(enforcePreconditions.bind(this, function() {
+  beforeEach(setup.bind(this, function() {
     aPlatform = webcl.getPlatforms()[0];
     aDevice = aPlatform.getDevices()[0];
     ctx = createContext();

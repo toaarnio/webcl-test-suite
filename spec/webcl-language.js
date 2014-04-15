@@ -18,7 +18,7 @@
 // 
 describe("Kernel language", function() {
 
-  beforeEach(enforcePreconditions.bind(this, function() {
+  beforeEach(setup.bind(this, function() {
     ctx = createContext();
     mustBuild = ctx.createProgram("kernel void dummy(global uint* buf) { buf[0]=0xdeadbeef; }");
     mustBuild.build();

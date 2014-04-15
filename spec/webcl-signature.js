@@ -18,7 +18,7 @@
 // 
 describe("Signature", function() {
 
-  beforeEach(enforcePreconditions.bind(this, function() {
+  beforeEach(setup.bind(this, function() {
     if (window.webcl === undefined && window.WebCL === undefined)
       throw "Both window.webcl and window.WebCL are undefined."
   }));

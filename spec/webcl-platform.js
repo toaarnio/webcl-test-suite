@@ -14,7 +14,7 @@
 
 describe("Platform", function() {
 
-  beforeEach(enforcePreconditions.bind(this, function() {
+  beforeEach(setup.bind(this, function() {
     aPlatform = webcl.getPlatforms()[0];
   }));
 
@@ -38,7 +38,7 @@ describe("Platform", function() {
 
     it("getPlatforms(<invalid arguments>) must throw", function() {
       if (!suite.preconditions) pending();
-      argc('webcl.getPlatforms', [], [], 'WEBCL_SYNTAX_ERROR');
+      argc('webcl.getPlatforms', [], 'WEBCL_SYNTAX_ERROR');
     });
     
   });
@@ -135,7 +135,7 @@ describe("Platform", function() {
       if (!suite.preconditions) pending();
       platforms = webcl.getPlatforms();
       for (i=0; i < platforms.length; i++) {
-        argc('platforms['+i+'].getDevices', ['UintNonZero'], ['undefined'], 'WEBCL_SYNTAX_ERROR');
+        argc('platforms['+i+'].getDevices', ['undefined'], 'WEBCL_SYNTAX_ERROR');
         fuzz('platforms['+i+'].getDevices', ['UintNonZero'], ['undefined'], null, [0], 'INVALID_DEVICE_TYPE');
       }
     });
@@ -147,7 +147,7 @@ describe("Platform", function() {
   // 
   describe("getInfo", function() {
     
-    beforeEach(enforcePreconditions.bind(this, function() {
+    beforeEach(setup.bind(this, function() {
       DEBUG("Testing on Device ["+(DEVICE_INDEX || 0)+"]")
       device = getDeviceAtIndex(DEVICE_INDEX);
     }));
@@ -179,7 +179,7 @@ describe("Platform", function() {
     it("platform.getInfo(<invalid arguments>) must throw", function() {
       if (!suite.preconditions) pending();
       platform = webcl.getPlatforms()[0];
-      argc('platform.getInfo', ['UintNonZero'], ['WebCL.PLATFORM_VENDOR'], 'WEBCL_SYNTAX_ERROR');
+      argc('platform.getInfo', ['WebCL.PLATFORM_VENDOR'], 'WEBCL_SYNTAX_ERROR');
       expect('platform.getInfo(WebCL.PLATFORM_VENDOR)').not.toThrow();
       expect('platform.getInfo(WebCL.DEVICE_VENDOR)').toThrow('INVALID_VALUE');
       expect('platform.getInfo(WebCL.CONTEXT_PLATFORM)').toThrow('INVALID_VALUE');
@@ -209,7 +209,7 @@ describe("Platform", function() {
     it("device.getInfo(<invalid arguments>) must throw", function() {
       if (!suite.preconditions) pending();
       device = getDeviceAtIndex(DEVICE_INDEX);
-      argc('device.getInfo', ['UintNonZero'], ['WebCL.DEVICE_VENDOR'], 'WEBCL_SYNTAX_ERROR');
+      argc('device.getInfo', ['WebCL.DEVICE_VENDOR'], 'WEBCL_SYNTAX_ERROR');
       expect('device.getInfo(WebCL.DEVICE_VENDOR)').not.toThrow();
       expect('device.getInfo(WebCL.PLATFORM_VENDOR)').toThrow('INVALID_VALUE');
       expect('device.getInfo(WebCL.CONTEXT_PLATFORM)').toThrow('INVALID_VALUE');
@@ -235,7 +235,7 @@ describe("Platform", function() {
   // 
   describe("JavaScript semantics", function() {
 
-    beforeEach(enforcePreconditions.bind(this, function() {
+    beforeEach(setup.bind(this, function() {
       aPlatform = webcl.getPlatforms()[0];
       aDevice = aPlatform.getDevices()[0];
     }));
