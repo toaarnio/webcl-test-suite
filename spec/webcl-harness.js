@@ -20,11 +20,15 @@
 //  * ERROR(msg)
 //  * DEBUG(msg)
 //  * TRACE(msg)
+//  * setup()
+//  * setupWithSource()
+//  * setupWithWait()
+//  * argc()
 //  * fuzz()
 //  * createContext()
 //  * loadSource(uri)
 //
-(function setup() {
+(function() {
 
   (function getURLParameters() {
     READY = (getURLParameter('run') === 'true');
@@ -37,27 +41,130 @@
     DEVICE_INDEX = isNaN(+DEVICE) ? null : +DEVICE;
   })();
 
-  enforcePreconditions = function(precondFunc) {
+  // ### setup() ###
+  //
+  // Calls the given 'setupFunction' and sets 'suite.preconditions' to either true or false,
+  // depending on whether the setup function returns successfully or throws an exception.
+  // Individual tests may then check the flag and set their status to "pending", for example.
+  // 
+  // Example:
+  //    beforeEach(setup.bind(this, function() { 
+  //      ctx = createContext();
+  //      queue = ctx.createCommandQueue();
+  //    }));
+  //
+  setup = function(setupFunction) {
     suite = this;
     if (suite.parentSuite.preconditions === false) {
       suite.preconditions = false;
     } else try {
-      precondFunc.call(this);
-      this.preconditions = true;
+      setupFunction.call(suite);
+      suite.preconditions = true;
     } catch (e) {
-      ERROR(this.parentSuite.description + " -> " + this.description + ": Test preconditions failed: " + e);
-      this.preconditions = false;
+      ERROR(suite.parentSuite.description + " -> " + suite.description + ": Test preconditions failed: " + e);
+      suite.preconditions = false;
     }
   };
 
-  // Call the given function with an invalid number of arguments and check that the given exception
-  // is thrown.  The number of arguments accepted by a function are determined from its signature,
-  // with any optional arguments at the end taken into account.
+  // ### setupWithSource() ###
+  // 
+  // Loads a kernel source file asynchronously from the given URI and passes it to the first
+  // callback function (whenLoaded).  The other callback function (whenDone) is provided by
+  // beforeEach(), and is called at the end to tell Jasmine that the actual test case can be
+  // invoked.  The 'suite.preconditions' flag is also set, as documented in setup().
   //
-  argc = function(funcName, signature, validArgs, exceptionName) {
+  // Example:
+  //    beforeEach(setupWithSource.bind(this, 'kernels/argtypes.cl', function(src) { 
+  //      program = ctx.createProgram(src);
+  //      program.build();
+  //    }));
+  //
+  setupWithSource = function(uri, whenLoaded, whenDone) {
+    var self = this;
+    if (self.src === undefined) {
+      try {
+        loadSource(uri, function(source) { 
+          self.src = source;
+          finalize();
+        });
+      } catch (e) {
+        ERROR("Failed to load " + uri + ": " + e);
+        finalize();
+      }
+    } else {
+      finalize();
+    }
     
-    expect(arguments.length).toEqual(4);
-    expect(signature.length).toEqual(validArgs.length);
+    function finalize() {
+      setup.call(self, whenLoaded.bind(self, self.src));
+      whenDone();
+    }
+  };
+
+  // ### setupWithWait() ###
+  //
+  // Calls 'whenReady' as soon as 'testIfReady' returns true.  The 'suite.preconditions' flag is
+  // also set, as documented in setup().
+  // 
+  // Example:
+  //    beforeEach(setupWithWait.bind(this, function() { return resourcesLoaded; }, function() { 
+  //      doStuffWithResources();
+  //    }));
+  //
+  setupWithWait = function(testIfReady, whenReady, whenDone) {
+    var self = this;
+    var intervalID = intervalFunc() || window.setInterval(intervalFunc, 5);
+
+    function intervalFunc() {
+      if (testIfReady() === true) {
+        window.clearInterval(intervalID);
+        setup.call(self, whenReady);
+        whenDone();
+        return true;
+      }
+    };
+  };
+
+  // ### createContext() ###
+  //
+  // Creates a new WebCLContext for the currently selected Device, or in absence of an explicit
+  // selection, the first Device on the first Platform.
+  //
+  createContext = function() {
+    try {
+      DEVICE_INDEX = DEVICE_INDEX || 0;
+      var selected = getDeviceAtIndex(DEVICE_INDEX);
+      var ctx = webcl.createContext(selected);
+      var device = ctx.getInfo(WebCL.CONTEXT_DEVICES)[0];
+      var vendorId = device.getInfo(WebCL.DEVICE_VENDOR_ID);
+      DEBUG("Creating a Context for Device " + deviceVendors[vendorId] + " (VENDOR_ID="+vendorId+")");
+      ctx.vendor = deviceVendors[vendorId];
+      return ctx;
+    } catch (e) {
+      throw e;
+    }
+  };
+
+  releaseAll = function() {
+    try { 
+      webcl.releaseAll();
+    } catch(e) { 
+      throw e;
+    }
+  };
+
+  // ### argc() ###
+  // 
+  // Calls the given function with an invalid number of arguments and checks that the given
+  // exception is thrown.
+  //
+  // Examples:
+  //    argc('ctx.getSupportedImageFormats', ['undefined'], 'WEBCL_SYNTAX_ERROR');
+  //    argc('kernel.setArg', ['0', 'buffer'], 'WEBCL_SYNTAX_ERROR');
+  //
+  argc = function(funcName, validArgs, exceptionName) {
+    
+    expect(arguments.length).toEqual(3);
     
     var maxArgs = validArgs.length;
     var minArgs = validArgs.indexOf('undefined');
@@ -75,6 +182,14 @@
 
   };
 
+  // ### fuzz() ###
+  // 
+  // Calls the given function with deliberately invalid arguments and checks that the given
+  // exception is thrown.
+  //
+  // Example:
+  //    fuzz('ctx.getInfo', [ 'Enum' ], [ 'WebCL.CONTEXT_NUM_DEVICES' ], null, [0], 'INVALID_VALUE');
+  //
   fuzz = function(funcName, signature, validArgs, customInvalidArgs, argsToTest, exceptionName) {
 
     // For each input type, define a list of values that are to be considered invalid.  For example,
@@ -148,29 +263,6 @@
     return true;
   };
   
-  createContext = function() {
-    try {
-      DEVICE_INDEX = DEVICE_INDEX || 0;
-      var selected = getDeviceAtIndex(DEVICE_INDEX);
-      var ctx = webcl.createContext(selected);
-      var device = ctx.getInfo(WebCL.CONTEXT_DEVICES)[0];
-      var vendorId = device.getInfo(WebCL.DEVICE_VENDOR_ID);
-      DEBUG("Creating a Context for Device " + deviceVendors[vendorId] + " (VENDOR_ID="+vendorId+")");
-      ctx.vendor = deviceVendors[vendorId];
-      return ctx;
-    } catch (e) {
-      throw e;
-    }
-  };
-
-  releaseAll = function() {
-    try { 
-      webcl.releaseAll();
-    } catch(e) { 
-      throw e;
-    }
-  };
-
   jasmine.getEnv().specFilter = function(spec) {
     var queryString = getURLParameter('spec');
     var specName = queryString && queryString.replace(/\+/g, " ");
