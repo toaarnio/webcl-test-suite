@@ -1995,32 +1995,39 @@ describe("Runtime", function() {
         expect('queue.enqueueNDRangeKernel(kernel, 3, [1, 2, 1], [2, 1, 2]); queue.finish()').not.toThrow();
       });
 
-      // This test assumes that the OpenCL device supports a work-group size of at least 2 in each
-      // dimension. Otherwise, the test is marked pending.
-      //
-      it("must work if localWorkSize !== null", function() {
+      it("must work if localWorkSize !== null (work-group size == 1)", function() {
         if (!suite.preconditions) pending();
-        if (!supportsWorkGroupSize(2, [2, 2, 2])) pending();
         expect('queue.enqueueNDRangeKernel(kernel, 1, null, [7      ], [1      ]); queue.finish()').not.toThrow();
-        expect('queue.enqueueNDRangeKernel(kernel, 1, null, [8      ], [2      ]); queue.finish()').not.toThrow();
-        expect('queue.enqueueNDRangeKernel(kernel, 1, null, [9      ], [3      ]); queue.finish()').not.toThrow();
         expect('queue.enqueueNDRangeKernel(kernel, 2, null, [8, 2   ], [1, 1   ]); queue.finish()').not.toThrow();
-        expect('queue.enqueueNDRangeKernel(kernel, 2, null, [8, 2   ], [2, 2   ]); queue.finish()').not.toThrow();
         expect('queue.enqueueNDRangeKernel(kernel, 3, null, [3, 2, 2], [1, 1, 1]); queue.finish()').not.toThrow();
+      });
+
+      // This test assumes that the OpenCL device supports a work-group size of at least 4, and 2 in
+      // each dimension. Otherwise, the test is marked pending.
+      //
+      it("must work if localWorkSize !== null (work-group size > 1)", function() {
+        if (!suite.preconditions) pending();
+        if (!supportsWorkGroupSize(4, [2, 2, 2])) pending();
+        expect('queue.enqueueNDRangeKernel(kernel, 1, null, [8      ], [2      ]); queue.finish()').not.toThrow();
+        expect('queue.enqueueNDRangeKernel(kernel, 2, null, [8, 2   ], [2, 2   ]); queue.finish()').not.toThrow();
         expect('queue.enqueueNDRangeKernel(kernel, 3, null, [3, 2, 2], [1, 2, 2]); queue.finish()').not.toThrow();
       });
 
-      // This test assumes that the OpenCL device supports a work-group size of at least 2 in each
-      // dimension. Otherwise, the test is marked pending.
+      it("must work if globalWorkOffset !== null and localWorkSize !== null (work-group size == 1)", function() {
+        if (!suite.preconditions) pending();
+        expect('queue.enqueueNDRangeKernel(kernel, 1, [0      ], [7      ], [1      ]); queue.finish()').not.toThrow();
+        expect('queue.enqueueNDRangeKernel(kernel, 2, [1, 1   ], [7, 2   ], [1, 1   ]); queue.finish()').not.toThrow();
+        expect('queue.enqueueNDRangeKernel(kernel, 3, [0, 1, 1], [3, 2, 2], [1, 1, 1]); queue.finish()').not.toThrow();
+      });
+
+      // This test assumes that the OpenCL device supports a work-group size of at least 4, and 2 in
+      // each dimension. Otherwise, the test is marked pending.
       //
-      it("must work if globalWorkOffset and localWorkSize !== null", function() {
+      it("must work if globalWorkOffset !== null and localWorkSize !== null (work-group size > 1)", function() {
         if (!suite.preconditions) pending();
         if (!supportsWorkGroupSize(4, [2, 2, 2])) pending();
-        expect('queue.enqueueNDRangeKernel(kernel, 1, [0      ], [7      ], [1      ]); queue.finish()').not.toThrow();
         expect('queue.enqueueNDRangeKernel(kernel, 1, [1      ], [8      ], [2      ]); queue.finish()').not.toThrow();
-        expect('queue.enqueueNDRangeKernel(kernel, 2, [1, 1   ], [7, 2   ], [1, 1   ]); queue.finish()').not.toThrow();
         expect('queue.enqueueNDRangeKernel(kernel, 2, [1, 1   ], [6, 2   ], [2, 2   ]); queue.finish()').not.toThrow();
-        expect('queue.enqueueNDRangeKernel(kernel, 3, [0, 1, 1], [3, 2, 2], [1, 1, 1]); queue.finish()').not.toThrow();
         expect('queue.enqueueNDRangeKernel(kernel, 3, [1, 2, 2], [3, 2, 2], [1, 2, 2]); queue.finish()').not.toThrow();
       });
 
@@ -2324,7 +2331,7 @@ describe("Runtime", function() {
   //
   // Runtime -> Functionality
   // 
-  describe("Functionality", function() {
+  xdescribe("Functionality", function() {
     
     beforeEach(setup.bind(this, function() {
       ctx = createContext();

@@ -253,14 +253,14 @@
       return false;
     }
 
+    var ok = true;
     if (minimumGroupDims) {
       device.getInfo(WebCL.DEVICE_MAX_WORK_ITEM_SIZES).forEach(function(val, i) { 
-        if (val < minimumGroupDims[i])
-          return false;
+        ok = ok && (val >= minimumGroupDims[i]);
       });
-    } 
+    }
 
-    return true;
+    return ok;
   };
   
   jasmine.getEnv().specFilter = function(spec) {
