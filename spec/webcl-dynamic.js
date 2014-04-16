@@ -596,7 +596,7 @@ describe("Runtime", function() {
       beforeEach(setup.bind(this, function() {
         ctx = createContext();
         device = ctx.getInfo(WebCL.CONTEXT_DEVICES)[0];
-        align = device.getInfo(WebCL.DEVICE_MEM_BASE_ADDR_ALIGN);
+        align = device.getInfo(WebCL.DEVICE_MEM_BASE_ADDR_ALIGN)/8;
         unaligned = align-1;
         size = align*2;
         buffer = ctx.createBuffer(WebCL.MEM_READ_WRITE, size);
