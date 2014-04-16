@@ -821,12 +821,14 @@ describe("Runtime", function() {
       it("build(<validDeviceArray>) must not throw", function() {
         if (!suite.preconditions) pending();
         expect('program.build()').not.toThrow();
+        expect('program.build(undefined)').not.toThrow();
         expect('program.build(null)').not.toThrow();
         expect('program.build(devices)').not.toThrow();
       });
 
       it("build(<validBuildOption>) must not throw", function() {
         if (!suite.preconditions) pending();
+        expect('program.build(devices, undefined)').not.toThrow();
         expect('program.build(devices, null)').not.toThrow();
         [ '',
           '-D foo',
@@ -958,37 +960,42 @@ describe("Runtime", function() {
 
     //////////////////////////////////////////////////////////////////////////////
     //
-    // Runtime -> WebCLProgram -> createKernel
+    // Runtime -> WebCLProgram -> createKernel*
     // 
-    describe("createKernel", function() {
+    describe("createKernel[*]", function() {
 
       var signature = [ 'String' ];
       var valid = [ '"dummy"' ];
 
-      it("createKernel(<validName>) must work", function() {
+      it("createKernel*(<valid arguments>) must work", function() {
         if (!suite.preconditions) pending();
         expect('program.build()').not.toThrow();
         expect('program.createKernel("dummy")').not.toThrow();
+        expect('program.createKernel("dummy") instanceof WebCLKernel').toEvalAs(true);
+        expect('program.createKernelsInProgram()').not.toThrow();
+        expect('program.createKernelsInProgram().length === 1').toEvalAs(true);
+        expect('program.createKernelsInProgram()[0] instanceof WebCLKernel').toEvalAs(true);
       });
 
-      it("createKernel(<invalidName>) must throw", function() {
+      it("createKernel*(<invalid arguments>) must throw", function() {
         if (!suite.preconditions) pending();
         expect('program.build()').not.toThrow();
         argc('program.createKernel', valid, 'WEBCL_SYNTAX_ERROR');
         fuzz('program.createKernel', signature, valid, null, [0], 'INVALID_KERNEL_NAME');
-      });
-
-      it("createKernelsInProgram() must work", function() {
-        if (!suite.preconditions) pending();
-        expect('program.build()').not.toThrow();
-        expect('program.createKernelsInProgram()').not.toThrow();
-        expect('program.createKernelsInProgram().length === 1').toEvalAs(true);
-      });
-
-      it("createKernelsInProgram(<invalid arguments) must throw", function() {
-        if (!suite.preconditions) pending();
-        expect('program.build()').not.toThrow();
         argc('program.createKernelsInProgram', [], 'WEBCL_SYNTAX_ERROR');
+      });
+
+      it("createKernel*() must throw if the program has not been built successfully", function() {
+        if (!suite.preconditions) pending();
+        expect('program.createKernel("dummy")').toThrow('INVALID_PROGRAM_EXECUTABLE');
+        expect('program.createKernelsInProgram()').toThrow('INVALID_PROGRAM_EXECUTABLE');
+        expect('program.build(null, "--invalid-option")').toThrow('INVALID_BUILD_OPTIONS');
+        expect('program.createKernel("dummy")').toThrow('INVALID_PROGRAM_EXECUTABLE');
+        expect('program.createKernelsInProgram()').toThrow('INVALID_PROGRAM_EXECUTABLE');
+        expect('program = ctx.createProgram("kernel void dummy() { invalidStatement; }")').not.toThrow();
+        expect('program.build()').toThrow('BUILD_PROGRAM_FAILURE');
+        expect('program.createKernel("dummy")').toThrow('INVALID_PROGRAM_EXECUTABLE');
+        expect('program.createKernelsInProgram()').toThrow('INVALID_PROGRAM_EXECUTABLE');
       });
 
       it("build() must throw if kernels are already created", function() {
