@@ -340,11 +340,14 @@
           } catch(e) {
             DEBUG(e);
             var result = {};
-            result.pass = (expected === undefined) || (e.name === expected);
+            result.pass = (expected === undefined) || (e.name === expected && e.message && e.message.length > 0 && e.message !== e.name);
             if (expected === undefined) {
               result.message = "Expected '" + actual + "' not to throw any exception, but it threw " + e.name + ": " + e.message;
             } else if (e.name !== expected) {
               result.message = "Expected '" + actual + "' to throw " + expected + ", but it threw " + e.name + ": " + e.message;
+            } else if (!e.message || e.message === e.name) {
+              result.message = "Expected '" + actual + "' to throw " + expected + 
+                " with a meaningful error message, but the message was just '" + e.message + "'.";
             }
             return result;
           }

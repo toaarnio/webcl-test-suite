@@ -275,7 +275,7 @@ describe("Platform", function() {
     });
 
     it(".toThrow('EXCEPTION_NAME')", function() {
-      customException = { name: 'CUSTOM_EXCEPTION' };
+      customException = { name: 'CUSTOM_EXCEPTION', message: 'Unknown exception' };
       expect('illegalStatement').toThrow('ReferenceError');
       expect('throw customException').toThrow('CUSTOM_EXCEPTION');
       expect(function() { illegalStatement; }).toThrow('ReferenceError');
@@ -283,7 +283,7 @@ describe("Platform", function() {
     });
 
     it(".not.toThrow('EXCEPTION_NAME')", function() {
-      customException = { name: 'CUSTOM_EXCEPTION' }
+      customException = { name: 'CUSTOM_EXCEPTION', message: 'Unknown exception' };
       expect('var validStatement').not.toThrow('ReferenceError');
       expect('throw customException').not.toThrow('ReferenceError');
       expect(function() { var validStatement; }).not.toThrow('ReferenceError');
@@ -301,15 +301,24 @@ describe("Platform", function() {
     });
 
     it(".toThrow('EXCEPTION_NAME') [MUST FAIL]", function() {
-      customException = { name: 'CUSTOM_EXCEPTION' };
+      customException = { name: 'CUSTOM_EXCEPTION', message: 'Unknown exception' };
       expect('var validStatement').toThrow('ReferenceError');
       expect('throw customException').toThrow('ReferenceError');
       expect(function() { var validStatement; }).toThrow('ReferenceError');
       expect(function() { throw customException; }).toThrow('ReferenceError');
     });
 
+    it(".toThrow('EXCEPTION_WITHOUT_MESSAGE') [MUST FAIL]", function() {
+      customException = { name: 'EXCEPTION_WITHOUT_MESSAGE' };
+      expect('throw customException').toThrow('EXCEPTION_WITHOUT_MESSAGE');
+      customException = { name: 'EXCEPTION_WITHOUT_MESSAGE', message: '' };
+      expect('throw customException').toThrow('EXCEPTION_WITHOUT_MESSAGE');
+      customException = { name: 'EXCEPTION_WITHOUT_MESSAGE', message: 'EXCEPTION_WITHOUT_MESSAGE' };
+      expect(function() { throw customException; }).toThrow('EXCEPTION_WITHOUT_MESSAGE');
+    });
+
     it(".not.toThrow('EXCEPTION_NAME') [MUST FAIL]", function() {
-      customException = { name: 'CUSTOM_EXCEPTION' };
+      customException = { name: 'CUSTOM_EXCEPTION', message: 'Unknown exception' };
       expect('illegalStatement').not.toThrow('ReferenceError');
       expect('throw customException').not.toThrow('CUSTOM_EXCEPTION');
       expect(function() { illegalStatement; }).not.toThrow('ReferenceError');
