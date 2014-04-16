@@ -135,8 +135,7 @@ describe("Platform", function() {
       if (!suite.preconditions) pending();
       platforms = webcl.getPlatforms();
       for (i=0; i < platforms.length; i++) {
-        argc('platforms['+i+'].getDevices', ['undefined'], 'WEBCL_SYNTAX_ERROR');
-        fuzz('platforms['+i+'].getDevices', ['UintNonZero'], ['undefined'], null, [0], 'INVALID_DEVICE_TYPE');
+        fuzz('platforms['+i+'].getDevices', ['OptionalEnum'], ['undefined'], null, [0], 'INVALID_DEVICE_TYPE');
       }
     });
   });
