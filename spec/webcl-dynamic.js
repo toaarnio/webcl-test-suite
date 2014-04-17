@@ -2399,6 +2399,6 @@ describe("Runtime", function() {
   //////////////////////////////////////////////////////////////////////////////
 
   beforeEach(addCustomMatchers);
-  afterEach(releaseAll);
+  afterEach(function() { webcl.releaseAll(); });
 
 });

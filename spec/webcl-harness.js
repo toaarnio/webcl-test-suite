@@ -23,10 +23,13 @@
 //  * setup()
 //  * setupWithSource()
 //  * setupWithWait()
-//  * argc()
-//  * fuzz()
+//  * getSelectedDevice()
 //  * createContext()
 //  * loadSource(uri)
+//  * supportsWorkGroupSize()
+//  * enumString()
+//  * argc()
+//  * fuzz()
 //
 (function() {
 
@@ -37,8 +40,7 @@
     ERROR = (getURLParameter('debug') === 'false') ? new Function() : console.error.bind(console);
     DEBUG = (getURLParameter('debug') === 'false') ? new Function() : console.debug.bind(console);
     TRACE = (getURLParameter('trace') === 'true') ? console.log.bind(console) : new Function();
-    var DEVICE = getURLParameter('device');
-    DEVICE_INDEX = isNaN(+DEVICE) ? null : +DEVICE;
+    SELECTED_DEVICE_INDEX = isNaN(+getURLParameter('device')) ? null : +getURLParameter('device');
   })();
 
   // ### setup() ###
@@ -125,15 +127,30 @@
     };
   };
 
+  // ### getSelectedDevice() ###
+  //
+  // Returns the currently selected WebCLDevice.
+  // 
+  getSelectedDevice = function() {
+    index = SELECTED_DEVICE_INDEX || 0;
+    var devices = [];
+    webcl.getPlatforms().forEach(function(plat) {
+      Array.prototype.push.apply(devices, plat.getDevices());
+    });
+
+    if (devices[index] === undefined)
+      throw "WebCL Test Suite: Requested the device at index "+index+", but there are only "+devices.length+" device(s) in this system."
+
+    return devices[index];
+  };
+
   // ### createContext() ###
   //
-  // Creates a new WebCLContext for the currently selected Device, or in absence of an explicit
-  // selection, the first Device on the first Platform.
+  // Creates a new WebCLContext for the currently selected Device.
   //
   createContext = function() {
     try {
-      DEVICE_INDEX = DEVICE_INDEX || 0;
-      var selected = getDeviceAtIndex(DEVICE_INDEX);
+      var selected = getSelectedDevice();
       var ctx = webcl.createContext(selected);
       var device = ctx.getInfo(WebCL.CONTEXT_DEVICES)[0];
       var vendorId = device.getInfo(WebCL.DEVICE_VENDOR_ID);
@@ -145,11 +162,56 @@
     }
   };
 
-  releaseAll = function() {
-    try { 
-      webcl.releaseAll();
-    } catch(e) { 
-      throw e;
+  // ### loadSource() ###
+  // 
+  // Loads a kernel source code file from the given `uri` via http GET, with a random query string
+  // appended to the uri to avoid obsolete copies getting served from some proxy or cache.  The
+  // given `uri` must have the suffix `.cl`.  Uses async XHR if a `callback` function is given.  If
+  // loading succeeds, returns the source code as the function return value (in synchronous mode),
+  // or passes it to the callback function (in async mode).  If anything goes wrong, throws an
+  // exception or passes `null` to the given `callback`.
+  //
+  loadSource = function(uri, callback) {
+    var validURI = (typeof(uri) === 'string') && (uri.lastIndexOf('.cl') === uri.length-3);
+    if (validURI) {
+      return xhrLoad(uri, callback);
+    } else {
+      throw "loadSource: invalid URI.";
+    }
+  };
+
+  // ### supportsWorkGroupSize() ###
+  //
+  // Examples:
+  //   if (!supportsWorkGroupSize(1024) pending();
+  //   if (!supportsWorkGroupSize(1024, [64, 64, 64])) pending();
+  // 
+  supportsWorkGroupSize = function(minimumGroupSize, minimumGroupDims) {
+    if (device.getInfo(WebCL.DEVICE_MAX_WORK_GROUP_SIZE) < minimumGroupSize) {
+      return false;
+    }
+
+    var ok = true;
+    if (minimumGroupDims) {
+      device.getInfo(WebCL.DEVICE_MAX_WORK_ITEM_SIZES).forEach(function(val, i) { 
+        ok = ok && (val >= minimumGroupDims[i]);
+      });
+    }
+
+    return ok;
+  };
+  
+  // ### enumString() ###
+  //
+  // Returns the human-readable string representation of the given
+  // WebCL enumerated value. For example, `enumString(-10)` will
+  // return the string `"IMAGE_FORMAT_NOT_SUPPORTED"`.
+  //
+  enumString = function(enumValue) {
+    for (var e in WebCL) {
+      if (WebCL[e] === enumValue) {
+        return e;
+      }
     }
   };
 
@@ -246,27 +308,6 @@
         }
       }
     }
-  };
-
-  supportsWorkGroupSize = function(minimumGroupSize, minimumGroupDims) {
-    if (device.getInfo(WebCL.DEVICE_MAX_WORK_GROUP_SIZE) < minimumGroupSize) {
-      return false;
-    }
-
-    var ok = true;
-    if (minimumGroupDims) {
-      device.getInfo(WebCL.DEVICE_MAX_WORK_ITEM_SIZES).forEach(function(val, i) { 
-        ok = ok && (val >= minimumGroupDims[i]);
-      });
-    }
-
-    return ok;
-  };
-  
-  jasmine.getEnv().specFilter = function(spec) {
-    var queryString = getURLParameter('spec');
-    var specName = queryString && queryString.replace(/\+/g, " ");
-    return (!specName) || spec.getFullName().indexOf(queryString) === 0;
   };
 
   // ### addCustomMatchers ###
@@ -408,59 +449,6 @@
     },
 
   };
-    
-  // ### enumString() ###
-  //
-  // Returns the human-readable string representation of the given
-  // WebCL enumerated value. For example, `enumString(-10)` will
-  // return the string `"IMAGE_FORMAT_NOT_SUPPORTED"`.
-  //
-  enumString = function(enumValue) {
-    for (var e in WebCL) {
-      if (WebCL[e] === enumValue) {
-        return e;
-      }
-    }
-  };
-
-  // ### loadSource() ###
-  // 
-  // Loads a kernel source code file from the given `uri` via http GET, with a random query string
-  // appended to the uri to avoid obsolete copies getting served from some proxy or cache.  The
-  // given `uri` must have the suffix `.cl`.  Uses async XHR if a `callback` function is given.  If
-  // loading succeeds, returns the source code as the function return value (in synchronous mode),
-  // or passes it to the callback function (in async mode).  If anything goes wrong, throws an
-  // exception or passes `null` to the given `callback`.
-  //
-  loadSource = function(uri, callback) {
-    var validURI = (typeof(uri) === 'string') && (uri.lastIndexOf('.cl') === uri.length-3);
-    if (validURI) {
-      return xhrLoad(uri, callback);
-    } else {
-      throw "loadSource: invalid URI.";
-    }
-  };
-
-  // ### getDeviceAtIndex() ###
-  // 
-  getDeviceAtIndex = function(index) {
-    index = index || 0;
-    var devices = [];
-    webcl.getPlatforms().forEach(function(plat) {
-      Array.prototype.push.apply(devices, plat.getDevices());
-    });
-    return devices[index];
-  };
-
-  var deviceVendors = {
-    999 : "Qualcomm - Android",
-    4098 : "AMD - Windows",
-    4318 : "NVIDIA - Windows",
-    32902 : "Intel - Windows",
-    16918016 : "NVIDIA Discrete GPU - Apple",
-    33695232 : "NVIDIA Integrated GPU - Apple",
-    0xffffffff : "Intel CPU - Apple",
-  };
 
   // [PRIVATE] Loads the given `uri` via http GET. Uses async XHR if a `callback` function is given.
   // In synchronous mode, returns the http response text, or throws an exception in case of failure.
@@ -490,8 +478,30 @@
     return useAsync || xhr.responseText;
   };
 
+  // [PRIVATE]
+  //
+  jasmine.getEnv().specFilter = function(spec) {
+    var queryString = getURLParameter('spec');
+    var specName = queryString && queryString.replace(/\+/g, " ");
+    return (!specName) || spec.getFullName().indexOf(queryString) === 0;
+  };
+
+  // [PRIVATE]
+  //
   function getURLParameter(name) {
     return decodeURIComponent((new RegExp('[?|&]' + name + '=' + '([^&;]+?)(&|#|;|$)').exec(location.search)||[,""])[1].replace(/\+/g, '%20'))||null
+  };
+
+  // [PRIVATE]
+  //
+  var deviceVendors = {
+    999 : "Qualcomm - Android",
+    4098 : "AMD - Windows",
+    4318 : "NVIDIA - Windows",
+    32902 : "Intel - Windows",
+    16918016 : "NVIDIA Discrete GPU - Apple",
+    33695232 : "NVIDIA Integrated GPU - Apple",
+    0xffffffff : "Intel CPU - Apple",
   };
 
 })();

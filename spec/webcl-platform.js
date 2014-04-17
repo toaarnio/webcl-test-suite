@@ -147,12 +147,10 @@ describe("Platform", function() {
   describe("getInfo", function() {
     
     beforeEach(setup.bind(this, function() {
-      DEBUG("Testing on Device ["+(DEVICE_INDEX || 0)+"]")
-      device = getDeviceAtIndex(DEVICE_INDEX);
+      device = getSelectedDevice();
     }));
 
     it("platform.getInfo(<validEnum>) must return the expected kind of value", function() {
-      if (!suite.preconditions) pending();
       var plats = webcl.getPlatforms();
       function checkInfo() {
         for (var i=0; i < plats.length; i++) {
@@ -176,7 +174,6 @@ describe("Platform", function() {
     });
 
     it("platform.getInfo(<invalid arguments>) must throw", function() {
-      if (!suite.preconditions) pending();
       platform = webcl.getPlatforms()[0];
       argc('platform.getInfo', ['WebCL.PLATFORM_VENDOR'], 'WEBCL_SYNTAX_ERROR');
       expect('platform.getInfo(WebCL.PLATFORM_VENDOR)').not.toThrow();
@@ -196,7 +193,6 @@ describe("Platform", function() {
 
     it("device.getInfo(<validEnum>) must return the expected kind of value", function() {
       if (!suite.preconditions) pending();
-      device = getDeviceAtIndex(DEVICE_INDEX);
       for (enumName in deviceInfoEnums) {
         matcher = deviceInfoEnumMatchers[enumName];
         value = device.getInfo(WebCL[enumName]);
@@ -207,7 +203,6 @@ describe("Platform", function() {
 
     it("device.getInfo(<invalid arguments>) must throw", function() {
       if (!suite.preconditions) pending();
-      device = getDeviceAtIndex(DEVICE_INDEX);
       argc('device.getInfo', ['WebCL.DEVICE_VENDOR'], 'WEBCL_SYNTAX_ERROR');
       expect('device.getInfo(WebCL.DEVICE_VENDOR)').not.toThrow();
       expect('device.getInfo(WebCL.PLATFORM_VENDOR)').toThrow('INVALID_VALUE');
@@ -218,7 +213,6 @@ describe("Platform", function() {
 
     it("device.getInfo(<nonEnabledExtensionEnum>) must throw", function() {
       if (!suite.preconditions) pending();
-      device = getDeviceAtIndex(DEVICE_INDEX);
       expect('device.getInfo(WebCL.DEVICE_VENDOR)').not.toThrow();
       for (enumName in extensionEnums) {
         enumValue = extensionEnums[enumName];

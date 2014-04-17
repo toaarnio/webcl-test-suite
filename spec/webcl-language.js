@@ -193,7 +193,7 @@ describe("Kernel language", function() {
   //////////////////////////////////////////////////////////////////////////////
 
   beforeEach(addCustomMatchers);
-  afterEach(releaseAll);
+  afterEach(function() { webcl.releaseAll(); });
 
 });
 
