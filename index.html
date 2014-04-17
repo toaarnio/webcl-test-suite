@@ -20,13 +20,13 @@
     <fieldset>
       <legend>Test Subsets</legend>
       <input type="radio" name="spec" value="Signature">Signature</input><br>
-      <input type="radio" name="spec" value="Platform">Platform</input><br>
+      <input type="radio" name="spec" value="Platform" checked="true">Platform</input><br>
       <input type="radio" name="spec" value="Runtime">Runtime</input><br>
       <fieldset style="border:none;">
         <input type="radio" name="spec" value="Runtime createContext">createContext</input><br>
         <input type="radio" name="spec" value="Runtime WebCLContext">Context</input><br>
-        <input type="radio" name="spec" value="Runtime WebCLBuffer">Buffer</input><br>
-        <input type="radio" name="spec" value="Runtime WebCLImage">Image</input><br>
+        <input type="radio" name="spec" value="Runtime WebCLSampler">Sampler</input><br>
+        <input type="radio" name="spec" value="Runtime WebCLMemoryObject">MemoryObject</input><br>
         <input type="radio" name="spec" value="Runtime WebCLProgram">Program</input><br>
         <input type="radio" name="spec" value="Runtime WebCLKernel">Kernel</input><br>
         <input type="radio" name="spec" value="Runtime WebCLCommandQueue">CommandQueue</input><br>
@@ -34,7 +34,7 @@
       </fieldset>
       <input type="radio" name="spec" value="Kernel language">Kernel language</input><br>
       <input type="radio" name="spec" value="Robustness">Robustness</input><br>
-      <input type="radio" name="spec" value="" checked="true">All</input><br>
+      <input type="radio" name="spec" value="">All</input><br>
     </fieldset>
     <fieldset>
       <legend>Web Console Output</legend>
