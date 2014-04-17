@@ -11,18 +11,25 @@
   <!-- include Jasmine  -->
   <script type="text/javascript" src="lib/jasmine-2.0.0/jasmine.js"></script>
   <script type="text/javascript" src="lib/jasmine-2.0.0/jasmine-html.js"></script>
-  <script type="text/javascript" src="lib/jasmine-2.0.0/jasmine-html.js"></script>
   <script type="text/javascript" src="lib/jasmine-2.0.0/boot.js"></script>
 
-  <!-- customize Jasmine html reporter output (hide stack trace) -->
+  <!-- customize Jasmine html reporter output (hide stack trace and an unnecessary checkbox) -->
   <style>
     .stack-trace {
       display: none;
     }
+    .exceptions {
+      display: none;
+    } 
+    .webcl-options {
+      color: #fff; float: right; margin-top: 5px; margin-right: 5px; 
+    }
   </style>
 
-  <!-- include WebCL spec files -->
+  <!-- include WebCL test harness -->
   <script type="text/javascript" src="spec/webcl-harness.js"></script>
+
+  <!-- include WebCL spec files -->
   <script type="text/javascript" src="spec/webcl-includes.js"></script>
   <script type="text/javascript" src="spec/webcl-signature.js"></script>
   <script type="text/javascript" src="spec/webcl-platform.js"></script>
