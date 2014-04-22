@@ -2328,70 +2328,77 @@ describe("Runtime", function() {
   //
   // Runtime -> Functionality
   // 
-  xdescribe("Functionality", function() {
+  describe("Functionality", function() {
     
     beforeEach(setup.bind(this, function() {
       ctx = createContext();
       device = ctx.getInfo(WebCL.CONTEXT_DEVICES)[0];
       queue = ctx.createCommandQueue(device);
-      event = new WebCLEvent();
 
-      numBytes = 1024;
-      buffer1 = ctx.createBuffer(WebCL.MEM_READ_WRITE, numBytes);
-      buffer2 = ctx.createBuffer(WebCL.MEM_READ_WRITE, numBytes);
-
-      numBytes = 1024;
-      hostPtr = new Uint8Array(numBytes);
-      hostPtr32f = new Float32Array(numBytes/4);
-      buffer = ctx.createBuffer(WebCL.MEM_READ_WRITE, numBytes);
-      image = ctx.createImage(WebCL.MEM_READ_WRITE, { width: 32, height: 32 });
-
-      W = 32;
-      H = 32;
-      C = 4;
-      BPP = C*1;
-      bytesPerRow = BPP * W;
-      BPPf32 = C*4;
-      bytesPerRowf32 = BPPf32 * W;
-      var descriptorRGBA8 = { width : W, height : H };
-      var descriptorRGBAf32 = { width : W, height : H, channelOrder : WebCL.RGBA, channelType: WebCL.FLOAT };
-      pixels = new Uint8Array(W*H*C);
-      pixels[0] = 0xfc;
-      pixels[100] = 0xcf;
-      pixelsf32 = new Float32Array(W*H*C);
-      image = ctx.createImage(WebCL.MEM_READ_WRITE, descriptorRGBA8, pixels);
-      imagef32 = ctx.createImage(WebCL.MEM_READ_WRITE, descriptorRGBAf32);
-      buffer = ctx.createBuffer(WebCL.MEM_READ_WRITE, W*H*C);
+      W = 32; H = 32; Ch = 4;
+      descriptorRGBA8 = { width : W, height : H };
+      descriptorRGBAf32 = { width : W, height : H, channelOrder : WebCL.RGBA, channelType: WebCL.FLOAT };
     }));
 
-    it("createBuffer(hostPtr) + enqueueReadBuffer[Rect]", function() {
+    xit("createBuffer(hostPtr) + enqueueReadBuffer[Rect]", function() {
     });
 
-    it("createImage(hostPtr) + enqueueReadImage", function() {
+    xit("createImage(hostPtr) + enqueueReadImage", function() {
     });
 
-    it("enqueueWriteBuffer[Rect] + enqueueReadBuffer[Rect]", function() {
+    xit("enqueueWriteBuffer[Rect] + enqueueReadBuffer[Rect]", function() {
     });
 
-    it("enqueueWriteImage + enqueueReadImage", function() {
+    xit("enqueueWriteImage + enqueueReadImage", function() {
     });
 
-    it("enqueueWriteBuffer + enqueueCopyBuffer[Rect] + enqueueReadBuffer", function() {
+    xit("enqueueWriteBuffer + enqueueCopyBuffer[Rect] + enqueueReadBuffer", function() {
     });
 
-    it("enqueueWriteImage + enqueueCopyImage + enqueueReadImage", function() {
+    xit("enqueueWriteImage + enqueueCopyImage + enqueueReadImage", function() {
     });
 
-    it("enqueueWriteBuffer + enqueueCopyBufferToImage + enqueueReadImage", function() {
+    xit("enqueueWriteBuffer + enqueueCopyBufferToImage + enqueueReadImage", function() {
     });
 
-    it("enqueueWriteImage + enqueueCopyImageToBuffer + enqueueReadBuffer", function() {
+    xit("enqueueWriteImage + enqueueCopyImageToBuffer + enqueueReadBuffer", function() {
     });
 
-    it("enqueueWriteBuffer + enqueueNDRangeKernel + enqueueReadBuffer", function() {
+    xit("enqueueWriteBuffer + enqueueNDRangeKernel + enqueueReadBuffer", function() {
     });
 
     it("enqueueWriteImage + enqueueNDRangeKernel + enqueueReadImage", function() {
+      if (!suite.preconditions) pending();
+      hostArraySrc = new Float32Array(W*H*Ch);
+      hostArrayDst = new Float32Array(W*H*Ch);
+      fillRandomBytes(hostArraySrc);
+      hostArraySrc[0] = 3.141;
+      expect('kernels/copyImage.cl').toBuild();
+      expect('copyKernel = program.createKernelsInProgram()[0]').not.toThrow();
+      expect('srcImage = ctx.createImage(WebCL.MEM_READ_WRITE, descriptorRGBAf32)').not.toThrow();
+      expect('dstImage = ctx.createImage(WebCL.MEM_READ_WRITE, descriptorRGBAf32)').not.toThrow();
+      expect('copyKernel.setArg(0, srcImage)').not.toThrow();
+      expect('copyKernel.setArg(1, dstImage)').not.toThrow();
+      expect('queue.enqueueWriteImage(srcImage, true, [0,0], [W,H], 0, hostArraySrc)').not.toThrow();
+      expect('queue.enqueueNDRangeKernel(copyKernel, 2, null, [W,H])').not.toThrow();
+      expect('queue.enqueueReadImage(dstImage, true, [0,0], [W,H], 0, hostArrayDst)').not.toThrow();
+      expect(hostArraySrc[0]).toBeCloseTo(3.141, 3);
+      expect(hostArrayDst[0]).toBeCloseTo(3.141, 3);
+      arrayCompare(hostArrayDst, hostArraySrc);
+
+      function fillRandomBytes(array) {
+        var buffer = new DataView(array.buffer);
+        var len = array.byteLength;
+        for (var i=0; i < len; i++) {
+          buffer.setInt8(i, Math.floor(Math.random()*255))
+        }
+      }
+      function arrayCompare(arr1, arr2) {
+        var len = Math.min(arr1.length, arr2.length);
+        for (var i=0; i < len; i++) {
+          expect(arr1[i]).toEqual(arr2[i]);
+        }
+      }
     });
 
   });
