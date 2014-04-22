@@ -24,6 +24,11 @@ describe("Kernel language", function() {
     mustBuild.build();
   }));
 
+  it("must support read_imagef() and write_imagef()", function() {
+    if (!suite.preconditions) pending();
+    expect('kernels/copyImage.cl').toBuild();
+  });
+
   //////////////////////////////////////////////////////////////////////////////
   //
   // Kernel language -> Compiler
