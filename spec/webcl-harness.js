@@ -326,7 +326,7 @@
       return {
         compare: function(actual, buildOptions) {
           try {
-            var program = actual;
+            program = actual;
             if (typeof(actual) === 'string') {
               var src = loadSource(actual);
               program = ctx.createProgram(src);
@@ -342,7 +342,7 @@
         },
         negativeCompare: function(actual, buildOptions) {
           try {
-            var program = actual;
+            program = actual;
             if (typeof(actual) === 'string') {
               var src = loadSource(actual);
               program = ctx.createProgram(src);
