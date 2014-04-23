@@ -56,15 +56,15 @@
   //    }));
   //
   setup = function(setupFunction) {
-    suite = this;
-    if (suite.parentSuite.preconditions === false) {
-      suite.preconditions = false;
-    } else try {
-      setupFunction.call(suite);
-      suite.preconditions = true;
-    } catch (e) {
-      ERROR(suite.parentSuite.description + " -> " + suite.description + ": Test preconditions failed: " + e);
-      suite.preconditions = false;
+    window.suite = this;
+    suite.preconditions = false;
+    if (suite.parentSuite.preconditions !== false) {
+      try {
+        if (setupFunction) setupFunction.call(suite);
+        suite.preconditions = true;
+      } catch (e) {
+        ERROR(suite.parentSuite.description + " -> " + suite.description + ": Test preconditions failed: " + e);
+      }
     }
   };
 
@@ -87,19 +87,23 @@
       try {
         loadSource(uri, function(source) { 
           self.src = source;
-          finalize();
+          finalize(true);
         });
       } catch (e) {
-        ERROR("Failed to load " + uri + ": " + e);
-        finalize();
+        finalize(false);
       }
     } else {
-      finalize();
+      finalize(true);
     }
-    
-    function finalize() {
-      setup.call(self, whenLoaded.bind(self, self.src));
-      whenDone();
+
+    function finalize(status) {
+      if (status === true) {
+        setup.call(self, whenLoaded.bind(self, self.src));
+        whenDone();
+      } else {
+        setup.call(self, function() { throw "Failed to load URI: " + uri; });
+        whenDone();
+      }
     }
   };
 
@@ -218,15 +222,20 @@
   // ### argc() ###
   // 
   // Calls the given function with an invalid number of arguments and checks that the given
-  // exception is thrown.
+  // exception is thrown.  The exception name may be omitted, in which case WEBCL_SYNTAX_ERROR is
+  // assumed.  Optional arguments at the end of the argument list are denoted with the string
+  // 'undefined', as in the example below.
   //
   // Examples:
   //    argc('ctx.getSupportedImageFormats', ['undefined'], 'WEBCL_SYNTAX_ERROR');
-  //    argc('kernel.setArg', ['0', 'buffer'], 'WEBCL_SYNTAX_ERROR');
+  //    argc('kernel.setArg', ['0', 'buffer']);
   //
   argc = function(funcName, validArgs, exceptionName) {
     
-    expect(arguments.length).toEqual(3);
+    expect(arguments.length).not.toBeLessThan(2);
+    expect(arguments.length).not.toBeGreaterThan(3);
+
+    exceptionName = exceptionName || 'WEBCL_SYNTAX_ERROR';
     
     var maxArgs = validArgs.length;
     var minArgs = validArgs.indexOf('undefined');
@@ -241,7 +250,6 @@
     var argStr = validArgs.concat('null').join(", ");
     var callStr = funcName + "(" + argStr + ")";
     expect(callStr).toThrow(exceptionName);
-
   };
 
   // ### fuzz() ###
@@ -505,3 +513,239 @@
   };
 
 })();
+
+
+//////////////////////////////////////////////////////////////////////////////
+//
+// Self-tests
+//
+xdescribe("Test framework", function() {
+
+  describe("beforeEach", function() {
+
+    describe("setup.bind(this, null)", function() {
+      
+      beforeEach(setup.bind(this, null));
+
+      it("must define the global 'suite' namespace", function() {
+        expect(window.suite).toBeDefined();
+      });
+      
+      it("must set suite.preconditions === true", function() {
+        expect(window.suite && suite.preconditions).toEqual(true);
+      });
+
+    });
+
+    describe("setup.bind(this, setupFunc)", function() {
+      
+      beforeEach(setup.bind(this, function() { 
+        suite.foo = 'bar'; 
+      }));
+
+      it("must define the global 'suite' namespace", function() {
+        expect(window.suite).toBeDefined();
+      });
+      
+      it("must set suite.preconditions === true", function() {
+        expect(window.suite && window.suite.preconditions).toEqual(true);
+      });
+      
+      it("must execute the given setup function", function() {
+        expect(window.suite.foo).toEqual('bar');
+      });
+
+    });
+
+    describe("setup.bind(this, functionThatThrows)", function() {
+      
+      beforeEach(setup.bind(this, function() { 
+        invalidStatement; 
+      }));
+
+      it("must define the global 'suite' namespace", function() {
+        expect(window.suite).toBeDefined();
+      });
+      
+      it("must set suite.preconditions === false", function() {
+        expect(window.suite.preconditions).toEqual(false);
+      });
+
+    });
+
+    describe("setupWithSource.bind(this, uri, setupFunc)", function() {
+      
+      beforeEach(setupWithSource.bind(this, 'kernels/argtypes.cl', function(src) { 
+        suite.source = src;
+      }));
+
+      it("must define the global 'suite' namespace", function() {
+        expect(window.suite).toBeDefined();
+      });
+      
+      it("must set suite.preconditions === true", function() {
+        expect(window.suite && window.suite.preconditions).toEqual(true);
+      });
+      
+      it("must pass the loaded URI to setupFunc", function() {
+        expect(typeof suite.source).toEqual('string');
+      });
+      
+    });
+
+    describe("setupWithSource.bind(this, uri, functionThatThrows)", function() {
+      
+      beforeEach(setupWithSource.bind(this, 'kernels/argtypes.cl', function(src) { invalidStatement; }));
+
+      it("must define the global 'suite' namespace", function() {
+        expect(window.suite).toBeDefined();
+      });
+      
+      it("must set suite.preconditions === false", function() {
+        expect(window.suite.preconditions).toEqual(false);
+      });
+      
+    });
+
+    describe("setupWithSource.bind(this, invalidURI, setupFunc)", function() {
+      
+      beforeEach(setupWithSource.bind(this, 'kernels/argtypes.c', function(src) { suite.source = src; }));
+
+      it("must define the global 'suite' namespace", function() {
+        expect(window.suite).toBeDefined();
+      });
+      
+      it("must set suite.preconditions === false", function() {
+        expect(window.suite.preconditions).toEqual(false);
+      });
+      
+    });
+
+  });
+    
+
+  describe("Custom matchers", function() {
+
+    beforeEach(addCustomMatchers);
+
+    it(".toThrow()", function() {
+      expect('illegalStatement').toThrow();
+      expect(function() { illegalStatement; }).toThrow();
+    });
+
+    it(".not.toThrow()", function() {
+      expect('var validStatement').not.toThrow();
+      expect(function() { var validStatement; }).not.toThrow();
+    });
+
+    it(".toThrow('EXCEPTION_NAME')", function() {
+      customException = { name: 'CUSTOM_EXCEPTION', message: 'Unknown exception' };
+      expect('illegalStatement').toThrow('ReferenceError');
+      expect('throw customException').toThrow('CUSTOM_EXCEPTION');
+      expect(function() { illegalStatement; }).toThrow('ReferenceError');
+      expect(function() { throw customException; }).toThrow('CUSTOM_EXCEPTION');
+    });
+
+    it(".not.toThrow('EXCEPTION_NAME')", function() {
+      customException = { name: 'CUSTOM_EXCEPTION', message: 'Unknown exception' };
+      expect('var validStatement').not.toThrow('ReferenceError');
+      expect('throw customException').not.toThrow('ReferenceError');
+      expect(function() { var validStatement; }).not.toThrow('ReferenceError');
+      expect(function() { throw customException; }).not.toThrow('ReferenceError');
+    });
+
+    it(".toThrow() [MUST FAIL]", function() {
+      expect('var validStatement').toThrow();
+      expect(function() { var validStatement; }).toThrow();
+    });
+
+    it(".not.toThrow() [MUST FAIL]", function() {
+      expect('illegalStatement').not.toThrow();
+      expect(function() { illegalStatement; }).not.toThrow();
+    });
+
+    it(".toThrow('EXCEPTION_NAME') [MUST FAIL]", function() {
+      customException = { name: 'CUSTOM_EXCEPTION', message: 'Unknown exception' };
+      expect('var validStatement').toThrow('ReferenceError');
+      expect('throw customException').toThrow('ReferenceError');
+      expect(function() { var validStatement; }).toThrow('ReferenceError');
+      expect(function() { throw customException; }).toThrow('ReferenceError');
+    });
+
+    it(".toThrow('EXCEPTION_WITHOUT_MESSAGE') [MUST FAIL]", function() {
+      customException = { name: 'EXCEPTION_WITHOUT_MESSAGE' };
+      expect('throw customException').toThrow('EXCEPTION_WITHOUT_MESSAGE');
+      customException = { name: 'EXCEPTION_WITHOUT_MESSAGE', message: '' };
+      expect('throw customException').toThrow('EXCEPTION_WITHOUT_MESSAGE');
+      customException = { name: 'EXCEPTION_WITHOUT_MESSAGE', message: 'EXCEPTION_WITHOUT_MESSAGE' };
+      expect(function() { throw customException; }).toThrow('EXCEPTION_WITHOUT_MESSAGE');
+    });
+
+    it(".not.toThrow('EXCEPTION_NAME') [MUST FAIL]", function() {
+      customException = { name: 'CUSTOM_EXCEPTION', message: 'Unknown exception' };
+      expect('illegalStatement').not.toThrow('ReferenceError');
+      expect('throw customException').not.toThrow('CUSTOM_EXCEPTION');
+      expect(function() { illegalStatement; }).not.toThrow('ReferenceError');
+      expect(function() { throw customException; }).not.toThrow('CUSTOM_EXCEPTION');
+    });
+
+  });
+
+  describe("argc", function() {
+
+    beforeEach(addCustomMatchers);
+
+    beforeEach(setup.bind(this, function() {
+      suite.argc0 = argc0;
+      suite.argc1 = argc1;
+      suite.argc2 = argc2;
+      suite.noNumArgCheck = noNumArgCheck;
+    }));
+
+    function DummyException(name, msg) {
+      this.name = name;
+      this.message = msg;
+    };
+
+    function argc0() {
+      if (arguments.length !== 0) 
+        throw new DummyException('WEBCL_SYNTAX_ERROR' , 'Invalid number of arguments: ' + arguments.length);
+    };
+    
+    function argc1(arg) {
+      if (arguments.length !== 1) 
+        throw new DummyException('WEBCL_SYNTAX_ERROR' , 'Invalid number of arguments: ' + arguments.length);
+    };
+
+    function argc2(arg, optionalArg, optionalArg2) {
+      if (arguments.length < 1 || arguments.length > 3) 
+        throw new DummyException('WEBCL_SYNTAX_ERROR' , 'Invalid number of arguments: ' + arguments.length);
+    };
+
+    function noNumArgCheck() {
+      return true;
+    };
+
+    it("must work with functions that take zero arguments", function() {
+      argc('suite.argc0', []);
+    });
+
+    it("must work with functions that take at least one argument", function() {
+      argc('suite.argc1', ['0xdeadbeef']);
+    });
+
+    it("must work with functions that take optional arguments", function() {
+      argc('suite.argc2', ['0xdeadbeef', 'undefined', 'undefined']);
+    });
+
+    it("must fail if the target function does not check the number of arguments [MUST FAIL]", function() {
+      argc('suite.noNumArgCheck', ['0xdeadbeef', '0xdeadbeef']);
+    });
+
+    it("must fail if the target function throws the wrong kind of exception [MUST FAIL]", function() {
+      argc('suite.argc0', [], 'EXPECTED_ERROR');
+    });
+
+  });
+
+});
