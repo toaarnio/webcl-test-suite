@@ -2140,12 +2140,16 @@ describe("Runtime", function() {
     //
     // Runtime -> WebCLCommandQueue -> enqueueWaitForEvents
     // 
-    xdescribe("enqueueWaitForEvents", function() {
+    describe("enqueueWaitForEvents", function() {
 
       it("enqueueWaitForEvents(<valid eventWaitList>) must work", function() {
         if (!suite.preconditions) pending();
         event = new WebCLEvent();
-        expect('queue.enqueueMarker(event)').not.toThrow();
+        numBytes = 1024;
+        buffer1 = ctx.createBuffer(WebCL.MEM_READ_WRITE, numBytes);
+        buffer2 = ctx.createBuffer(WebCL.MEM_READ_WRITE, numBytes);
+        expect('queue.enqueueCopyBuffer(buffer1, buffer2, 0, 0, numBytes, null, event)').not.toThrow();
+        expect('queue.enqueueCopyBuffer(buffer2, buffer1, 0, 0, numBytes, [event])').not.toThrow();
         expect('queue.enqueueWaitForEvents([event]); queue.finish();').not.toThrow();
       });
 
@@ -2163,6 +2167,7 @@ describe("Runtime", function() {
     beforeEach(setup.bind(this, function() {
       ctx = createContext();
       queue = ctx.createCommandQueue(null, WebCL.QUEUE_PROFILING_ENABLE);
+      emptyEvent = new WebCLEvent();
       event = new WebCLEvent();
     }));
 
@@ -2179,7 +2184,7 @@ describe("Runtime", function() {
 
       it("enqueue*(<emptyEvent>) must work", function() {
         if (!suite.preconditions) pending();
-        expect('queue.enqueueMarker(event)').not.toThrow();
+        expect('queue.enqueueMarker(emptyEvent)').not.toThrow();
       });
 
       it("enqueue*(<populatedEvent>) must throw", function() {
@@ -2214,11 +2219,48 @@ describe("Runtime", function() {
     // 
     describe("Wait lists", function() {
 
-      xit("enqueue*(<valid eventWaitList>) must work", function() {
+      it("enqueue*(<valid eventWaitList>) must work", function() {
         if (!suite.preconditions) pending();
         expect('queue.enqueueMarker(event)').not.toThrow();
         expect('queue.enqueueWaitForEvents([event]); queue.finish();').not.toThrow();
       });
+
+    });
+
+    describe("waitForEvents", function() {
+
+      var signature = [ 'NonEmptyArray', 'OptionalFunction' ];
+      var valid = [ '[ emptyEvent ]', 'undefined' ];
+
+      it("waitForEvents(<valid eventWaitList>) must work", function() {
+        expect('queue.enqueueMarker(event)').not.toThrow();
+        expect('webcl.waitForEvents([event])').not.toThrow();
+      });
+
+      it("waitForEvents(<invalid arguments>) must throw", function() {
+        argc('webcl.waitForEvents', valid);
+      });
+
+      it("waitForEvents(<invalid wait list>) must throw", function() {
+        fuzz('webcl.waitForEvents', signature, valid, null, [0], 'INVALID_VALUE');
+      });
+
+      it("waitForEvents(<invalid event in wait list>) must throw", function() {
+        expect('userEvent = ctx.createUserEvent()').not.toThrow();
+        expect('webcl.waitForEvents([userEvent])').toThrow('INVALID_EVENT_WAIT_LIST');
+        expect('webcl.waitForEvents([emptyEvent])').toThrow('INVALID_EVENT_WAIT_LIST');
+      });
+
+      it("waitForEvents(<events in different contexts>) must throw", function() {
+        eventCtx1 = new WebCLEvent();
+        eventCtx2 = new WebCLEvent();
+        ctx2 = createContext();
+        queue2 = ctx2.createCommandQueue();
+        expect('queue.enqueueMarker(eventCtx1)').not.toThrow();
+        expect('queue2.enqueueMarker(eventCtx2)').not.toThrow();
+        expect('webcl.waitForEvents([eventCtx1, eventCtx2])').toThrow('INVALID_CONTEXT');
+      });
+
     });
 
     //////////////////////////////////////////////////////////////////////////////
