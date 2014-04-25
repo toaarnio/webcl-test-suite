@@ -2233,25 +2233,30 @@ describe("Runtime", function() {
       var valid = [ '[ emptyEvent ]', 'undefined' ];
 
       it("waitForEvents(<valid eventWaitList>) must work", function() {
+        if (!suite.preconditions) pending();
         expect('queue.enqueueMarker(event)').not.toThrow();
         expect('webcl.waitForEvents([event])').not.toThrow();
       });
 
       it("waitForEvents(<invalid arguments>) must throw", function() {
+        if (!suite.preconditions) pending();
         argc('webcl.waitForEvents', valid);
       });
 
       it("waitForEvents(<invalid wait list>) must throw", function() {
+        if (!suite.preconditions) pending();
         fuzz('webcl.waitForEvents', signature, valid, null, [0], 'INVALID_VALUE');
       });
 
       it("waitForEvents(<invalid event in wait list>) must throw", function() {
+        if (!suite.preconditions) pending();
         expect('userEvent = ctx.createUserEvent()').not.toThrow();
         expect('webcl.waitForEvents([userEvent])').toThrow('INVALID_EVENT_WAIT_LIST');
         expect('webcl.waitForEvents([emptyEvent])').toThrow('INVALID_EVENT_WAIT_LIST');
       });
 
       it("waitForEvents(<events in different contexts>) must throw", function() {
+        if (!suite.preconditions) pending();
         eventCtx1 = new WebCLEvent();
         eventCtx2 = new WebCLEvent();
         ctx2 = createContext();
