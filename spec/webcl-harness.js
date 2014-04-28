@@ -230,7 +230,7 @@
   //    argc('ctx.getSupportedImageFormats', ['undefined'], 'WEBCL_SYNTAX_ERROR');
   //    argc('kernel.setArg', ['0', 'buffer']);
   //
-  argc = function(funcName, validArgs, exceptionName) {
+  argc = function(funcNameStr, validArgs, exceptionName) {
     
     expect(arguments.length).not.toBeLessThan(2);
     expect(arguments.length).not.toBeGreaterThan(3);
@@ -244,11 +244,11 @@
     for (var i=0; i < minArgs; i++) {
       var args = validArgs.slice(0, i);
       var argStr = args.join(", ");
-      var callStr = funcName + "(" + argStr + ")";
+      var callStr = funcNameStr + "(" + argStr + ")";
       expect(callStr).toThrow(exceptionName);
     }
     var argStr = validArgs.concat('null').join(", ");
-    var callStr = funcName + "(" + argStr + ")";
+    var callStr = funcNameStr + "(" + argStr + ")";
     expect(callStr).toThrow(exceptionName);
   };
 
@@ -260,7 +260,7 @@
   // Example:
   //    fuzz('ctx.getInfo', [ 'Enum' ], [ 'WebCL.CONTEXT_NUM_DEVICES' ], null, [0], 'INVALID_VALUE');
   //
-  fuzz = function(funcName, signature, validArgs, customInvalidArgs, argsToTest, exceptionName) {
+  fuzz = function(callStr, signature, validArgs, customInvalidArgs, argsToTest, exceptionName) {
 
     // For each input type, define a list of values that are to be considered invalid.  For example,
     // 1.01 must not be accepted as an integer.
@@ -288,6 +288,7 @@
     };
     
     expect(arguments.length).toEqual(6);
+    expect(typeof callStr).toEqual('string');
     expect(signature.length).toBeGreaterThan(0);
     expect(signature.length).toEqual(validArgs.length);
 
@@ -313,10 +314,35 @@
           var args = validArgs.slice();
           args[i] = invalidArgs[j];
           argStr = args.join(", ");
-          expect(funcName + "(" + argStr + ")").toThrow(exceptionName);
+          expect(callStr + "(" + argStr + ")").toThrow(exceptionName);
         }
       }
     }
+  };
+
+  argc2 = function(callStr, api, expectedExceptionName) {
+
+    expect(arguments.length).not.toBeLessThan(2);
+    expect(arguments.length).not.toBeGreaterThan(3);
+    expect(typeof api).toEqual('object');
+    expect(typeof callStr).toEqual('string');
+    expect(typeof api[callStr]).toEqual('object');
+    expect(Array.isArray(api[callStr]['signature'])).toEqual(true);
+    expect(Array.isArray(api[callStr]['validArgs'])).toEqual(true);
+
+    argc(callStr, api[callStr].validArgs, expectedExceptionName);
+  };
+
+  fuzz2 = function(callStr, api, argsToTest, expectedExceptionName) {
+    
+    expect(arguments.length).toEqual(4);
+    expect(typeof api).toEqual('object');
+    expect(typeof callStr).toEqual('string');
+    expect(typeof api[callStr]).toEqual('object');
+    expect(Array.isArray(api[callStr]['signature'])).toEqual(true);
+    expect(Array.isArray(api[callStr]['validArgs'])).toEqual(true);
+
+    fuzz(callStr, api[callStr].signature, api[callStr].validArgs, api[callStr].invalidArgs || null, argsToTest, expectedExceptionName);
   };
 
   // ### addCustomMatchers ###

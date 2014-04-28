@@ -1402,6 +1402,8 @@ describe("Runtime", function() {
         image = ctx.createImage(WebCL.MEM_READ_WRITE, { width: 32, height: 32 });
       }));
 
+      ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
       describe("enqueueReadBuffer", function() {
 
         it("enqueueReadBuffer(<valid arguments>) must work", function() {
@@ -1455,6 +1457,7 @@ describe("Runtime", function() {
 
       });
 
+      ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
       describe("enqueueWriteBuffer", function() {
 
@@ -1509,6 +1512,7 @@ describe("Runtime", function() {
 
       });
 
+      ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
       describe("enqueueCopyBuffer", function() {
         
@@ -1538,19 +1542,7 @@ describe("Runtime", function() {
 
         it("enqueueCopyBuffer(<valid arguments>) must work", function() {
           if (!suite.preconditions) pending();
-          event = new WebCLEvent();
           expect('queue.enqueueCopyBuffer(buffer1, buffer2, 0, 0, numBytes)').not.toThrow();
-          expect('queue.enqueueCopyBuffer(buffer1, buffer2, 0, 0, numBytes, null, event)').not.toThrow();
-          expect('queue.enqueueCopyBuffer(buffer2, buffer1, 0, 0, numBytes, [event]); queue.finish();').not.toThrow();
-        });
-
-        it("enqueueCopyBuffer(<invalid # of arguments>) must throw", function() {
-          if (!suite.preconditions) pending();
-          expect('queue.enqueueCopyBuffer()').toThrow('WEBCL_SYNTAX_ERROR');
-          expect('queue.enqueueCopyBuffer(buffer1)').toThrow('WEBCL_SYNTAX_ERROR');
-          expect('queue.enqueueCopyBuffer(buffer1, buffer2, 0)').toThrow('WEBCL_SYNTAX_ERROR');
-          expect('queue.enqueueCopyBuffer(buffer1, buffer2, 0, 0)').toThrow('WEBCL_SYNTAX_ERROR');
-          expect('queue.enqueueCopyBuffer(buffer1, buffer2, 0, 0, numBytes, null, null, null)').toThrow('WEBCL_SYNTAX_ERROR');
         });
 
         it("enqueueCopyBuffer(<invalid arguments>) must throw", function() {
@@ -1563,6 +1555,8 @@ describe("Runtime", function() {
         });
 
       });
+
+      ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
       describe("enqueueCopyBufferRect", function() {
         
@@ -1597,10 +1591,7 @@ describe("Runtime", function() {
 
         it("enqueueCopyBufferRect(<valid arguments>) must work", function() {
           if (!suite.preconditions) pending();
-          event = new WebCLEvent();
           expect('queue.enqueueCopyBufferRect(buffer1, buffer2, [0,0,0], [0,0,0], [32,32,1], 0, 0, 0, 0)').not.toThrow();
-          expect('queue.enqueueCopyBufferRect(buffer1, buffer2, [0,0,0], [0,0,0], [32,32,1], 0, 0, 0, 0, null, event)').not.toThrow();
-          expect('queue.enqueueCopyBufferRect(buffer1, buffer2, [0,0,0], [0,0,0], [32,32,1], 0, 0, 0, 0, [event])').not.toThrow();
         });
 
         it("enqueueCopyBufferRect(<invalid arguments>) must throw", function() {
@@ -1660,6 +1651,8 @@ describe("Runtime", function() {
         imagef32 = ctx.createImage(WebCL.MEM_READ_WRITE, descriptorRGBAf32);
         buffer = ctx.createBuffer(WebCL.MEM_READ_WRITE, W*H*C);
       }));
+
+      ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
       describe("enqueueReadImage", function() {
 
@@ -1760,6 +1753,7 @@ describe("Runtime", function() {
 
       });
 
+      ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
       describe("enqueueWriteImage", function() {
 
@@ -1859,15 +1853,9 @@ describe("Runtime", function() {
           expect('queue.enqueueWriteImage(image, true, [0,0], [1, 1], 0, pixels.subarray(0, 3))').toThrow('INVALID_VALUE');
         });
 
-        it("enqueueWriteImage(<valid eventWaitList>) must work", function() {
-          if (!suite.preconditions) pending();
-          event = new WebCLEvent();
-          expect('queue.enqueueWriteImage(image, false, [0, 0], [W, H], 0, pixels, null, event)').not.toThrow();
-          expect('queue.enqueueWriteImage(image, true, [0, 0], [W, H], 0, pixels, [event])').not.toThrow();
-        });
-
       });
 
+      ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
       describe("enqueueCopyImage", function() {
         
@@ -1907,10 +1895,7 @@ describe("Runtime", function() {
 
         it("enqueueCopyImage(<valid arguments>) must work", function() {
           if (!suite.preconditions) pending();
-          event = new WebCLEvent();
           expect('queue.enqueueCopyImage(image1, image2, [0,0], [0,0], [W,H])').not.toThrow();
-          expect('queue.enqueueCopyImage(image1, image2, [0,0], [0,0], [W,H], null, event)').not.toThrow();
-          expect('queue.enqueueCopyImage(image2, image1, [0,0], [0,0], [W,H], [event]); queue.finish();').not.toThrow();
         });
 
         it("enqueueCopyImage(<invalid arguments>) must throw", function() {
@@ -1999,8 +1984,8 @@ describe("Runtime", function() {
         expect('queue.enqueueNDRangeKernel(kernel, 3, null, [3, 2, 2], [1, 1, 1]); queue.finish()').not.toThrow();
       });
 
-      // This test assumes that the OpenCL device supports a work-group size of at least 4, and 2 in
-      // each dimension. Otherwise, the test is marked pending.
+      // This test assumes that the OpenCL device supports a flattened work-group size of at least
+      // 4, and 2 in each dimension. Otherwise, the test is marked pending.
       //
       it("must work if localWorkSize !== null (work-group size > 1)", function() {
         if (!suite.preconditions) pending();
@@ -2017,8 +2002,8 @@ describe("Runtime", function() {
         expect('queue.enqueueNDRangeKernel(kernel, 3, [0, 1, 1], [3, 2, 2], [1, 1, 1]); queue.finish()').not.toThrow();
       });
 
-      // This test assumes that the OpenCL device supports a work-group size of at least 4, and 2 in
-      // each dimension. Otherwise, the test is marked pending.
+      // This test assumes that the OpenCL device supports a flattened work-group size of at least
+      // 4, and 2 in each dimension. Otherwise, the test is marked pending.
       //
       it("must work if globalWorkOffset !== null and localWorkSize !== null (work-group size > 1)", function() {
         if (!suite.preconditions) pending();
@@ -2136,25 +2121,6 @@ describe("Runtime", function() {
 
     });
 
-    //////////////////////////////////////////////////////////////////////////////
-    //
-    // Runtime -> WebCLCommandQueue -> enqueueWaitForEvents
-    // 
-    describe("enqueueWaitForEvents", function() {
-
-      it("enqueueWaitForEvents(<valid eventWaitList>) must work", function() {
-        if (!suite.preconditions) pending();
-        event = new WebCLEvent();
-        numBytes = 1024;
-        buffer1 = ctx.createBuffer(WebCL.MEM_READ_WRITE, numBytes);
-        buffer2 = ctx.createBuffer(WebCL.MEM_READ_WRITE, numBytes);
-        expect('queue.enqueueCopyBuffer(buffer1, buffer2, 0, 0, numBytes, null, event)').not.toThrow();
-        expect('queue.enqueueCopyBuffer(buffer2, buffer1, 0, 0, numBytes, [event])').not.toThrow();
-        expect('queue.enqueueWaitForEvents([event]); queue.finish();').not.toThrow();
-      });
-
-    });
-
   });
 
 
@@ -2169,13 +2135,15 @@ describe("Runtime", function() {
       queue = ctx.createCommandQueue(null, WebCL.QUEUE_PROFILING_ENABLE);
       emptyEvent = new WebCLEvent();
       event = new WebCLEvent();
+      event1 = new WebCLEvent();
+      event2 = new WebCLEvent();
     }));
 
     //////////////////////////////////////////////////////////////////////////////
     //
     // Runtime -> WebCLEvent -> Initialization
     // 
-    describe("Initialization", function() {
+    describe("Initializing", function() {
 
       it("new WebCLEvent() must work", function() {
         if (!suite.preconditions) pending();
@@ -2217,21 +2185,54 @@ describe("Runtime", function() {
     //
     // Runtime -> WebCLEvent -> Wait lists
     // 
-    describe("Wait lists", function() {
+    describe("Waiting", function() {
 
-      it("enqueue*(<valid eventWaitList>) must work", function() {
+      var API = {
+        'webcl.waitForEvents' : { 
+          signature : [ 'NonEmptyArray', 'OptionalFunction' ],
+          validArgs : [ '[ emptyEvent ]', 'undefined' ],
+        },
+      };
+
+      it("enqueueWaitForEvents(<valid eventWaitList>) must work", function() {
         if (!suite.preconditions) pending();
         expect('queue.enqueueMarker(event)').not.toThrow();
-        expect('queue.enqueueWaitForEvents([event]); queue.finish();').not.toThrow();
+        expect('queue.enqueueWaitForEvents([event])').not.toThrow();
+        expect('queue.finish()').not.toThrow();
       });
 
-    });
+      it("enqueueWriteImage(<valid eventWaitList>) must work", function() {
+        if (!suite.preconditions) pending();
+        W = 32; H = 32;
+        hostPtr = new Uint8Array(W*H*4);
+        image = ctx.createImage(WebCL.MEM_READ_WRITE, { width: W, height: H});
+        expect('queue.enqueueWriteImage(image, false, [0, 0], [W, H], 0, hostPtr, null, event)').not.toThrow();
+        expect('queue.enqueueWriteImage(image, false, [0, 0], [W, H], 0, hostPtr, [event])').not.toThrow();
+        expect('queue.finish()').not.toThrow();
+      });
 
-    describe("waitForEvents", function() {
+      it("enqueueCopyImage(<valid arguments>) must work", function() {
+        if (!suite.preconditions) pending();
+        W = 32; H = 32;
+        hostPtr = new Uint8Array(W*H*4);
+        image1 = ctx.createImage(WebCL.MEM_READ_WRITE, { width: W, height: H});
+        image2 = ctx.createImage(WebCL.MEM_READ_WRITE, { width: W*2, height: H+16});
+        expect('queue.enqueueCopyImage(image1, image2, [0,0], [0,0], [W,H], null, event)').not.toThrow();
+        expect('queue.enqueueCopyImage(image2, image1, [0,0], [0,0], [W,H], [event])').not.toThrow();
+        expect('queue.finish()').not.toThrow();
+      });
 
-      var signature = [ 'NonEmptyArray', 'OptionalFunction' ];
-      var valid = [ '[ emptyEvent ]', 'undefined' ];
-
+      it("enqueueCopyBuffer[Rect](<valid eventWaitList>) must work", function() {
+        if (!suite.preconditions) pending();
+        numBytes = 1024;
+        buffer1 = ctx.createBuffer(WebCL.MEM_READ_WRITE, numBytes);
+        buffer2 = ctx.createBuffer(WebCL.MEM_READ_WRITE, numBytes);
+        expect('queue.enqueueCopyBuffer(buffer1, buffer2, 0, 0, numBytes, null, event1)').not.toThrow();
+        expect('queue.enqueueCopyBuffer(buffer2, buffer1, 0, 0, numBytes, [event1], event2)').not.toThrow();
+        expect('queue.enqueueCopyBufferRect(buffer1, buffer2, [0,0,0], [0,0,0], [32,32,1], 0, 0, 0, 0, [event2])').not.toThrow();
+        expect('queue.finish()').not.toThrow();
+      });
+      
       it("waitForEvents(<valid eventWaitList>) must work", function() {
         if (!suite.preconditions) pending();
         expect('queue.enqueueMarker(event)').not.toThrow();
@@ -2240,12 +2241,8 @@ describe("Runtime", function() {
 
       it("waitForEvents(<invalid arguments>) must throw", function() {
         if (!suite.preconditions) pending();
-        argc('webcl.waitForEvents', valid);
-      });
-
-      it("waitForEvents(<invalid wait list>) must throw", function() {
-        if (!suite.preconditions) pending();
-        fuzz('webcl.waitForEvents', signature, valid, null, [0], 'INVALID_VALUE');
+        argc('webcl.waitForEvents', API['webcl.waitForEvents'].validArgs);
+        fuzz2('webcl.waitForEvents', API, [0], 'INVALID_VALUE');
       });
 
       it("waitForEvents(<invalid event in wait list>) must throw", function() {
@@ -2274,9 +2271,13 @@ describe("Runtime", function() {
     // 
     describe("getInfo", function() {
 
-      var signature = [ 'Enum' ];
-      var valid = [ 'WebCL.EVENT_COMMAND_TYPE' ];
-      var invalid = [ 'WebCL.PROFILING_COMMAND_SUBMIT' ]
+      var API = {
+        'event.getInfo' : { 
+          signature : [ 'Enum' ],
+          validArgs : [ 'WebCL.EVENT_COMMAND_TYPE' ],
+          invalidArgs : [ 'WebCL.PROFILING_COMMAND_SUBMIT' ]
+        },
+      };
 
       it("getInfo(<validEnum>) must work on a populated event", function() {
         if (!suite.preconditions) pending();
@@ -2302,8 +2303,8 @@ describe("Runtime", function() {
       it("getInfo(<invalid arguments>) must throw", function() {
         if (!suite.preconditions) pending();
         expect('queue.enqueueMarker(event)').not.toThrow();
-        argc('event.getInfo', valid, 'WEBCL_SYNTAX_ERROR');
-        fuzz('event.getInfo', signature, valid, invalid, [0], 'INVALID_VALUE');
+        argc2('event.getInfo', API, 'WEBCL_SYNTAX_ERROR');
+        fuzz2('event.getInfo', API, [0], 'INVALID_VALUE');
       });
 
     });
