@@ -1001,6 +1001,15 @@ describe("Runtime", function() {
         expect('program.createKernelsInProgram()').toThrow('INVALID_PROGRAM_EXECUTABLE');
       });
 
+      it("createKernel*() must throw if the most recent build was not successful", function() {
+        if (!suite.preconditions) pending();
+        expect('program = ctx.createProgram("kernel void dummy(global uint* buf) { buf[0]=0xdeadbeef; }")').not.toThrow();
+        expect('program.build()').not.toThrow();
+        expect('program.build(null, "-D kernel=foo")').toThrow('BUILD_PROGRAM_FAILURE');
+        expect('program.createKernel("dummy")').toThrow('INVALID_PROGRAM_EXECUTABLE');
+        expect('program.createKernelsInProgram()').toThrow('INVALID_PROGRAM_EXECUTABLE');
+      });
+
       it("build() must throw if kernels are already created", function() {
         if (!suite.preconditions) pending();
         expect('program.build(devices)').not.toThrow();
