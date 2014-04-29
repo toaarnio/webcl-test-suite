@@ -24,16 +24,26 @@ describe("Kernel language", function() {
     mustBuild.build();
   }));
 
-  it("must support read_imagef() and write_imagef()", function() {
-    if (!suite.preconditions) pending();
-    expect('kernels/copyImage.cl').toBuild();
-  });
-
   //////////////////////////////////////////////////////////////////////////////
   //
   // Kernel language -> Compiler
   // 
-  describe("Compiler (OpenCL C 1.1 conformance)", function() {
+  describe("Compiler (OpenCL 1.1 conformance)", function() {
+
+    // Status as of 2014-04-29:
+    //  [PASS] Win7 / NVIDIA GPU driver (332.21)
+    //  [FAIL] Win7 / Intel CPU driver (3.0.1.15216)
+    //  
+    it("-D options must not be sticky", function() {
+      program = mustBuild;
+      expect('program.build(null, "-D kernel=foo")').toThrow('BUILD_PROGRAM_FAILURE');
+      expect('program.build()').not.toThrow();
+    });
+
+    it("must support read_imagef() and write_imagef()", function() {
+      if (!suite.preconditions) pending();
+      expect('kernels/copyImage.cl').toBuild();
+    });
 
     it("must not allow obviously invalid kernel source", function() {
       if (!suite.preconditions) pending();
