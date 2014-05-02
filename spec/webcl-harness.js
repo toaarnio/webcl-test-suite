@@ -513,13 +513,6 @@
     return useAsync || xhr.responseText;
   };
 
-  // [PRIVATE]
-  //
-  jasmine.getEnv().specFilter = function(spec) {
-    var queryString = getURLParameter('spec');
-    var specName = queryString && queryString.replace(/\+/g, " ");
-    return (!specName) || spec.getFullName().indexOf(queryString) === 0;
-  };
 
   // [PRIVATE]
   //
@@ -539,6 +532,30 @@
     0xffffffff : "Intel CPU - Apple",
   };
 
+  //////////////////////////////////////////////////////////////////////////////
+  //
+  // Customized Jasmine built-ins
+  //
+
+  jasmine.getEnv().specFilter = function(spec) {
+    var queryString = getURLParameter('spec');
+    var specName = queryString && queryString.replace(/\+/g, " ");
+    return (!specName) || spec.getFullName().indexOf(queryString) === 0;
+  };
+
+  oit = jasmine.getEnv().it;
+
+  jasmine.getEnv().it = function(desc, func) {
+    return oit(desc, function(done) { 
+      if (!suite || suite.preconditions) {
+        func(done);
+      } else {
+        pending();
+      }
+      done();
+    });
+  };
+
 })();
 
 
@@ -550,15 +567,19 @@ xdescribe("Test framework", function() {
 
   describe("beforeEach", function() {
 
+    oit("must not be required", function() {
+      expect(true).toEqual(true);
+    });
+
     describe("setup.bind(this, null)", function() {
       
       beforeEach(setup.bind(this, null));
 
-      it("must define the global 'suite' namespace", function() {
+      oit("must define the global 'suite' namespace", function() {
         expect(window.suite).toBeDefined();
       });
       
-      it("must set suite.preconditions === true", function() {
+      oit("must set suite.preconditions === true", function() {
         expect(window.suite && suite.preconditions).toEqual(true);
       });
 
@@ -570,15 +591,15 @@ xdescribe("Test framework", function() {
         suite.foo = 'bar'; 
       }));
 
-      it("must define the global 'suite' namespace", function() {
+      oit("must define the global 'suite' namespace", function() {
         expect(window.suite).toBeDefined();
       });
       
-      it("must set suite.preconditions === true", function() {
+      oit("must set suite.preconditions === true", function() {
         expect(window.suite && window.suite.preconditions).toEqual(true);
       });
       
-      it("must execute the given setup function", function() {
+      oit("must execute the given setup function", function() {
         expect(window.suite.foo).toEqual('bar');
       });
 
@@ -590,12 +611,16 @@ xdescribe("Test framework", function() {
         invalidStatement; 
       }));
 
-      it("must define the global 'suite' namespace", function() {
+      oit("must define the global 'suite' namespace", function() {
         expect(window.suite).toBeDefined();
       });
       
-      it("must set suite.preconditions === false", function() {
+      oit("must set suite.preconditions === false", function() {
         expect(window.suite.preconditions).toEqual(false);
+      });
+
+      it("must set this test as 'pending'", function() {
+        expect(true).toEqual(false);
       });
 
     });
@@ -606,15 +631,15 @@ xdescribe("Test framework", function() {
         suite.source = src;
       }));
 
-      it("must define the global 'suite' namespace", function() {
+      oit("must define the global 'suite' namespace", function() {
         expect(window.suite).toBeDefined();
       });
       
-      it("must set suite.preconditions === true", function() {
+      oit("must set suite.preconditions === true", function() {
         expect(window.suite && window.suite.preconditions).toEqual(true);
       });
       
-      it("must pass the loaded URI to setupFunc", function() {
+      oit("must pass the loaded URI to setupFunc", function() {
         expect(typeof suite.source).toEqual('string');
       });
       
@@ -624,28 +649,36 @@ xdescribe("Test framework", function() {
       
       beforeEach(setupWithSource.bind(this, 'kernels/argtypes.cl', function(src) { invalidStatement; }));
 
-      it("must define the global 'suite' namespace", function() {
+      oit("must define the global 'suite' namespace", function() {
         expect(window.suite).toBeDefined();
       });
       
-      it("must set suite.preconditions === false", function() {
+      oit("must set suite.preconditions === false", function() {
         expect(window.suite.preconditions).toEqual(false);
       });
       
+      it("must set this test as 'pending'", function() {
+        expect(true).toEqual(false);
+      });
+
     });
 
     describe("setupWithSource.bind(this, invalidURI, setupFunc)", function() {
       
       beforeEach(setupWithSource.bind(this, 'kernels/argtypes.c', function(src) { suite.source = src; }));
 
-      it("must define the global 'suite' namespace", function() {
+      oit("must define the global 'suite' namespace", function() {
         expect(window.suite).toBeDefined();
       });
       
-      it("must set suite.preconditions === false", function() {
+      oit("must set suite.preconditions === false", function() {
         expect(window.suite.preconditions).toEqual(false);
       });
       
+      it("must set this test as 'pending'", function() {
+        expect(true).toEqual(false);
+      });
+
     });
 
   });
@@ -655,17 +688,17 @@ xdescribe("Test framework", function() {
 
     beforeEach(addCustomMatchers);
 
-    it(".toThrow()", function() {
+    oit(".toThrow()", function() {
       expect('illegalStatement').toThrow();
       expect(function() { illegalStatement; }).toThrow();
     });
 
-    it(".not.toThrow()", function() {
+    oit(".not.toThrow()", function() {
       expect('var validStatement').not.toThrow();
       expect(function() { var validStatement; }).not.toThrow();
     });
 
-    it(".toThrow('EXCEPTION_NAME')", function() {
+    oit(".toThrow('EXCEPTION_NAME')", function() {
       customException = { name: 'CUSTOM_EXCEPTION', message: 'Unknown exception' };
       expect('illegalStatement').toThrow('ReferenceError');
       expect('throw customException').toThrow('CUSTOM_EXCEPTION');
@@ -673,7 +706,7 @@ xdescribe("Test framework", function() {
       expect(function() { throw customException; }).toThrow('CUSTOM_EXCEPTION');
     });
 
-    it(".not.toThrow('EXCEPTION_NAME')", function() {
+    oit(".not.toThrow('EXCEPTION_NAME')", function() {
       customException = { name: 'CUSTOM_EXCEPTION', message: 'Unknown exception' };
       expect('var validStatement').not.toThrow('ReferenceError');
       expect('throw customException').not.toThrow('ReferenceError');
@@ -681,17 +714,17 @@ xdescribe("Test framework", function() {
       expect(function() { throw customException; }).not.toThrow('ReferenceError');
     });
 
-    it(".toThrow() [MUST FAIL]", function() {
+    oit(".toThrow() [MUST FAIL]", function() {
       expect('var validStatement').toThrow();
       expect(function() { var validStatement; }).toThrow();
     });
 
-    it(".not.toThrow() [MUST FAIL]", function() {
+    oit(".not.toThrow() [MUST FAIL]", function() {
       expect('illegalStatement').not.toThrow();
       expect(function() { illegalStatement; }).not.toThrow();
     });
 
-    it(".toThrow('EXCEPTION_NAME') [MUST FAIL]", function() {
+    oit(".toThrow('EXCEPTION_NAME') [MUST FAIL]", function() {
       customException = { name: 'CUSTOM_EXCEPTION', message: 'Unknown exception' };
       expect('var validStatement').toThrow('ReferenceError');
       expect('throw customException').toThrow('ReferenceError');
@@ -699,7 +732,7 @@ xdescribe("Test framework", function() {
       expect(function() { throw customException; }).toThrow('ReferenceError');
     });
 
-    it(".toThrow('EXCEPTION_WITHOUT_MESSAGE') [MUST FAIL]", function() {
+    oit(".toThrow('EXCEPTION_WITHOUT_MESSAGE') [MUST FAIL]", function() {
       customException = { name: 'EXCEPTION_WITHOUT_MESSAGE' };
       expect('throw customException').toThrow('EXCEPTION_WITHOUT_MESSAGE');
       customException = { name: 'EXCEPTION_WITHOUT_MESSAGE', message: '' };
@@ -708,7 +741,7 @@ xdescribe("Test framework", function() {
       expect(function() { throw customException; }).toThrow('EXCEPTION_WITHOUT_MESSAGE');
     });
 
-    it(".not.toThrow('EXCEPTION_NAME') [MUST FAIL]", function() {
+    oit(".not.toThrow('EXCEPTION_NAME') [MUST FAIL]", function() {
       customException = { name: 'CUSTOM_EXCEPTION', message: 'Unknown exception' };
       expect('illegalStatement').not.toThrow('ReferenceError');
       expect('throw customException').not.toThrow('CUSTOM_EXCEPTION');
@@ -753,23 +786,23 @@ xdescribe("Test framework", function() {
       return true;
     };
 
-    it("must work with functions that take zero arguments", function() {
+    oit("must work with functions that take zero arguments", function() {
       argc('suite.argc0', []);
     });
 
-    it("must work with functions that take at least one argument", function() {
+    oit("must work with functions that take at least one argument", function() {
       argc('suite.argc1', ['0xdeadbeef']);
     });
 
-    it("must work with functions that take optional arguments", function() {
+    oit("must work with functions that take optional arguments", function() {
       argc('suite.argc2', ['0xdeadbeef', 'undefined', 'undefined']);
     });
 
-    it("must fail if the target function does not check the number of arguments [MUST FAIL]", function() {
+    oit("must fail if the target function does not check the number of arguments [MUST FAIL]", function() {
       argc('suite.noNumArgCheck', ['0xdeadbeef', '0xdeadbeef']);
     });
 
-    it("must fail if the target function throws the wrong kind of exception [MUST FAIL]", function() {
+    oit("must fail if the target function throws the wrong kind of exception [MUST FAIL]", function() {
       argc('suite.argc0', [], 'EXPECTED_ERROR');
     });
 
