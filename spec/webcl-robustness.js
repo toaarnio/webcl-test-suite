@@ -78,7 +78,8 @@ describe("Robustness", function() {
   //  * Win7 / NVIDIA GPU driver (crashes)
   //  * Win7 / Intel CPU driver (crashes)
   //
-  it("must not crash or throw on build(<callback>)", function() {
+  oit("must not crash or throw on build(<callback>)", function() {
+    if (!suite.preconditions) pending;
     //var r = confirm("This test case may crash your browser. Run anyway?");
     //if (r === false) pending();
     buildCallback = function() {
@@ -114,7 +115,8 @@ describe("Robustness", function() {
   //  * Win7 / Firefox 64-bit / Intel CPU driver (crashes randomly)
   //  * Mac OSX 10.9 (crashes)
   //
-  it("must not crash on setArg(<invalidArgument>)", function() {
+  oit("must not crash on setArg(<invalidArgument>)", function() {
+    if (!suite.preconditions) pending;
     var r = confirm("This test case will crash your browser on all known OpenCL drivers. Run anyway?");
     if (r === false) pending();
     src = loadSource('kernels/argtypes.cl');
@@ -136,7 +138,8 @@ describe("Robustness", function() {
   //  * Win7 / NVIDIA GPU driver (crashes)
   //  * Win7 / Intel CPU driver (freezes)
   //
-  it("must not crash compiling a kernel that allocates 6 GB of 'local' memory", function() {
+  oit("must not crash compiling a kernel that allocates 6 GB of 'local' memory", function() {
+    if (!suite.preconditions) pending;
     var r = confirm("This test case will crash your browser on Windows. Run anyway?");
     if (r === false) pending();
     expect('kernels/largeArrayLocal.cl').not.toBuild();
