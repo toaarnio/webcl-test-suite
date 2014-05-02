@@ -29,7 +29,6 @@ describe("Platform", function() {
   describe("getPlatforms", function() {
 
     it("getPlatforms() must work", function() {
-      if (!suite.preconditions) pending();
       expect('webcl.getPlatforms()').not.toThrow();
       expect('webcl.getPlatforms() instanceof Array').toEvalAs(true);
       expect('webcl.getPlatforms().length >= 1').toEvalAs(true);
@@ -37,7 +36,6 @@ describe("Platform", function() {
     });
 
     it("getPlatforms(<invalid arguments>) must throw", function() {
-      if (!suite.preconditions) pending();
       argc('webcl.getPlatforms', []);
     });
 
@@ -46,7 +44,6 @@ describe("Platform", function() {
   describe("platform.getInfo", function() {
 
     it("platform.getInfo(<valid enum>) must work", function() {
-      if (!suite.preconditions) pending();
       expect('platforms = webcl.getPlatforms()').not.toThrow();
       function checkInfo() {
         for (var i=0; i < platforms.length; i++) {
@@ -70,7 +67,6 @@ describe("Platform", function() {
     });
     
     it("platform.getInfo(<invalid arguments>) must throw", function() {
-      if (!suite.preconditions) pending();
       expect('platform = webcl.getPlatforms()[0]').not.toThrow();
       argc('platform.getInfo', ['WebCL.PLATFORM_VENDOR']);
       expect('platform.getInfo(WebCL.PLATFORM_VENDOR)').not.toThrow();
@@ -90,7 +86,6 @@ describe("Platform", function() {
     }));
 
     it("getDevices(ALL || DEFAULT) must work", function() {
-      if (!suite.preconditions) pending();
       for (i=0; i < platforms.length; i++) {
         expect('platforms['+i+'].getDevices()').not.toThrow();
         expect('platforms['+i+'].getDevices() instanceof Array').toEvalAs(true);
@@ -108,7 +103,6 @@ describe("Platform", function() {
     });
 
     it("getDevices(CPU || GPU || ACCELERATOR) must work", function() {
-      if (!suite.preconditions) pending();
       for (i=0; i < platforms.length; i++) {
         var defaultDevice = platforms[i].getDevices(WebCL.DEVICE_TYPE_DEFAULT)[0];
         var defaultDeviceType = defaultDevice.getInfo(WebCL.DEVICE_TYPE);
@@ -138,7 +132,6 @@ describe("Platform", function() {
     });
 
     it("getDevices(<invalid arguments>) must throw", function() {
-      if (!suite.preconditions) pending();
       for (i=0; i < platforms.length; i++) {
         fuzz('platforms['+i+'].getDevices', ['OptionalEnum'], ['undefined'], null, [0], 'INVALID_DEVICE_TYPE');
         argc('platforms['+i+'].getDevices', ['undefined']);
@@ -155,7 +148,6 @@ describe("Platform", function() {
     }));
 
     it("device.getInfo(<valid enum>) must not throw", function() {
-      if (!suite.preconditions) pending();
       for (enumName in deviceInfoEnums) {
         enumValue = deviceInfoEnums[enumName];
         expect('device.getInfo(WebCL.'+enumName+')').not.toThrow();
@@ -163,7 +155,6 @@ describe("Platform", function() {
     });
 
     it("device.getInfo(<valid enum>) must return the expected kind of value", function() {
-      if (!suite.preconditions) pending();
       for (enumName in deviceInfoEnums) {
         matcher = deviceInfoEnumMatchers[enumName];
         value = device.getInfo(WebCL[enumName]);
@@ -173,7 +164,6 @@ describe("Platform", function() {
     });
 
     it("device.getInfo(<invalid arguments>) must throw", function() {
-      if (!suite.preconditions) pending();
       argc('device.getInfo', ['WebCL.DEVICE_VENDOR'], 'WEBCL_SYNTAX_ERROR');
       expect('device.getInfo(WebCL.DEVICE_VENDOR)').not.toThrow();
       expect('device.getInfo(WebCL.PLATFORM_VENDOR)').toThrow('INVALID_VALUE');
@@ -183,7 +173,6 @@ describe("Platform", function() {
     });
 
     it("device.getInfo(<non-enabled extension enum>) must throw", function() {
-      if (!suite.preconditions) pending();
       expect('device.getInfo(WebCL.DEVICE_VENDOR)').not.toThrow();
       for (enumName in extensionEnums) {
         enumValue = extensionEnums[enumName];
@@ -202,7 +191,6 @@ describe("Platform", function() {
     }));
 
     it("objects must accommodate user-defined fields", function() {
-      if (!suite.preconditions) pending();
       expect('webcl.foo = "bar"').not.toThrow();
       expect('webcl.foo === "bar"').toEvalAs(true);
       expect('aPlatform.name = "foo"').not.toThrow();
@@ -210,7 +198,6 @@ describe("Platform", function() {
     });
     
     it("platform getters must return the same object every time", function() {
-      if (!suite.preconditions) pending();
       expect('aPlatform === webcl.getPlatforms()[0]').toEvalAs(true);
       expect('aDevice === aPlatform.getDevices()[0]').toEvalAs(true);
       expect('aPlatform === aDevice.getInfo(WebCL.DEVICE_PLATFORM)').toEvalAs(true);

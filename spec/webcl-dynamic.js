@@ -33,18 +33,15 @@ describe("Runtime", function() {
     }));
 
     it("createContext() must work", function() {
-      if (!suite.preconditions) pending();
       expect('webcl.createContext()').not.toThrow();
       expect('webcl.createContext() instanceof WebCLContext').toEvalAs(true);
     });
 
     it("createContext(DEVICE_TYPE_DEFAULT) must work", function() {
-      if (!suite.preconditions) pending();
       expect('webcl.createContext(WebCL.DEVICE_TYPE_DEFAULT)').not.toThrow();
     });
 
     it("createContext(CPU || GPU || ACCELERATOR) must work", function() {
-      if (!suite.preconditions) pending();
       var types = [ WebCL.DEVICE_TYPE_CPU, WebCL.DEVICE_TYPE_GPU, WebCL.DEVICE_TYPE_ACCELERATOR ];
       for (var t=0, found=false; t < types.length && !found; t++) {
         try {
@@ -57,12 +54,10 @@ describe("Runtime", function() {
     });
 
     it("createContext(aPlatform) must work", function() {
-      if (!suite.preconditions) pending();
       expect('webcl.createContext(aPlatform)').not.toThrow();
     });
 
     it("createContext(aPlatform, CPU || GPU || ACCELERATOR) must work", function() {
-      if (!suite.preconditions) pending();
       var types = [ WebCL.DEVICE_TYPE_CPU, WebCL.DEVICE_TYPE_GPU, WebCL.DEVICE_TYPE_ACCELERATOR ];
       for (var t=0, found=false; t < types.length && !found; t++) {
         try {
@@ -75,32 +70,26 @@ describe("Runtime", function() {
     });
 
     it("createContext(aDevice) must work", function() {
-      if (!suite.preconditions) pending();
       expect('webcl.createContext(aDevice)').not.toThrow();
     });
 
     it("createContext([aDevice]) must work", function() {
-      if (!suite.preconditions) pending();
       expect('webcl.createContext([aDevice])').not.toThrow();
     });
 
     it("createContext(aPlatform, DEVICE_TYPE_ALL) must work", function() {
-      if (!suite.preconditions) pending();
       expect('webcl.createContext(aPlatform, WebCL.DEVICE_TYPE_ALL)').not.toThrow();
     });
 
     it("createContext(DEVICE_TYPE_ACCELERATOR) must throw", function() {
-      if (!suite.preconditions) pending();
       expect('webcl.createContext(WebCL.DEVICE_TYPE_ACCELERATOR)').toThrow('DEVICE_NOT_FOUND');
     });
 
     it("createContext(aPlatform, DEVICE_TYPE_ACCELERATOR) must throw", function() {
-      if (!suite.preconditions) pending();
       expect('webcl.createContext(aPlatform, WebCL.DEVICE_TYPE_ACCELERATOR)').toThrow('DEVICE_NOT_FOUND');
     });
 
     it("createContext(<invalid deviceType>) must throw", function() {
-      if (!suite.preconditions) pending();
       expect('webcl.createContext(WebCL.DEVICE_TYPE_ALL)').toThrow('INVALID_DEVICE_TYPE');
       expect('webcl.createContext(0)').toThrow('INVALID_DEVICE_TYPE');
       expect('webcl.createContext(0x1234)').toThrow('INVALID_DEVICE_TYPE');
@@ -109,7 +98,6 @@ describe("Runtime", function() {
     });
 
     it("createContext(aPlatform, <invalid deviceType>) must throw", function() {
-      if (!suite.preconditions) pending();
       expect('webcl.createContext(aPlatform, 0)').toThrow('INVALID_DEVICE_TYPE');
       expect('webcl.createContext(aPlatform, 0x1234)').toThrow('INVALID_DEVICE_TYPE');
       expect('webcl.createContext(aPlatform, null)').toThrow('INVALID_DEVICE_TYPE');
@@ -117,7 +105,6 @@ describe("Runtime", function() {
     });
 
     it("createContext(<invalid device or platform>) must throw", function() {
-      if (!suite.preconditions) pending();
       expect('webcl.createContext({})').toThrow('INVALID_DEVICE_TYPE');
       expect('webcl.createContext(webcl)').toThrow('INVALID_DEVICE_TYPE');
       expect('webcl.createContext(WebCL)').toThrow('INVALID_DEVICE_TYPE');
@@ -125,7 +112,6 @@ describe("Runtime", function() {
     });
 
     it("createContext(<invalid device array>) must throw", function() {
-      if (!suite.preconditions) pending();
       expect('webcl.createContext([])').toThrow('INVALID_VALUE');
       expect('webcl.createContext([undefined])').toThrow('INVALID_DEVICE');
       expect('webcl.createContext([null])').toThrow('INVALID_DEVICE');
@@ -166,7 +152,6 @@ describe("Runtime", function() {
       var invalid = [ 'WebCL.CONTEXT_PROPERTIES' ];
 
       it("getInfo(<validEnum>) must work", function() {
-        if (!suite.preconditions) pending();
         expect('ctx.getInfo(WebCL.CONTEXT_NUM_DEVICES)').not.toThrow();
         expect('ctx.getInfo(WebCL.CONTEXT_DEVICES)').not.toThrow();
         expect('ctx.getInfo(WebCL.CONTEXT_NUM_DEVICES) === 1').toEvalAs(true);
@@ -175,7 +160,6 @@ describe("Runtime", function() {
       });
 
       it("getInfo(<invalid arguments>) must throw", function() {
-        if (!suite.preconditions) pending();
         argc('ctx.getInfo', valid, 'WEBCL_SYNTAX_ERROR');
         fuzz('ctx.getInfo', signature, valid, invalid, [0], 'INVALID_VALUE');
       });
@@ -194,7 +178,6 @@ describe("Runtime", function() {
       var valid = [ 'undefined' ];
 
       it("getSupportedImageFormats(<validEnum>) must work", function() {
-        if (!suite.preconditions) pending();
         expect('ctx.getSupportedImageFormats()').not.toThrow();
         expect('ctx.getSupportedImageFormats() instanceof Array').toEvalAs(true);
         expect('ctx.getSupportedImageFormats().length >= 10').toEvalAs(true);
@@ -205,7 +188,6 @@ describe("Runtime", function() {
       });
 
       it("getSupportedImageFormats() must be equivalent to getSupportedImageFormats(MEM_READ_WRITE)", function() {
-        if (!suite.preconditions) pending();
         formats = ctx.getSupportedImageFormats();
         formatsReadWrite = ctx.getSupportedImageFormats(WebCL.MEM_READ_WRITE);
         expect('formats.length').toEvalAs('formatsReadWrite.length');
@@ -216,7 +198,6 @@ describe("Runtime", function() {
       });
 
       it("getSupportedImageFormats(<validEnum>) must return the mandatory formats", function() {
-        if (!suite.preconditions) pending();
         function rgbaFilter(item) { return (item.channelOrder === WebCL.RGBA); }
         rgbaFormatsReadWrite = ctx.getSupportedImageFormats(WebCL.MEM_READ_WRITE).filter(rgbaFilter);
         rgbaFormatsReadWrite = ctx.getSupportedImageFormats(WebCL.MEM_READ_WRITE).filter(rgbaFilter);
@@ -228,7 +209,6 @@ describe("Runtime", function() {
       });
 
       it("getSupportedImageFormats(<invalid arguments>) must throw", function() {
-        if (!suite.preconditions) pending();
         argc('ctx.getSupportedImageFormats', valid, 'WEBCL_SYNTAX_ERROR');
         fuzz('ctx.getSupportedImageFormats', signature, valid, null, [0], 'INVALID_VALUE');
       });
@@ -246,7 +226,6 @@ describe("Runtime", function() {
       var invalid = [ 'ctx', '0x4', ];
 
       it("createCommandQueue(<validDevice>) must work", function() {
-        if (!suite.preconditions) pending();
         expect('ctx.createCommandQueue()').not.toThrow();
         expect('ctx.createCommandQueue(null)').not.toThrow();
         expect('ctx.createCommandQueue(device)').not.toThrow();
@@ -257,7 +236,6 @@ describe("Runtime", function() {
       });
 
       it("createCommandQueue(<validDevice>, <supportedProperties>) must work", function() {
-        if (!suite.preconditions) pending();
         supportedProperties = device.getInfo(WebCL.DEVICE_QUEUE_PROPERTIES);
         expect('ctx.createCommandQueue(device, supportedProperties)').not.toThrow();
         expect('ctx.createCommandQueue(null, supportedProperties)').not.toThrow();
@@ -265,14 +243,12 @@ describe("Runtime", function() {
       });
 
       it("createCommandQueue(<invalid arguments>) must throw", function() {
-        if (!suite.preconditions) pending();
         argc('ctx.createCommandQueue', valid, 'WEBCL_SYNTAX_ERROR');
         fuzz('ctx.createCommandQueue', signature, valid, invalid, [0], 'INVALID_DEVICE');
         fuzz('ctx.createCommandQueue', signature, valid, invalid, [1], 'INVALID_VALUE');
       });
 
       it("createCommandQueue(<validDevice>, <unsupportedProperties>) must throw", function() {
-        if (!suite.preconditions) pending();
         allProperties = WebCL.QUEUE_PROFILING_ENABLE | WebCL.QUEUE_OUT_OF_ORDER_EXEC_MODE_ENABLE;
         supportedProperties = device.getInfo(WebCL.DEVICE_QUEUE_PROPERTIES);
         if (allProperties !== supportedProperties)
@@ -293,13 +269,11 @@ describe("Runtime", function() {
       var valid = [ '"foo"' ];
 
       it("createProgram(<validString>) must not throw", function() {
-        if (!suite.preconditions) pending();
         expect('ctx.createProgram("foobar")').not.toThrow();
         expect('ctx.createProgram("foobar") instanceof WebCLProgram').toEvalAs(true);
       });
 
       it("createProgram(<invalid arguments>) must throw", function() {
-        if (!suite.preconditions) pending();
         argc('ctx.createProgram', valid, 'WEBCL_SYNTAX_ERROR');
         fuzz('ctx.createProgram', signature, valid, null, [0], 'INVALID_VALUE');
       });
@@ -317,7 +291,6 @@ describe("Runtime", function() {
       var invalid = [ 'WebCL.MEM_TYPE', '0x10000000000', 'new Uint8Array(1023)' ];
 
       it("createBuffer(<valid memFlags>) must work", function() {
-        if (!suite.preconditions) pending();
         expect('ctx.createBuffer(WebCL.MEM_READ_ONLY, 1024)').not.toThrow();
         expect('ctx.createBuffer(WebCL.MEM_WRITE_ONLY, 1024)').not.toThrow();
         expect('ctx.createBuffer(WebCL.MEM_READ_WRITE, 1024)').not.toThrow();
@@ -325,7 +298,6 @@ describe("Runtime", function() {
       });
 
       it("createBuffer(<valid hostPtr>) must work", function() {
-        if (!suite.preconditions) pending();
         expect('ctx.createBuffer(WebCL.MEM_READ_ONLY, 1024, new Uint8Array(1024))').not.toThrow();
         expect('ctx.createBuffer(WebCL.MEM_READ_ONLY, 1024, new Uint8Array(1025))').not.toThrow();
         expect('ctx.createBuffer(WebCL.MEM_WRITE_ONLY, 1024, new Uint16Array(512))').not.toThrow();
@@ -334,7 +306,6 @@ describe("Runtime", function() {
       });
 
       it("createBuffer(<invalid arguments>) must throw", function() {
-        if (!suite.preconditions) pending();
         argc('ctx.createBuffer', valid, 'WEBCL_SYNTAX_ERROR');
         fuzz('ctx.createBuffer', signature, valid, null, [0], 'INVALID_VALUE');
         fuzz('ctx.createBuffer', signature, valid, invalid, [1], 'INVALID_VALUE');
@@ -354,7 +325,6 @@ describe("Runtime", function() {
       var invalid = [ 'WebCL.MEM_TYPE', '{ width: -1, height: 4 }', 'new Uint8Array(4*4*4-1)' ];
 
       it("createImage(<valid memFlags>) must work", function() {
-        if (!suite.preconditions) pending();
         expect('ctx.createImage(WebCL.MEM_READ_ONLY, { width: 64, height: 64 })').not.toThrow();
         expect('ctx.createImage(WebCL.MEM_WRITE_ONLY, { width: 64, height: 64 })').not.toThrow();
         expect('ctx.createImage(WebCL.MEM_READ_WRITE, { width: 64, height: 64 })').not.toThrow();
@@ -362,7 +332,6 @@ describe("Runtime", function() {
       });
 
       it("createImage(<valid descriptor>) must work", function() {
-        if (!suite.preconditions) pending();
         expect('desc = new WebCLImageDescriptor()').not.toThrow();
         expect('desc.width = 11; desc.height = 17;').not.toThrow();
         expect('ctx.createImage(WebCL.MEM_READ_ONLY, desc)').not.toThrow();
@@ -370,7 +339,6 @@ describe("Runtime", function() {
       });
 
       it("createImage(<any supported format>) must work", function() {
-        if (!suite.preconditions) pending();
         formats = ctx.getSupportedImageFormats();
         for (i=0;  i < formats.length; i++) {
           formats[i].width = 7;
@@ -382,26 +350,22 @@ describe("Runtime", function() {
       });
 
       it("createImage(<valid dimensions>) must work", function() {
-        if (!suite.preconditions) pending();
         expect('ctx.createImage(WebCL.MEM_READ_ONLY, { width: 37, height: 1 })').not.toThrow();
         expect('ctx.createImage(WebCL.MEM_WRITE_ONLY, { width: 1, height: 1025 })').not.toThrow();
         expect('ctx.createImage(WebCL.MEM_READ_WRITE, { width: 19, height: 11 })').not.toThrow();
       });
 
       it("createImage(<valid hostPtr>) must work", function() {
-        if (!suite.preconditions) pending();
         expect('ctx.createImage(WebCL.MEM_READ_ONLY, { width: 11, height: 17 }, new Uint8Array(11*17*4))').not.toThrow();
       });
 
       it("createImage(<valid rowPitch>) must work", function() {
-        if (!suite.preconditions) pending();
         expect('ctx.createImage(WebCL.MEM_READ_ONLY, { width: 11, height: 17, rowPitch: 0 })').not.toThrow();
         expect('ctx.createImage(WebCL.MEM_READ_ONLY, { width: 11, height: 17, rowPitch: 0 }, new Uint8Array(11*17*4))').not.toThrow();
         expect('ctx.createImage(WebCL.MEM_READ_ONLY, { width: 11, height: 17, rowPitch: 11*4 }, new Uint8Array(11*17*4))').not.toThrow();
       });
 
       it("createImage(<invalid arguments>) must throw", function() {
-        if (!suite.preconditions) pending();
         argc('ctx.createImage', valid, 'WEBCL_SYNTAX_ERROR');
         fuzz('ctx.createImage', signature, valid, invalid, [0], 'INVALID_VALUE');
         fuzz('ctx.createImage', signature, valid, invalid, [1], 'INVALID_IMAGE_DESCRIPTOR');
@@ -409,7 +373,6 @@ describe("Runtime", function() {
       });
 
       it("createImage(<invalid descriptor>) must throw", function() {
-        if (!suite.preconditions) pending();
         expect('ctx.createImage(WebCL.MEM_READ_ONLY, { width: 4 })').toThrow('INVALID_IMAGE_DESCRIPTOR');
         expect('ctx.createImage(WebCL.MEM_READ_ONLY, { width: 4, height: null })').toThrow('INVALID_IMAGE_DESCRIPTOR');
         expect('ctx.createImage(WebCL.MEM_READ_ONLY, { width: 4, height: {} })').toThrow('INVALID_IMAGE_DESCRIPTOR');
@@ -426,7 +389,6 @@ describe("Runtime", function() {
       });
 
       it("createImage(<invalid image format>) must throw", function() {
-        if (!suite.preconditions) pending();
         expect('ctx.createImage(WebCL.MEM_READ_ONLY, { width: 4, height: 4, channelOrder: null })').toThrow('INVALID_IMAGE_FORMAT_DESCRIPTOR');
         expect('ctx.createImage(WebCL.MEM_READ_ONLY, { width: 4, height: 4, channelOrder: {} })').toThrow('INVALID_IMAGE_FORMAT_DESCRIPTOR');
         expect('ctx.createImage(WebCL.MEM_READ_ONLY, { width: 4, height: 4, channelOrder: [] })').toThrow('INVALID_IMAGE_FORMAT_DESCRIPTOR');
@@ -440,19 +402,16 @@ describe("Runtime", function() {
       });
 
       it("createImage(<invalid dimensions>) must throw", function() {
-        if (!suite.preconditions) pending();
         expect('ctx.createImage(WebCL.MEM_READ_ONLY, { width: 4, height: 0 })').toThrow('INVALID_IMAGE_SIZE');
         expect('ctx.createImage(WebCL.MEM_READ_ONLY, { width: 1024*1024, height: 1 })').toThrow('INVALID_IMAGE_SIZE');
       });
 
       it("createImage(<invalid rowPitch>) must throw", function() {
-        if (!suite.preconditions) pending();
         expect('ctx.createImage(WebCL.MEM_READ_ONLY, { width: 4, height: 4, rowPitch: 1 })').toThrow('INVALID_IMAGE_SIZE');
         expect('ctx.createImage(WebCL.MEM_READ_ONLY, { width: 4, height: 4, rowPitch: 15 }, new Uint8Array(4*4*4))').toThrow('INVALID_IMAGE_SIZE');
       });
 
       it("createImage(<invalid hostPtr>) must throw", function() {
-        if (!suite.preconditions) pending();
         fuzz('ctx.createImage', signature, valid, invalid, [2], 'INVALID_HOST_PTR');
         expect('ctx.createImage(WebCL.MEM_READ_ONLY, { width:1, height:1, channelType: WebCL.FLOAT }, new Uint8Array(15))').toThrow('INVALID_HOST_PTR');
         expect('ctx.createImage(WebCL.MEM_READ_ONLY, { width:4, height:4, rowPitch: 0 }, new Uint8Array(4*4*4-1))').toThrow('INVALID_HOST_PTR');
@@ -462,7 +421,6 @@ describe("Runtime", function() {
       });
 
       it("createImage(<invalid channelOrder>) must throw", function() {
-        if (!suite.preconditions) pending();
         expect('ctx.createImage(WebCL.MEM_READ_ONLY, { width: 4, height: 4, channelOrder: WebCL.RGBA })').not.toThrow();
         expect('ctx.createImage(WebCL.MEM_READ_ONLY, { width: 4, height: 4, channelOrder: WebCL.FLOAT })').toThrow('INVALID_IMAGE_FORMAT_DESCRIPTOR');
         expect('ctx.createImage(WebCL.MEM_READ_ONLY, { width: 4, height: 4, channelOrder: 0 })').toThrow('INVALID_IMAGE_FORMAT_DESCRIPTOR');
@@ -470,7 +428,6 @@ describe("Runtime", function() {
       });
 
       it("createImage(<invalid channelType>) must throw", function() {
-        if (!suite.preconditions) pending();
         expect('ctx.createImage(WebCL.MEM_READ_ONLY, { width: 4, height: 4, channelType: WebCL.FLOAT })').not.toThrow();
         expect('ctx.createImage(WebCL.MEM_READ_ONLY, { width: 4, height: 4, channelType: WebCL.RGBA })').toThrow('INVALID_IMAGE_FORMAT_DESCRIPTOR');
         expect('ctx.createImage(WebCL.MEM_READ_ONLY, { width: 4, height: 4, channelType: 0 })').toThrow('INVALID_IMAGE_FORMAT_DESCRIPTOR');
@@ -478,13 +435,11 @@ describe("Runtime", function() {
       });
 
       it("createImage(<invalid channelOrder/channelType combination>) must throw", function() {
-        if (!suite.preconditions) pending();
         invalidFormat = { width: 4, height: 4, channelOrder: WebCL.RGBA, channelType: WebCL.UNORM_SHORT_555 };
         expect('ctx.createImage(WebCL.MEM_READ_ONLY, invalidFormat)').toThrow('INVALID_IMAGE_FORMAT_DESCRIPTOR');
       });
 
       it("createImage(<unsupported image format>) must throw", function() {
-        if (!suite.preconditions) pending();
         unsupportedFormat = { width: 4, height: 4, channelOrder: WebCL.RGB, channelType: WebCL.UNORM_SHORT_555 };
         expect('ctx.createImage(WebCL.MEM_READ_ONLY, unsupportedFormat)').toThrow('IMAGE_FORMAT_NOT_SUPPORTED');
       });
@@ -502,7 +457,6 @@ describe("Runtime", function() {
       var invalid = [ 'WebCL.FALSE', 'WebCL.FILTER_NEAREST', 'WebCL.ADDRESS_CLAMP' ];
 
       it("createSampler(<valid arguments>) must not throw", function() {
-        if (!suite.preconditions) pending();
         expect('ctx.createSampler(true, WebCL.ADDRESS_CLAMP, WebCL.FILTER_NEAREST)').not.toThrow();
         expect('ctx.createSampler(true, WebCL.ADDRESS_CLAMP, WebCL.FILTER_LINEAR)').not.toThrow();
         expect('ctx.createSampler(true, WebCL.ADDRESS_CLAMP_TO_EDGE, WebCL.FILTER_NEAREST)').not.toThrow();
@@ -515,7 +469,6 @@ describe("Runtime", function() {
       });
 
       it("createSampler(<invalid arguments>) must throw", function() {
-        if (!suite.preconditions) pending();
         argc('ctx.createSampler', valid, 'WEBCL_SYNTAX_ERROR');
         fuzz('ctx.createSampler', signature, valid, invalid, [0, 1, 2], 'INVALID_VALUE');
         expect('ctx.createSampler(false, WebCL.ADDRESS_REPEAT, WebCL.FILTER_NEAREST)').toThrow('INVALID_VALUE');
@@ -531,13 +484,11 @@ describe("Runtime", function() {
     describe("createUserEvent", function() {
 
       it("createUserEvent() must work", function() {
-        if (!suite.preconditions) pending();
         expect('ctx.createUserEvent()').not.toThrow();
         expect('ctx.createUserEvent() instanceof WebCLUserEvent').toEvalAs(true);
       });
 
       it("createUserEvent(<invalid arguments) must throw", function() {
-        if (!suite.preconditions) pending();
         expect('ctx.createUserEvent(null)').toThrow('WEBCL_SYNTAX_ERROR');
       });
 
@@ -561,7 +512,6 @@ describe("Runtime", function() {
     }));
 
     it("getInfo(<validEnum>) must work", function() {
-      if (!suite.preconditions) pending();
       expect('sampler.getInfo(WebCL.SAMPLER_CONTEXT)').not.toThrow();
       expect('sampler.getInfo(WebCL.SAMPLER_NORMALIZED_COORDS)').not.toThrow();
       expect('sampler.getInfo(WebCL.SAMPLER_ADDRESSING_MODE)').not.toThrow();
@@ -573,7 +523,6 @@ describe("Runtime", function() {
     });
 
     it("getInfo(<invalid arguments>) must throw", function() {
-      if (!suite.preconditions) pending();
       argc('sampler.getInfo', valid, 'WEBCL_SYNTAX_ERROR');
       fuzz('sampler.getInfo', signature, valid, null, [0], 'INVALID_VALUE');
     });
@@ -609,7 +558,6 @@ describe("Runtime", function() {
         var invalid = [ 'WebCL.MEM_TYPE', 'size', 'size*2' ];
 
         it("createSubBuffer(<valid arguments>) must work", function() {
-          if (!suite.preconditions) pending();
           expect('buffer.createSubBuffer(WebCL.MEM_READ_ONLY, 0, 32)').not.toThrow();
           expect('buffer.createSubBuffer(WebCL.MEM_WRITE_ONLY, 0, 32)').not.toThrow();
           expect('buffer.createSubBuffer(WebCL.MEM_READ_WRITE, 0, 32)').not.toThrow();
@@ -618,13 +566,11 @@ describe("Runtime", function() {
         });
 
         it("createSubBuffer(<invalid arguments>) must throw", function() {
-          if (!suite.preconditions) pending();
           argc('buffer.createSubBuffer', valid, 'WEBCL_SYNTAX_ERROR');
           fuzz('buffer.createSubBuffer', signature, valid, invalid, [0, 1, 2], 'INVALID_VALUE');
         });
 
         it("createSubBuffer(<invalid origin/size>) must throw", function() {
-          if (!suite.preconditions) pending();
           expect('buffer.createSubBuffer(WebCL.MEM_READ_ONLY, size, 1)').toThrow('INVALID_VALUE');
           expect('buffer.createSubBuffer(WebCL.MEM_READ_ONLY, align, align+1)').toThrow('INVALID_VALUE');
           expect('buffer.createSubBuffer(WebCL.MEM_READ_ONLY, 0, size+1)').toThrow('INVALID_VALUE');
@@ -632,13 +578,11 @@ describe("Runtime", function() {
         });
 
         it("createSubBuffer() must throw if this buffer is already a sub-buffer", function() {
-          if (!suite.preconditions) pending();
           expect('subBuffer = buffer.createSubBuffer(WebCL.MEM_READ_WRITE, 0, 16)').not.toThrow();
           expect('subBuffer.createSubBuffer(WebCL.MEM_READ_WRITE, 0, 8)').toThrow('INVALID_MEM_OBJECT');
         });
 
         it("createSubBuffer() must throw if trying to upgrade read/write permissions", function() {
-          if (!suite.preconditions) pending();
           expect('readOnlyBuffer = ctx.createBuffer(WebCL.MEM_READ_ONLY, 1024)').not.toThrow();
           expect('writeOnlyBuffer = ctx.createBuffer(WebCL.MEM_WRITE_ONLY, 1024)').not.toThrow();
           expect('readOnlyBuffer.createSubBuffer(WebCL.MEM_READ_WRITE, 0, 16)').toThrow('INVALID_VALUE');
@@ -655,7 +599,6 @@ describe("Runtime", function() {
         var valid = [ 'WebCL.MEM_TYPE' ];
 
         it("getInfo(<validEnum>) must work on regular buffers", function() {
-          if (!suite.preconditions) pending();
           expect('buffer.getInfo(WebCL.MEM_TYPE)').not.toThrow();
           expect('buffer.getInfo(WebCL.MEM_FLAGS)').not.toThrow();
           expect('buffer.getInfo(WebCL.MEM_CONTEXT)').not.toThrow();
@@ -669,7 +612,6 @@ describe("Runtime", function() {
         });
 
         it("getInfo(<validEnum>) must work on sub-buffers", function() {
-          if (!suite.preconditions) pending();
           expect('subBuffer = buffer.createSubBuffer(WebCL.MEM_READ_ONLY, align, 32)').not.toThrow();
           expect('subBuffer.getInfo(WebCL.MEM_TYPE)').not.toThrow();
           expect('subBuffer.getInfo(WebCL.MEM_FLAGS)').not.toThrow();
@@ -684,7 +626,6 @@ describe("Runtime", function() {
         });
 
         it("getInfo(<invalid arguments>) must throw", function() {
-          if (!suite.preconditions) pending();
           argc('buffer.getInfo', valid, 'WEBCL_SYNTAX_ERROR');
           fuzz('buffer.getInfo', signature, valid, null, [0], 'INVALID_VALUE');
         });
@@ -709,7 +650,6 @@ describe("Runtime", function() {
       }));
 
       it("getInfo() must work", function() {
-        if (!suite.preconditions) pending();
         expect('image.getInfo()').not.toThrow();
         expect('image.getInfo() instanceof WebCLImageDescriptor').toEvalAs(true);
         expect('image.getInfo().width').toEvalAs('33');
@@ -720,7 +660,6 @@ describe("Runtime", function() {
       });
 
       it("getInfo() must work with non-default channelType (WebCL.FLOAT)", function() {
-        if (!suite.preconditions) pending();
         descriptor = { width: 19, height: 11, channelOrder: WebCL.RGBA, channelType: WebCL.FLOAT };
         expect('image1 = ctx.createImage(WebCL.MEM_READ_ONLY, descriptor)').not.toThrow();
         expect('image1.getInfo().width').toEvalAs('19');
@@ -731,7 +670,6 @@ describe("Runtime", function() {
       });
 
       it("getInfo() must work with non-default channelOrder (WebCL.A)", function() {
-        if (!suite.preconditions) pending();
         descriptor = { width: 11, height: 27, channelOrder: WebCL.A, channelType: WebCL.UNORM_INT8 };
         expect('image1 = ctx.createImage(WebCL.MEM_READ_ONLY, descriptor)').not.toThrow();
         expect('image1.getInfo().width').toEvalAs('11');
@@ -742,7 +680,6 @@ describe("Runtime", function() {
       });
 
       it("getInfo(<validEnum>) must work", function() {
-        if (!suite.preconditions) pending();
         expect('image.getInfo(WebCL.MEM_TYPE)').not.toThrow();
         expect('image.getInfo(WebCL.MEM_FLAGS)').not.toThrow();
         expect('image.getInfo(WebCL.MEM_CONTEXT)').not.toThrow();
@@ -756,7 +693,6 @@ describe("Runtime", function() {
       });
 
       it("getInfo(<invalid arguments>) must throw", function() {
-        if (!suite.preconditions) pending();
         argc('image.getInfo', valid, 'WEBCL_SYNTAX_ERROR');
         fuzz('image.getInfo', signature, valid, null, [0], 'INVALID_VALUE');
       });
@@ -788,7 +724,6 @@ describe("Runtime", function() {
       var valid = [ 'WebCL.PROGRAM_NUM_DEVICES' ];
 
       it("getInfo(<validEnum>) must work", function() {
-        if (!suite.preconditions) pending();
         expect('program.getInfo(WebCL.PROGRAM_NUM_DEVICES)').not.toThrow();
         expect('program.getInfo(WebCL.PROGRAM_DEVICES)').not.toThrow();
         expect('program.getInfo(WebCL.PROGRAM_CONTEXT)').not.toThrow();
@@ -801,7 +736,6 @@ describe("Runtime", function() {
       });
 
       it("getInfo(<invalid arguments>) must throw", function() {
-        if (!suite.preconditions) pending();
         argc('program.getInfo', valid, 'WEBCL_SYNTAX_ERROR');
         fuzz('program.getInfo', signature, valid, null, [0], 'INVALID_VALUE');
       });
@@ -819,7 +753,6 @@ describe("Runtime", function() {
       var invalid = [ 'device', '[program]', '{}' ];
 
       it("build(<validDeviceArray>) must not throw", function() {
-        if (!suite.preconditions) pending();
         expect('program.build()').not.toThrow();
         expect('program.build(undefined)').not.toThrow();
         expect('program.build(null)').not.toThrow();
@@ -827,7 +760,6 @@ describe("Runtime", function() {
       });
 
       it("build(<validBuildOption>) must not throw", function() {
-        if (!suite.preconditions) pending();
         expect('program.build(devices, undefined)').not.toThrow();
         expect('program.build(devices, null)').not.toThrow();
         [ '',
@@ -852,19 +784,16 @@ describe("Runtime", function() {
       });
 
       it("build(<multipleValidBuildOptions>) must not throw", function() {
-        if (!suite.preconditions) pending();
         expect('program.build(devices, "-cl-opt-disable -Werror")').not.toThrow();
       });
 
       it("build(<invalid arguments>) must throw", function() {
-        if (!suite.preconditions) pending();
         argc('program.build', valid, 'WEBCL_SYNTAX_ERROR');
         fuzz('program.build', signature, valid, invalid, [0], 'INVALID_VALUE');
         fuzz('program.build', signature, valid, invalid, [1], 'INVALID_BUILD_OPTIONS');
       });
 
       it("build(<invalid build options>) must throw", function() {
-        if (!suite.preconditions) pending();
         expect('program.build(devices, "-cl-std=CL1.1")').toThrow('INVALID_BUILD_OPTIONS');
         expect('program.build(devices, "-cl-std=CL1.2")').toThrow('INVALID_BUILD_OPTIONS');
         expect('program.build(devices, "-cl-kernel-arg-info")').toThrow('INVALID_BUILD_OPTIONS');
@@ -878,12 +807,10 @@ describe("Runtime", function() {
       });
 
       it("build(<invalid callback>) must throw", function() {
-        if (!suite.preconditions) pending();
         fuzz('program.build', signature, valid, invalid, [2], 'INVALID_VALUE');
       });
 
       it("must throw if program source is invalid", function() {
-        if (!suite.preconditions) pending();
         program = ctx.createProgram("obviously invalid");
         expect('program.build(devices)').toThrow('BUILD_PROGRAM_FAILURE');
       });
@@ -909,14 +836,12 @@ describe("Runtime", function() {
       var invalid = [ 'program', 'WebCL.PROGRAM_NUM_DEVICES' ];
 
       it("getBuildInfo(<validDevice>, <validEnum>) must work before build()", function() {
-        if (!suite.preconditions) pending();
         expect('program.getBuildInfo(device, WebCL.PROGRAM_BUILD_STATUS)').not.toThrow();
         expect('program.getBuildInfo(device, WebCL.PROGRAM_BUILD_OPTIONS)').not.toThrow();
         expect('program.getBuildInfo(device, WebCL.PROGRAM_BUILD_LOG)').not.toThrow();
       });
 
       it("getBuildInfo(<validDevice>, <validEnum>) must work after build()", function() {
-        if (!suite.preconditions) pending();
         expect('program.build(devices)').not.toThrow();
         expect('program.getBuildInfo(device, WebCL.PROGRAM_BUILD_STATUS)').not.toThrow();
         expect('program.getBuildInfo(device, WebCL.PROGRAM_BUILD_OPTIONS)').not.toThrow();
@@ -924,7 +849,6 @@ describe("Runtime", function() {
       });
 
       it("getBuildInfo(PROGRAM_BUILD_STATUS) must report the expected status", function() {
-        if (!suite.preconditions) pending();
         expect('program.getBuildInfo(device, WebCL.PROGRAM_BUILD_STATUS)').toEvalAs('WebCL.BUILD_NONE');
         expect('program.build(devices)').not.toThrow();
         expect('program.getBuildInfo(device, WebCL.PROGRAM_BUILD_STATUS)').toEvalAs('WebCL.BUILD_SUCCESS');
@@ -934,7 +858,6 @@ describe("Runtime", function() {
       });
 
       it("getBuildInfo(PROGRAM_BUILD_OPTIONS) must report the given build options", function() {
-        if (!suite.preconditions) pending();
         expect('program.build(devices)').not.toThrow();
         expect('program.getBuildInfo(device, WebCL.PROGRAM_BUILD_OPTIONS)').not.toThrow();
         expect('typeof program.getBuildInfo(device, WebCL.PROGRAM_BUILD_OPTIONS) === "string"').toEvalAs(true);
@@ -945,7 +868,6 @@ describe("Runtime", function() {
       });
 
       it("getBuildInfo(PROGRAM_BUILD_LOG) must report the expected build errors", function() {
-        if (!suite.preconditions) pending();
         program = ctx.createProgram("obviously invalid");
         expect('program.build(devices)').toThrow();
         expect('program.getBuildInfo(device, WebCL.PROGRAM_BUILD_LOG).length > 0').toEvalAs(true);
@@ -953,7 +875,6 @@ describe("Runtime", function() {
       });
         
       it("getBuildInfo(<invalid arguments>) must throw", function() {
-        if (!suite.preconditions) pending();
         argc('program.getBuildInfo', valid, 'WEBCL_SYNTAX_ERROR');
         fuzz('program.getBuildInfo', signature, valid, invalid, [0], 'INVALID_DEVICE');
         fuzz('program.getBuildInfo', signature, valid, invalid, [1], 'INVALID_VALUE');
@@ -971,7 +892,6 @@ describe("Runtime", function() {
       var valid = [ '"dummy"' ];
 
       it("createKernel*(<valid arguments>) must work", function() {
-        if (!suite.preconditions) pending();
         expect('program.build()').not.toThrow();
         expect('program.createKernel("dummy")').not.toThrow();
         expect('program.createKernel("dummy") instanceof WebCLKernel').toEvalAs(true);
@@ -981,7 +901,6 @@ describe("Runtime", function() {
       });
 
       it("createKernel*(<invalid arguments>) must throw", function() {
-        if (!suite.preconditions) pending();
         expect('program.build()').not.toThrow();
         argc('program.createKernel', valid, 'WEBCL_SYNTAX_ERROR');
         fuzz('program.createKernel', signature, valid, null, [0], 'INVALID_KERNEL_NAME');
@@ -989,7 +908,6 @@ describe("Runtime", function() {
       });
 
       it("createKernel*() must throw if the program has not been built successfully", function() {
-        if (!suite.preconditions) pending();
         expect('program.createKernel("dummy")').toThrow('INVALID_PROGRAM_EXECUTABLE');
         expect('program.createKernelsInProgram()').toThrow('INVALID_PROGRAM_EXECUTABLE');
         expect('program.build(null, "--invalid-option")').toThrow('INVALID_BUILD_OPTIONS');
@@ -1002,7 +920,6 @@ describe("Runtime", function() {
       });
 
       it("createKernel*() must throw if the most recent build was not successful", function() {
-        if (!suite.preconditions) pending();
         expect('program = ctx.createProgram("kernel void dummy(global uint* buf) { buf[0]=0xdeadbeef; }")').not.toThrow();
         expect('program.build()').not.toThrow();
         expect('program.build(null, "-D kernel=foo")').toThrow('BUILD_PROGRAM_FAILURE');
@@ -1011,7 +928,6 @@ describe("Runtime", function() {
       });
 
       it("build() must throw if kernels are already created", function() {
-        if (!suite.preconditions) pending();
         expect('program.build(devices)').not.toThrow();
         expect('program.createKernel("dummy")').not.toThrow();
         expect('program.build(devices)').toThrow('INVALID_OPERATION');
@@ -1050,7 +966,6 @@ describe("Runtime", function() {
       }));
 
       it("getInfo(<validEnum>) must work", function() {
-        if (!suite.preconditions) pending();
         expect('kernel.getInfo(WebCL.KERNEL_FUNCTION_NAME)').not.toThrow();
         expect('kernel.getInfo(WebCL.KERNEL_NUM_ARGS)').not.toThrow();
         expect('kernel.getInfo(WebCL.KERNEL_CONTEXT)').not.toThrow();
@@ -1062,7 +977,6 @@ describe("Runtime", function() {
       });
 
       it("getInfo(<invalid arguments) must throw", function() {
-        if (!suite.preconditions) pending();
         argc('kernel.getInfo', valid, 'WEBCL_SYNTAX_ERROR');
         fuzz('kernel.getInfo', signature, valid, null, [0], 'INVALID_VALUE');
       });
@@ -1088,7 +1002,6 @@ describe("Runtime", function() {
       }));
 
       it("getWorkGroupInfo(<validEnum>) must work", function() {
-        if (!suite.preconditions) pending();
         expect('kernel.getWorkGroupInfo(device, WebCL.KERNEL_WORK_GROUP_SIZE)').not.toThrow();
         expect('kernel.getWorkGroupInfo(device, WebCL.KERNEL_COMPILE_WORK_GROUP_SIZE)').not.toThrow();
         expect('kernel.getWorkGroupInfo(device, WebCL.KERNEL_LOCAL_MEM_SIZE)').not.toThrow();
@@ -1105,7 +1018,6 @@ describe("Runtime", function() {
       });
 
       it("getWorkGroupInfo(COMPILE_WORK_GROUP_SIZE) must report the expected reqd_work_group_size", function() {
-        if (!suite.preconditions) pending();
         program = ctx.createProgram("kernel __attribute__((reqd_work_group_size(4, 3, 2))) void dummy(global uint* buf) { buf[0]=0xdeadbeef; }");
         expect('program.build()').not.toThrow();
         expect('kernel = program.createKernel("dummy")').not.toThrow();
@@ -1117,7 +1029,6 @@ describe("Runtime", function() {
       });
 
       it("getWorkGroupInfo(<invalid arguments>) must throw", function() {
-        if (!suite.preconditions) pending();
         argc('kernel.getWorkGroupInfo', valid, 'WEBCL_SYNTAX_ERROR');
         fuzz('kernel.getWorkGroupInfo', signature, valid, null, [0], 'INVALID_DEVICE');
         fuzz('kernel.getWorkGroupInfo', signature, valid, null, [1], 'INVALID_VALUE');
@@ -1143,18 +1054,15 @@ describe("Runtime", function() {
         kernelWithLocalArgs = program.createKernel('localmem');
       }));
 
-      it("setArg(index, clObject) must work if clObject matches the expected type", function(done) {
-        if (!suite.preconditions) pending();
+      it("setArg(index, clObject) must work if clObject matches the expected type", function() {
         expect('kernelWithMemArgs instanceof WebCLKernel').toEvalAs(true);
         expect('kernelWithMemArgs.setArg(0, buffer)').not.toThrow();
         expect('kernelWithMemArgs.setArg(1, image)').not.toThrow();
         expect('kernelWithMemArgs.setArg(2, image)').not.toThrow();
         expect('kernelWithMemArgs.setArg(3, sampler)').not.toThrow();
-        done();
       });
 
-      it("setArg(index, value) must work if value matches the expected scalar type", function(done) {
-        if (!suite.preconditions) pending();
+      it("setArg(index, value) must work if value matches the expected scalar type", function() {
         expect('kernelWithScalarArgs instanceof WebCLKernel').toEvalAs(true);
         expect('kernelWithScalarArgs.setArg(1, new Int8Array(1))').not.toThrow();    // char
         expect('kernelWithScalarArgs.setArg(2, new Int16Array(1))').not.toThrow();   // short
@@ -1165,11 +1073,9 @@ describe("Runtime", function() {
         expect('kernelWithScalarArgs.setArg(7, new Uint32Array(1))').not.toThrow();  // uint
         expect('kernelWithScalarArgs.setArg(8, new Uint32Array(2))').not.toThrow();  // ulong
         expect('kernelWithScalarArgs.setArg(9, new Float32Array(1))').not.toThrow(); // float
-        done();
       });
 
-      it("setArg(index, value) must work if value matches the expected vector type", function(done) {
-        if (!suite.preconditions) pending();
+      it("setArg(index, value) must work if value matches the expected vector type", function() {
         expect('kernelWithVectorArgs instanceof WebCLKernel').toEvalAs(true);
         expect('kernelWithVectorArgs.setArg(1, new Int8Array(4))').not.toThrow();    // char4
         expect('kernelWithVectorArgs.setArg(2, new Int16Array(4))').not.toThrow();   // short4
@@ -1180,18 +1086,14 @@ describe("Runtime", function() {
         expect('kernelWithVectorArgs.setArg(7, new Uint32Array(4))').not.toThrow();  // uint4
         expect('kernelWithVectorArgs.setArg(8, new Uint32Array(8))').not.toThrow();  // ulong4
         expect('kernelWithVectorArgs.setArg(9, new Float32Array(4))').not.toThrow(); // float4
-        done();
       });
 
-      it("setArg(index, value) must work if a local memory size is passed in using Uint32Array of length 1", function(done) {
-        if (!suite.preconditions) pending();
+      it("setArg(index, value) must work if a local memory size is passed in using Uint32Array of length 1", function() {
         expect('kernelWithLocalArgs instanceof WebCLKernel').toEvalAs(true);
         expect('kernelWithLocalArgs.setArg(1, new Uint32Array([10]))').not.toThrow();
-        done();
       });
 
-      it("setArg(<invalid arguments>) must throw", function(done) {
-        if (!suite.preconditions) pending();
+      it("setArg(<invalid arguments>) must throw", function() {
         var signature = [ 'Uint', 'Array' ];
         var valid = [ '0', 'new Int8Array(1)' ];
         var invalid = [ '10', '0xdeadbeef' ]; 
@@ -1199,21 +1101,17 @@ describe("Runtime", function() {
         argc('kernelWithScalarArgs.setArg', valid, 'WEBCL_SYNTAX_ERROR');
         fuzz("kernelWithScalarArgs.setArg", signature, valid, invalid, [0], "INVALID_ARG_INDEX");
         fuzz("kernelWithScalarArgs.setArg", signature, valid, invalid, [1], "INVALID_ARG_VALUE");
-        done();
       });
 
-      it("setArg(<buffer from another context>) must throw", function(done) {
-        if (!suite.preconditions) pending();
+      it("setArg(<buffer from another context>) must throw", function() {
         expect('kernelWithMemArgs instanceof WebCLKernel').toEvalAs(true);
         expect('ctx2 = createContext()').not.toThrow();
         expect('queue2 = ctx2.createCommandQueue()').not.toThrow();
         expect('bufferFromAnotherContext = ctx2.createBuffer(WebCL.MEM_READ_WRITE, 1024)').not.toThrow();
         expect('kernelWithMemArgs.setArg(0, bufferFromAnotherContext)').toThrow('INVALID_CONTEXT');
-        done();
       });
 
-      it("setArg(index, clObject) must throw if clObject does not match the expected type (CRITICAL)", function(done) {
-        if (!suite.preconditions) pending();
+      it("setArg(index, clObject) must throw if clObject does not match the expected type (CRITICAL)", function() {
         expect('kernelWithMemArgs instanceof WebCLKernel').toEvalAs(true);
         expect('kernelWithMemArgs.setArg(0, image)').toThrow();
         expect('kernelWithMemArgs.setArg(0, sampler)').toThrow();
@@ -1223,11 +1121,9 @@ describe("Runtime", function() {
         expect('kernelWithMemArgs.setArg(2, sampler)').toThrow();
         expect('kernelWithMemArgs.setArg(3, buffer)').toThrow();
         expect('kernelWithMemArgs.setArg(3, image)').toThrow();
-        done();
       });
 
-      xit("setArg(index, clObject) must throw if an arbitrary integer is passed in (CRITICAL)", function(done) {
-        if (!suite.preconditions) pending();
+      xit("setArg(index, clObject) must throw if an arbitrary integer is passed in (CRITICAL)", function() {
         expect('kernelWithMemArgs instanceof WebCLKernel').toEvalAs(true);
         expect('kernelWithMemArgs.setArg(0, new Uint32Array(1))').toThrow('INVALID_MEM_OBJECT'); // global uint* expected
         expect('kernelWithMemArgs.setArg(0, new Uint32Array(2))').toThrow('INVALID_MEM_OBJECT'); // global uint* expected
@@ -1237,11 +1133,9 @@ describe("Runtime", function() {
         expect('kernelWithMemArgs.setArg(2, new Uint32Array(2))').toThrow('INVALID_MEM_OBJECT'); // write_only image2d_t expected
         expect('kernelWithMemArgs.setArg(3, new Uint32Array(1))').toThrow('INVALID_SAMPLER');    // sampler_t expected
         expect('kernelWithMemArgs.setArg(3, new Uint32Array(2))').toThrow('INVALID_SAMPLER');    // sampler_t expected
-        done();
       });
 
-      it("setArg(index, value) must throw if value is not an ArrayBufferView (CRITICAL)", function(done) {
-        if (!suite.preconditions) pending();
+      it("setArg(index, value) must throw if value is not an ArrayBufferView (CRITICAL)", function() {
         expect('kernelWithScalarArgs instanceof WebCLKernel').toEvalAs(true);
         expect('kernelWithScalarArgs.setArg(3, new ArrayBuffer(4))').toThrow('INVALID_ARG_VALUE'); // int expected
         expect('kernelWithScalarArgs.setArg(4, new ArrayBuffer(8))').toThrow('INVALID_ARG_VALUE'); // long expected
@@ -1259,11 +1153,9 @@ describe("Runtime", function() {
         expect('kernelWithScalarArgs.setArg(4, sampler)').toThrow('INVALID_ARG_VALUE');
         expect('kernelWithScalarArgs.setArg(3, kernelWithScalarArgs)').toThrow('INVALID_ARG_VALUE');
         expect('kernelWithScalarArgs.setArg(4, kernelWithScalarArgs)').toThrow('INVALID_ARG_VALUE');
-        done();
       });
 
-      it("setArg(index, value) must throw if value does not match the expected scalar size", function(done) {
-        if (!suite.preconditions) pending();
+      it("setArg(index, value) must throw if value does not match the expected scalar size", function() {
         expect('kernelWithScalarArgs instanceof WebCLKernel').toEvalAs(true);
         expect('kernelWithScalarArgs.setArg(1, new Int8Array(0))').toThrow('INVALID_ARG_SIZE');    // char
         expect('kernelWithScalarArgs.setArg(1, new Int8Array(2))').toThrow('INVALID_ARG_SIZE');    // char
@@ -1277,11 +1169,9 @@ describe("Runtime", function() {
         expect('kernelWithScalarArgs.setArg(8, new Uint32Array(1))').toThrow('INVALID_ARG_SIZE');  // ulong
         expect('kernelWithScalarArgs.setArg(8, new Uint32Array(1))').toThrow('INVALID_ARG_SIZE');  // ulong
         expect('kernelWithScalarArgs.setArg(9, new Float32Array(2))').toThrow('INVALID_ARG_SIZE'); // float
-        done();
       });
 
-      it("setArg(index, value) must throw if value does not match the expected vector size", function(done) {
-        if (!suite.preconditions) pending();
+      it("setArg(index, value) must throw if value does not match the expected vector size", function() {
         expect('kernelWithVectorArgs instanceof WebCLKernel').toEvalAs(true);
         expect('kernelWithVectorArgs.setArg(1, new Int8Array(0))').toThrow('INVALID_ARG_SIZE');    // char4
         expect('kernelWithVectorArgs.setArg(2, new Int16Array(3))').toThrow('INVALID_ARG_SIZE');   // short4
@@ -1293,11 +1183,9 @@ describe("Runtime", function() {
         expect('kernelWithVectorArgs.setArg(8, new Uint32Array(4))').toThrow('INVALID_ARG_SIZE');  // ulong4
         expect('kernelWithVectorArgs.setArg(8, new Uint32Array(16))').toThrow('INVALID_ARG_SIZE'); // ulong4
         expect('kernelWithVectorArgs.setArg(9, new Float32Array(8))').toThrow('INVALID_ARG_SIZE'); // float4
-        done();
       });
 
-      it("setArg(index, value) must throw if value type is wrong, even if the size is right", function(done) {
-        if (!suite.preconditions) pending();
+      it("setArg(index, value) must throw if value type is wrong, even if the size is right", function() {
         expect('kernelWithScalarArgs instanceof WebCLKernel').toEvalAs(true);
         expect('kernelWithScalarArgs.setArg(1, new Uint8Array(1))').toThrow('INVALID_ARG_VALUE');    // char
         expect('kernelWithScalarArgs.setArg(2, new Uint16Array(1))').toThrow('INVALID_ARG_VALUE');   // short
@@ -1310,11 +1198,9 @@ describe("Runtime", function() {
         expect('kernelWithScalarArgs.setArg(3, new Int8Array(4))').toThrow('INVALID_ARG_VALUE');     // int
         expect('kernelWithScalarArgs.setArg(3, new Float32Array(1))').toThrow('INVALID_ARG_VALUE');  // int
         expect('kernelWithScalarArgs.setArg(4, new Float32Array(2))').toThrow('INVALID_ARG_VALUE');  // long
-        done();
       });
 
-      it("setArg(index, value) must throw if a local memory size is passed in using anything but Uint32Array of length 1", function(done) {
-        if (!suite.preconditions) pending();
+      it("setArg(index, value) must throw if a local memory size is passed in using anything but Uint32Array of length 1", function() {
         expect('kernelWithLocalArgs instanceof WebCLKernel').toEvalAs(true);
         expect('kernelWithLocalArgs.setArg(1, new Int32Array(1))').toThrow();
         expect('kernelWithLocalArgs.setArg(1, new Uint16Array(2))').toThrow();
@@ -1328,14 +1214,11 @@ describe("Runtime", function() {
         expect('kernelWithLocalArgs.setArg(1, image)').toThrow();
         expect('kernelWithLocalArgs.setArg(1, sampler)').toThrow();
         expect('kernelWithLocalArgs.setArg(1, kernel)').toThrow();
-        done();
       });
 
-      it("setArg(index, value) must throw if attempting to set local memory size to zero", function(done) {
-        if (!suite.preconditions) pending();
+      it("setArg(index, value) must throw if attempting to set local memory size to zero", function() {
         expect('kernelWithLocalArgs instanceof WebCLKernel').toEvalAs(true);
         expect('kernelWithLocalArgs.setArg(1, new Uint32Array([0]))').toThrow('INVALID_ARG_SIZE');
-        done();
       });
 
     });
@@ -1365,7 +1248,6 @@ describe("Runtime", function() {
       var valid = [ 'WebCL.QUEUE_PROPERTIES' ];
 
       it("getInfo(<validEnum>) must work", function() {
-        if (!suite.preconditions) pending();
         expect('queue.getInfo(WebCL.QUEUE_CONTEXT)').not.toThrow();
         expect('queue.getInfo(WebCL.QUEUE_DEVICE)').not.toThrow();
         expect('queue.getInfo(WebCL.QUEUE_PROPERTIES)').not.toThrow();
@@ -1375,7 +1257,6 @@ describe("Runtime", function() {
       });
 
       it("getInfo(<invalidEnum>) must throw", function() {
-        if (!suite.preconditions) pending();
         argc('queue.getInfo', valid, 'WEBCL_SYNTAX_ERROR');
         fuzz('queue.getInfo', signature, valid, null, [0], 'INVALID_VALUE');
       });
@@ -1419,7 +1300,6 @@ describe("Runtime", function() {
       describe("enqueueReadBuffer", function() {
 
         it("enqueueReadBuffer(<valid arguments>) must work", function() {
-          if (!suite.preconditions) pending();
           expect('queue.enqueueReadBuffer(buffer, true, 0, numBytes, hostPtr)').not.toThrow();
           expect('queue.enqueueReadBuffer(buffer, true, 0, numBytes, hostPtr32f)').not.toThrow();
           expect('queue.enqueueReadBuffer(buffer, true, 1, numBytes-1, hostPtr)').not.toThrow();
@@ -1429,7 +1309,6 @@ describe("Runtime", function() {
         });
 
         it("enqueueReadBuffer(<invalid arguments>) must throw", function() {
-          if (!suite.preconditions) pending();
           argc('queue.enqueueReadBuffer', valid, 'WEBCL_SYNTAX_ERROR');
           fuzz('queue.enqueueReadBuffer', signature, valid, null, [0], 'INVALID_MEM_OBJECT');
           fuzz('queue.enqueueReadBuffer', signature, valid, null, [1, 2, 3, 4], 'INVALID_VALUE');
@@ -1438,31 +1317,26 @@ describe("Runtime", function() {
         });
 
         it("enqueueReadBuffer(<invalid buffer>) must throw", function() {
-          if (!suite.preconditions) pending();
           expect('queue.enqueueReadBuffer(image, true, 0, 32, hostPtr)').toThrow('INVALID_MEM_OBJECT');
         });
 
         it("enqueueReadBuffer(<buffer from another context>) must throw", function() {
-          if (!suite.preconditions) pending();
           ctx2 = createContext();
           queue2 = ctx2.createCommandQueue();
           expect('queue2.enqueueReadBuffer(buffer, true, 0, numBytes, hostPtr)').toThrow('INVALID_CONTEXT');
         });
 
         it("enqueueReadBuffer(<invalid numBytes>) must throw", function() {
-          if (!suite.preconditions) pending();
           expect('queue.enqueueReadBuffer(buffer, true, 0, numBytes-1, hostPtr32f)').toThrow('INVALID_VALUE');
         });
 
         it("enqueueReadBuffer(<buffer region out of bounds>) must throw", function() {
-          if (!suite.preconditions) pending();
           expect('queue.enqueueReadBuffer(buffer, true, 1, numBytes, hostPtr)').toThrow('INVALID_VALUE');
           expect('queue.enqueueReadBuffer(buffer, true, numBytes, 1, hostPtr)').toThrow('INVALID_VALUE');
           expect('queue.enqueueReadBuffer(buffer, true, numBytes-1, 2, hostPtr)').toThrow('INVALID_VALUE');
         });
 
         it("enqueueReadBuffer(<hostPtr region out of bounds>) must throw", function() {
-          if (!suite.preconditions) pending();
           expect('queue.enqueueReadBuffer(buffer, true, 0, numBytes, hostPtr.subarray(0,-1))').toThrow('INVALID_VALUE');
           expect('queue.enqueueReadBuffer(buffer, true, 0, 1, new Uint8Array(0))').toThrow('INVALID_VALUE');
         });
@@ -1474,7 +1348,6 @@ describe("Runtime", function() {
       describe("enqueueWriteBuffer", function() {
 
         it("enqueueWriteBuffer(<valid arguments>) must work", function() {
-          if (!suite.preconditions) pending();
           expect('queue.enqueueWriteBuffer(buffer, true, 0, numBytes, hostPtr)').not.toThrow();
           expect('queue.enqueueWriteBuffer(buffer, true, 0, numBytes, hostPtr32f)').not.toThrow();
           expect('queue.enqueueWriteBuffer(buffer, true, 1, numBytes-1, hostPtr)').not.toThrow();
@@ -1484,7 +1357,6 @@ describe("Runtime", function() {
         });
 
         it("enqueueWriteBuffer(<invalid arguments>) must throw", function() {
-          if (!suite.preconditions) pending();
           argc('queue.enqueueWriteBuffer', valid, 'WEBCL_SYNTAX_ERROR');
           fuzz('queue.enqueueWriteBuffer', signature, valid, null, [0], 'INVALID_MEM_OBJECT');
           fuzz('queue.enqueueWriteBuffer', signature, valid, null, [1, 2, 3, 4], 'INVALID_VALUE');
@@ -1493,31 +1365,26 @@ describe("Runtime", function() {
         });
 
         it("enqueueWriteBuffer(<invalid buffer>) must throw", function() {
-          if (!suite.preconditions) pending();
           expect('queue.enqueueWriteBuffer(image, true, 0, 32, hostPtr)').toThrow('INVALID_MEM_OBJECT');
         });
 
         it("enqueueWriteBuffer(<buffer from another context>) must throw", function() {
-          if (!suite.preconditions) pending();
           ctx2 = createContext();
           queue2 = ctx2.createCommandQueue();
           expect('queue2.enqueueWriteBuffer(buffer, true, 0, numBytes, hostPtr)').toThrow('INVALID_CONTEXT');
         });
 
         it("enqueueWriteBuffer(<invalid numBytes>) must throw", function() {
-          if (!suite.preconditions) pending();
           expect('queue.enqueueWriteBuffer(buffer, true, 0, numBytes-1, hostPtr32f)').toThrow('INVALID_VALUE');
         });
 
         it("enqueueWriteBuffer(<buffer region out of bounds>) must throw", function() {
-          if (!suite.preconditions) pending();
           expect('queue.enqueueWriteBuffer(buffer, true, 1, numBytes, hostPtr)').toThrow('INVALID_VALUE');
           expect('queue.enqueueWriteBuffer(buffer, true, numBytes, 1, hostPtr)').toThrow('INVALID_VALUE');
           expect('queue.enqueueWriteBuffer(buffer, true, numBytes-1, 2, hostPtr)').toThrow('INVALID_VALUE');
         });
 
         it("enqueueWriteBuffer(<hostPtr region out of bounds>) must throw", function() {
-          if (!suite.preconditions) pending();
           expect('queue.enqueueWriteBuffer(buffer, true, 0, numBytes, hostPtr.subarray(0,-1))').toThrow('INVALID_VALUE');
           expect('queue.enqueueWriteBuffer(buffer, true, 0, 1, new Uint8Array(0))').toThrow('INVALID_VALUE');
         });
@@ -1553,12 +1420,10 @@ describe("Runtime", function() {
         }));
 
         it("enqueueCopyBuffer(<valid arguments>) must work", function() {
-          if (!suite.preconditions) pending();
           expect('queue.enqueueCopyBuffer(buffer1, buffer2, 0, 0, numBytes)').not.toThrow();
         });
 
         it("enqueueCopyBuffer(<invalid arguments>) must throw", function() {
-          if (!suite.preconditions) pending();
           argc('queue.enqueueCopyBuffer', valid, 'WEBCL_SYNTAX_ERROR');
           fuzz('queue.enqueueCopyBuffer', signature, valid, null, [0, 1], 'INVALID_MEM_OBJECT');
           fuzz('queue.enqueueCopyBuffer', signature, valid, null, [2, 3, 4], 'INVALID_VALUE');
@@ -1602,12 +1467,10 @@ describe("Runtime", function() {
         }));
 
         it("enqueueCopyBufferRect(<valid arguments>) must work", function() {
-          if (!suite.preconditions) pending();
           expect('queue.enqueueCopyBufferRect(buffer1, buffer2, [0,0,0], [0,0,0], [32,32,1], 0, 0, 0, 0)').not.toThrow();
         });
 
         it("enqueueCopyBufferRect(<invalid arguments>) must throw", function() {
-          if (!suite.preconditions) pending();
           argc('queue.enqueueCopyBufferRect', valid, 'WEBCL_SYNTAX_ERROR');
           fuzz('queue.enqueueCopyBufferRect', signature, valid, null, [0, 1], 'INVALID_MEM_OBJECT');
           fuzz('queue.enqueueCopyBufferRect', signature, valid, null, [2, 3, 4, 5, 6, 7, 8], 'INVALID_VALUE');
@@ -1669,7 +1532,6 @@ describe("Runtime", function() {
       describe("enqueueReadImage", function() {
 
         it("enqueueReadImage(<valid arguments>) must work with RGBA8", function() {
-          if (!suite.preconditions) pending();
           expect('queue.enqueueReadImage(image, true, [0, 0], [W, H], 0, pixels)').not.toThrow();
           expect('queue.enqueueReadImage(image, true, [0, 0], [W, H], bytesPerRow, pixels)').not.toThrow();
           expect('queue.enqueueReadImage(image, true, [0, 0], [W, H], bytesPerRow, pixels)').not.toThrow();
@@ -1680,7 +1542,6 @@ describe("Runtime", function() {
         });
 
         it("enqueueReadImage(<valid arguments>) must work with RGBAf32", function() {
-          if (!suite.preconditions) pending();
           expect('queue.enqueueReadImage(imagef32, true, [0, 0], [W, H], 0, pixelsf32)').not.toThrow();
           expect('queue.enqueueReadImage(imagef32, true, [0, 0], [W, H], bytesPerRowf32, pixelsf32)').not.toThrow();
           expect('queue.enqueueReadImage(imagef32, true, [0, 0], [W, H], bytesPerRowf32, pixelsf32)').not.toThrow();
@@ -1688,7 +1549,6 @@ describe("Runtime", function() {
         });
 
         it("enqueueReadImage(<valid arguments>) must return the expected data", function() {
-          if (!suite.preconditions) pending();
           results = new Uint8Array(W*H*C);
           expect('queue.enqueueReadImage(image, true, [0, 0], [W, H], 0, results)').not.toThrow();
           expect('results[0]').toEvalTo(0xfc);
@@ -1696,7 +1556,6 @@ describe("Runtime", function() {
         });
 
         it("enqueueReadImage(<invalid arguments>) must throw", function() {
-          if (!suite.preconditions) pending();
           argc('queue.enqueueReadImage', valid, 'WEBCL_SYNTAX_ERROR');
           fuzz('queue.enqueueReadImage', signature, valid, null, [0], 'INVALID_MEM_OBJECT');
           fuzz('queue.enqueueReadImage', signature, valid, null, [1, 2, 3, 4, 5], 'INVALID_VALUE');
@@ -1705,19 +1564,16 @@ describe("Runtime", function() {
         });
 
         it("enqueueReadImage(<invalid image>) must throw", function() {
-          if (!suite.preconditions) pending(); 
           expect('queue.enqueueReadImage(buffer, true, [0,0], [W, H], 0, pixels)').toThrow('INVALID_MEM_OBJECT');
         });
 
         it("enqueueReadImage(<image from another context>) must throw", function() {
-          if (!suite.preconditions) pending();
           ctx2 = createContext();
           queue2 = ctx2.createCommandQueue();
           expect('queue2.enqueueReadImage(image, true, [0,0], [W, H], 0, pixels)').toThrow('INVALID_CONTEXT');
         });
 
         it("enqueueReadImage(<invalid origin>) must throw", function() {
-          if (!suite.preconditions) pending();
           expect('queue.enqueueReadImage(image, true, [0], [W, H], 0, pixels)').toThrow('INVALID_VALUE');
           expect('queue.enqueueReadImage(image, true, [0, 0, 0], [W, H], 0, pixels)').toThrow('INVALID_VALUE');
           expect('queue.enqueueReadImage(image, true, [0, null], [W, H], 0, pixels)').toThrow('INVALID_VALUE');
@@ -1726,7 +1582,6 @@ describe("Runtime", function() {
         });
 
         it("enqueueReadImage(<invalid region>) must throw", function() {
-          if (!suite.preconditions) pending();
           fuzz('queue.enqueueReadImage', signature, valid, null, [3], 'INVALID_VALUE');
           expect('queue.enqueueReadImage(image, true, [0,0], [W], 0, pixels)').toThrow('INVALID_VALUE');
           expect('queue.enqueueReadImage(image, true, [0,0], [W, H, 1], 0, pixels)').toThrow('INVALID_VALUE');
@@ -1736,19 +1591,16 @@ describe("Runtime", function() {
         });
 
         it("enqueueReadImage(<invalid hostRowPitch>) must throw", function() {
-          if (!suite.preconditions) pending();
           fuzz('queue.enqueueReadImage', signature, valid, null, [4], 'INVALID_VALUE');
           expect('queue.enqueueReadImage(image, true, [0,0], [W, H], bytesPerRow-1, pixels)').toThrow('INVALID_VALUE');
           expect('queue.enqueueReadImage(image, true, [0,0], [W, H], bytesPerRow+1, new Uint16Array(2*W*H*C))').toThrow('INVALID_VALUE');
         });
 
         it("enqueueReadImage(<invalid hostPtr>) must throw", function() {
-          if (!suite.preconditions) pending();
           expect('queue.enqueueReadImage(image, true, [0,0], [W, H], 0, new Uint8Array(2))').toThrow('INVALID_VALUE');
         });
 
         it("enqueueReadImage(<image region out-of-bounds>) must throw", function() {
-          if (!suite.preconditions) pending();
           expect('queue.enqueueReadImage(image, true, [0,0], [W+1, 1], 0, pixels)').toThrow('INVALID_VALUE');
           expect('queue.enqueueReadImage(image, true, [0,0], [1, H+1], 0, pixels)').toThrow('INVALID_VALUE');
           expect('queue.enqueueReadImage(image, true, [1,0], [W, 1], 0, pixels)').toThrow('INVALID_VALUE');
@@ -1758,7 +1610,6 @@ describe("Runtime", function() {
         });
 
         it("enqueueReadImage(<hostPtr region out-of-bounds>) must throw", function() {
-          if (!suite.preconditions) pending();
           expect('queue.enqueueReadImage(image, true, [0,0], [W, H], 0, pixels.subarray(0,-2))').toThrow('INVALID_VALUE');
           expect('queue.enqueueReadImage(image, true, [0,0], [1, 1], 0, pixels.subarray(0, 3))').toThrow('INVALID_VALUE');
         });
@@ -1770,7 +1621,6 @@ describe("Runtime", function() {
       describe("enqueueWriteImage", function() {
 
         it("enqueueWriteImage(<valid arguments>) must work with RGBA8", function() {
-          if (!suite.preconditions) pending();
           expect('queue.enqueueWriteImage(image, true, [0, 0], [W, H], 0, pixels)').not.toThrow();
           expect('queue.enqueueWriteImage(image, true, [0, 0], [W, H], bytesPerRow, pixels)').not.toThrow();
           expect('queue.enqueueWriteImage(image, true, [0, 0], [W, H], bytesPerRow, pixels)').not.toThrow();
@@ -1781,7 +1631,6 @@ describe("Runtime", function() {
         });
 
         it("enqueueWriteImage(<valid arguments>) must work with RGBAf32", function() {
-          if (!suite.preconditions) pending();
           expect('queue.enqueueWriteImage(imagef32, true, [0, 0], [W, H], 0, pixelsf32)').not.toThrow();
           expect('queue.enqueueWriteImage(imagef32, true, [0, 0], [W, H], bytesPerRowf32, pixelsf32)').not.toThrow();
           expect('queue.enqueueWriteImage(imagef32, true, [0, 0], [W, H], bytesPerRowf32, pixelsf32)').not.toThrow();
@@ -1789,7 +1638,6 @@ describe("Runtime", function() {
         });
 
         it("enqueueWriteImage(<valid arguments>) must really write the given data", function() {
-          if (!suite.preconditions) pending();
           results = new Uint8Array(W*H*C);
           pixels[5] = 0xce;
           pixels[95] = 0xec;
@@ -1800,7 +1648,6 @@ describe("Runtime", function() {
         });
 
         it("enqueueWriteImage(<invalid arguments>) must throw", function() {
-          if (!suite.preconditions) pending();
           argc('queue.enqueueWriteImage', valid, 'WEBCL_SYNTAX_ERROR');
           fuzz('queue.enqueueWriteImage', signature, valid, null, [0], 'INVALID_MEM_OBJECT');
           fuzz('queue.enqueueWriteImage', signature, valid, null, [1, 2, 3, 4, 5], 'INVALID_VALUE');
@@ -1809,19 +1656,16 @@ describe("Runtime", function() {
         });
 
         it("enqueueWriteImage(<invalid image>) must throw", function() {
-          if (!suite.preconditions) pending(); 
           expect('queue.enqueueWriteImage(buffer, true, [0,0], [W, H], 0, pixels)').toThrow('INVALID_MEM_OBJECT');
         });
 
         it("enqueueWriteImage(<image from another context>) must throw", function() {
-          if (!suite.preconditions) pending();
           ctx2 = createContext();
           queue2 = ctx2.createCommandQueue();
           expect('queue2.enqueueWriteImage(image, true, [0,0], [W, H], 0, pixels)').toThrow('INVALID_CONTEXT');
         });
 
         it("enqueueWriteImage(<invalid origin>) must throw", function() {
-          if (!suite.preconditions) pending();
           expect('queue.enqueueWriteImage(image, true, [0], [W, H], 0, pixels)').toThrow('INVALID_VALUE');
           expect('queue.enqueueWriteImage(image, true, [0, 0, 0], [W, H], 0, pixels)').toThrow('INVALID_VALUE');
           expect('queue.enqueueWriteImage(image, true, [0, null], [W, H], 0, pixels)').toThrow('INVALID_VALUE');
@@ -1830,7 +1674,6 @@ describe("Runtime", function() {
         });
 
         it("enqueueWriteImage(<invalid region>) must throw", function() {
-          if (!suite.preconditions) pending();
           expect('queue.enqueueWriteImage(image, true, [0,0], [W], 0, pixels)').toThrow('INVALID_VALUE');
           expect('queue.enqueueWriteImage(image, true, [0,0], [W, H, 1], 0, pixels)').toThrow('INVALID_VALUE');
           expect('queue.enqueueWriteImage(image, true, [0,0], [W, null], 0, pixels)').toThrow('INVALID_VALUE');
@@ -1839,18 +1682,15 @@ describe("Runtime", function() {
         });
 
         it("enqueueWriteImage(<invalid hostRowPitch>) must throw", function() {
-          if (!suite.preconditions) pending();
           expect('queue.enqueueWriteImage(image, true, [0,0], [W, H], bytesPerRow-1, pixels)').toThrow('INVALID_VALUE');
           expect('queue.enqueueWriteImage(image, true, [0,0], [W, H], bytesPerRow+1, new Uint16Array(2*W*H*C))').toThrow('INVALID_VALUE');
         });
 
         it("enqueueWriteImage(<invalid hostPtr>) must throw", function() {
-          if (!suite.preconditions) pending();
           expect('queue.enqueueWriteImage(image, true, [0,0], [W, H], 0, new Uint8Array(2))').toThrow('INVALID_VALUE');
         });
 
         it("enqueueWriteImage(<image region out-of-bounds>) must throw", function() {
-          if (!suite.preconditions) pending();
           expect('queue.enqueueWriteImage(image, true, [0,0], [W+1, 1], 0, pixels)').toThrow('INVALID_VALUE');
           expect('queue.enqueueWriteImage(image, true, [0,0], [1, H+1], 0, pixels)').toThrow('INVALID_VALUE');
           expect('queue.enqueueWriteImage(image, true, [1,0], [W, 1], 0, pixels)').toThrow('INVALID_VALUE');
@@ -1860,7 +1700,6 @@ describe("Runtime", function() {
         });
 
         it("enqueueWriteImage(<hostPtr region out-of-bounds>) must throw", function() {
-          if (!suite.preconditions) pending();
           expect('queue.enqueueWriteImage(image, true, [0,0], [W, H], 0, pixels.subarray(0,-2))').toThrow('INVALID_VALUE');
           expect('queue.enqueueWriteImage(image, true, [0,0], [1, 1], 0, pixels.subarray(0, 3))').toThrow('INVALID_VALUE');
         });
@@ -1906,12 +1745,10 @@ describe("Runtime", function() {
         }));
 
         it("enqueueCopyImage(<valid arguments>) must work", function() {
-          if (!suite.preconditions) pending();
           expect('queue.enqueueCopyImage(image1, image2, [0,0], [0,0], [W,H])').not.toThrow();
         });
 
         it("enqueueCopyImage(<invalid arguments>) must throw", function() {
-          if (!suite.preconditions) pending();
           argc('queue.enqueueCopyImage', valid, 'WEBCL_SYNTAX_ERROR');
           fuzz('queue.enqueueCopyImage', signature, valid, null, [0, 1], 'INVALID_MEM_OBJECT');
           fuzz('queue.enqueueCopyImage', signature, valid, null, [2, 3, 4], 'INVALID_VALUE');
@@ -1964,7 +1801,6 @@ describe("Runtime", function() {
       }));
 
       it("must work with minimal/default arguments", function() {
-        if (!suite.preconditions) pending();
         expect('queue.enqueueNDRangeKernel(kernel, 1, null, [7]); queue.finish()').not.toThrow();
         expect('queue.enqueueNDRangeKernel(kernel, 1, null, [7], null); queue.finish()').not.toThrow();
         expect('queue.enqueueNDRangeKernel(kernel, 1, null, [7], null, null); queue.finish()').not.toThrow();
@@ -1974,7 +1810,6 @@ describe("Runtime", function() {
       });
 
       it("must work if workDim === {1, 2, 3}", function() {
-        if (!suite.preconditions) pending();
         expect('queue.enqueueNDRangeKernel(kernel, 1, null, [7      ]); queue.finish()').not.toThrow();
         expect('queue.enqueueNDRangeKernel(kernel, 2, null, [8, 2   ]); queue.finish()').not.toThrow();
         expect('queue.enqueueNDRangeKernel(kernel, 3, null, [2, 2, 3]); queue.finish()').not.toThrow();
@@ -1982,7 +1817,6 @@ describe("Runtime", function() {
       });
 
       it("must work if globalWorkOffset !== null", function() {
-        if (!suite.preconditions) pending();
         expect('queue.enqueueNDRangeKernel(kernel, 1, [0      ], [7      ]); queue.finish()').not.toThrow();
         expect('queue.enqueueNDRangeKernel(kernel, 1, [1      ], [7      ]); queue.finish()').not.toThrow();
         expect('queue.enqueueNDRangeKernel(kernel, 2, [1, 2   ], [7, 2   ]); queue.finish()').not.toThrow();
@@ -1990,7 +1824,6 @@ describe("Runtime", function() {
       });
 
       it("must work if localWorkSize !== null (work-group size == 1)", function() {
-        if (!suite.preconditions) pending();
         expect('queue.enqueueNDRangeKernel(kernel, 1, null, [7      ], [1      ]); queue.finish()').not.toThrow();
         expect('queue.enqueueNDRangeKernel(kernel, 2, null, [8, 2   ], [1, 1   ]); queue.finish()').not.toThrow();
         expect('queue.enqueueNDRangeKernel(kernel, 3, null, [3, 2, 2], [1, 1, 1]); queue.finish()').not.toThrow();
@@ -2000,7 +1833,6 @@ describe("Runtime", function() {
       // 4, and 2 in each dimension. Otherwise, the test is marked pending.
       //
       it("must work if localWorkSize !== null (work-group size > 1)", function() {
-        if (!suite.preconditions) pending();
         if (!supportsWorkGroupSize(4, [2, 2, 2])) pending();
         expect('queue.enqueueNDRangeKernel(kernel, 1, null, [8      ], [2      ]); queue.finish()').not.toThrow();
         expect('queue.enqueueNDRangeKernel(kernel, 2, null, [8, 2   ], [2, 2   ]); queue.finish()').not.toThrow();
@@ -2008,7 +1840,6 @@ describe("Runtime", function() {
       });
 
       it("must work if globalWorkOffset !== null and localWorkSize !== null (work-group size == 1)", function() {
-        if (!suite.preconditions) pending();
         expect('queue.enqueueNDRangeKernel(kernel, 1, [0      ], [7      ], [1      ]); queue.finish()').not.toThrow();
         expect('queue.enqueueNDRangeKernel(kernel, 2, [1, 1   ], [7, 2   ], [1, 1   ]); queue.finish()').not.toThrow();
         expect('queue.enqueueNDRangeKernel(kernel, 3, [0, 1, 1], [3, 2, 2], [1, 1, 1]); queue.finish()').not.toThrow();
@@ -2018,7 +1849,6 @@ describe("Runtime", function() {
       // 4, and 2 in each dimension. Otherwise, the test is marked pending.
       //
       it("must work if globalWorkOffset !== null and localWorkSize !== null (work-group size > 1)", function() {
-        if (!suite.preconditions) pending();
         if (!supportsWorkGroupSize(4, [2, 2, 2])) pending();
         expect('queue.enqueueNDRangeKernel(kernel, 1, [1      ], [8      ], [2      ]); queue.finish()').not.toThrow();
         expect('queue.enqueueNDRangeKernel(kernel, 2, [1, 1   ], [6, 2   ], [2, 2   ]); queue.finish()').not.toThrow();
@@ -2026,7 +1856,6 @@ describe("Runtime", function() {
       });
 
       it("enqueueNDRangeKernel(<invalid arguments> must throw", function() {
-        if (!suite.preconditions) pending();
         argc('queue.enqueueNDRangeKernel', valid, 'WEBCL_SYNTAX_ERROR');
         fuzz('queue.enqueueNDRangeKernel', signature, valid, null, [0], 'INVALID_KERNEL');
         fuzz('queue.enqueueNDRangeKernel', signature, valid, null, [1], 'INVALID_WORK_DIMENSION');
@@ -2038,14 +1867,12 @@ describe("Runtime", function() {
       });
 
       it("must throw if kernel is from another WebCLContext", function() {
-        if (!suite.preconditions) pending();
         ctx2 = createContext();
         queue2 = ctx2.createCommandQueue();
         expect('queue2.enqueueNDRangeKernel(kernel, 1, null, [7]); queue.finish()').toThrow('INVALID_CONTEXT');
       });
 
       it("must throw if globalWorkSize.length != workDim", function() {
-        if (!suite.preconditions) pending();
         expect('queue.enqueueNDRangeKernel(kernel, 1, null, [    ])').toThrow('INVALID_GLOBAL_WORK_SIZE');
         expect('queue.enqueueNDRangeKernel(kernel, 1, null, [1, 1])').toThrow('INVALID_GLOBAL_WORK_SIZE');
         expect('queue.enqueueNDRangeKernel(kernel, 2, null, [   1])').toThrow('INVALID_GLOBAL_WORK_SIZE');
@@ -2053,7 +1880,6 @@ describe("Runtime", function() {
       });
 
       it("must throw if globalWorkOffset.length != workDim", function() {
-        if (!suite.preconditions) pending();
         expect('queue.enqueueNDRangeKernel(kernel, 1, [    ], [      1])').toThrow('INVALID_GLOBAL_OFFSET');
         expect('queue.enqueueNDRangeKernel(kernel, 1, [1, 1], [      1])').toThrow('INVALID_GLOBAL_OFFSET');
         expect('queue.enqueueNDRangeKernel(kernel, 2, [   1], [   1, 1])').toThrow('INVALID_GLOBAL_OFFSET');
@@ -2061,7 +1887,6 @@ describe("Runtime", function() {
       });
 
       it("must throw if localWorkSize.length != workDim", function() {
-        if (!suite.preconditions) pending();
         expect('queue.enqueueNDRangeKernel(kernel, 1, null, [      1], [    ])').toThrow('INVALID_WORK_GROUP_SIZE');
         expect('queue.enqueueNDRangeKernel(kernel, 1, null, [      1], [1, 1])').toThrow('INVALID_WORK_GROUP_SIZE');
         expect('queue.enqueueNDRangeKernel(kernel, 2, null, [   1, 1], [   1])').toThrow('INVALID_WORK_GROUP_SIZE');
@@ -2069,7 +1894,6 @@ describe("Runtime", function() {
       });
 
       it("must throw if globalWorkSize[i] is not an integer in [1, 2^32)", function() {
-        if (!suite.preconditions) pending();
         expect('queue.enqueueNDRangeKernel(kernel, 1, null, [0])').toThrow('INVALID_GLOBAL_WORK_SIZE');
         expect('queue.enqueueNDRangeKernel(kernel, 1, null, [-1])').toThrow('INVALID_GLOBAL_WORK_SIZE');
         expect('queue.enqueueNDRangeKernel(kernel, 1, null, [1.001])').toThrow('INVALID_GLOBAL_WORK_SIZE');
@@ -2081,7 +1905,6 @@ describe("Runtime", function() {
       });
 
       it("must throw if localWorkSize[i] is not an integer in [1, 2^32)", function() {
-        if (!suite.preconditions) pending();
         expect('queue.enqueueNDRangeKernel(kernel, 1, null, [7], [0])').toThrow('INVALID_WORK_GROUP_SIZE');
         expect('queue.enqueueNDRangeKernel(kernel, 1, null, [7], [-1])').toThrow('INVALID_WORK_GROUP_SIZE');
         expect('queue.enqueueNDRangeKernel(kernel, 1, null, [7], [1.001])').toThrow('INVALID_WORK_GROUP_SIZE');
@@ -2093,7 +1916,6 @@ describe("Runtime", function() {
       });
 
       it("must throw if globalWorkOffset[i] is not an integer in [0, 2^32)", function() {
-        if (!suite.preconditions) pending();
         expect('queue.enqueueNDRangeKernel(kernel, 1, [-1], [7])').toThrow('INVALID_GLOBAL_OFFSET');
         expect('queue.enqueueNDRangeKernel(kernel, 1, [1.001], [7])').toThrow('INVALID_GLOBAL_OFFSET');
         expect('queue.enqueueNDRangeKernel(kernel, 1, ["1"], [7])').toThrow('INVALID_GLOBAL_OFFSET');
@@ -2103,7 +1925,6 @@ describe("Runtime", function() {
       });
 
       it("must throw if globalWorkOffset[i] + globalWorkSize[i] is not an integer in [1, 2^32)", function() {
-        if (!suite.preconditions) pending();
         expect('queue instanceof WebCLCommandQueue').toEvalAs(true);
         expect('queue.enqueueNDRangeKernel(kernel, 1, [0xfffffffe], [2])').toThrow('INVALID_GLOBAL_OFFSET');
         expect('queue.enqueueNDRangeKernel(kernel, 1, [2], [0xfffffffe])').toThrow('INVALID_GLOBAL_OFFSET');
@@ -2113,7 +1934,6 @@ describe("Runtime", function() {
       // dimension. Otherwise, the test is marked pending.
       //
       it("must throw if globalWorkSize[i] % localWorkSize[i] !== 0", function() {
-        if (!suite.preconditions) pending();
         if (!supportsWorkGroupSize(2, [2, 2, 2])) pending();
         expect('queue.enqueueNDRangeKernel(kernel, 1, null, [3], [2])').toThrow('INVALID_WORK_GROUP_SIZE');
         expect('queue.enqueueNDRangeKernel(kernel, 3, null, [4, 1, 3], [1, 1, 2])').toThrow('INVALID_WORK_GROUP_SIZE');
@@ -2124,7 +1944,6 @@ describe("Runtime", function() {
       // test is marked pending.
       //
       it("must throw if localWorkSize exceeds device-specific limits", function() {
-        if (!suite.preconditions) pending();
         if (supportsWorkGroupSize(4096)) pending();
         if (!supportsWorkGroupSize(16, [16, 16, 16])) pending();
         expect('queue.enqueueNDRangeKernel(kernel, 3, null, [256, 256, 256], [16, 16, 16])').toThrow('INVALID_WORK_GROUP_SIZE');
@@ -2158,36 +1977,30 @@ describe("Runtime", function() {
     describe("Initializing", function() {
 
       it("new WebCLEvent() must work", function() {
-        if (!suite.preconditions) pending();
         expect('event instanceof WebCLEvent').toEvalAs(true);
       });
 
       it("enqueue*(<emptyEvent>) must work", function() {
-        if (!suite.preconditions) pending();
         expect('queue.enqueueMarker(emptyEvent)').not.toThrow();
       });
 
       it("enqueue*(<populatedEvent>) must throw", function() {
-        if (!suite.preconditions) pending();
         expect('queue.enqueueMarker(event)').not.toThrow();
         expect('queue.enqueueMarker(event)').toThrow('INVALID_EVENT');
       });
 
       it("enqueue*(<releasedEvent>) must throw", function() {
-        if (!suite.preconditions) pending();
         expect('queue.enqueueMarker(event)').not.toThrow();
         expect('event.release()').not.toThrow();
         expect('queue.enqueueMarker(event)').toThrow('INVALID_EVENT');
       });
 
       it("enqueue*(<userEvent>) must throw", function() {
-        if (!suite.preconditions) pending();
         expect('userEvent = ctx.createUserEvent()').not.toThrow();
         expect('queue.enqueueMarker(userEvent)').toThrow('INVALID_EVENT');
       });
 
       it("enqueue*(<invalidEvent>) must throw", function() {
-        if (!suite.preconditions) pending();
         expect('queue.enqueueMarker("foo")').toThrow('INVALID_EVENT');
       });
 
@@ -2207,14 +2020,12 @@ describe("Runtime", function() {
       };
 
       it("enqueueWaitForEvents(<valid eventWaitList>) must work", function() {
-        if (!suite.preconditions) pending();
         expect('queue.enqueueMarker(event)').not.toThrow();
         expect('queue.enqueueWaitForEvents([event])').not.toThrow();
         expect('queue.finish()').not.toThrow();
       });
 
       it("enqueueWriteImage(<valid eventWaitList>) must work", function() {
-        if (!suite.preconditions) pending();
         W = 32; H = 32;
         hostPtr = new Uint8Array(W*H*4);
         image = ctx.createImage(WebCL.MEM_READ_WRITE, { width: W, height: H});
@@ -2224,7 +2035,6 @@ describe("Runtime", function() {
       });
 
       it("enqueueCopyImage(<valid arguments>) must work", function() {
-        if (!suite.preconditions) pending();
         W = 32; H = 32;
         hostPtr = new Uint8Array(W*H*4);
         image1 = ctx.createImage(WebCL.MEM_READ_WRITE, { width: W, height: H});
@@ -2235,7 +2045,6 @@ describe("Runtime", function() {
       });
 
       it("enqueueCopyBuffer[Rect](<valid eventWaitList>) must work", function() {
-        if (!suite.preconditions) pending();
         numBytes = 1024;
         buffer1 = ctx.createBuffer(WebCL.MEM_READ_WRITE, numBytes);
         buffer2 = ctx.createBuffer(WebCL.MEM_READ_WRITE, numBytes);
@@ -2246,26 +2055,22 @@ describe("Runtime", function() {
       });
       
       it("waitForEvents(<valid eventWaitList>) must work", function() {
-        if (!suite.preconditions) pending();
         expect('queue.enqueueMarker(event)').not.toThrow();
         expect('webcl.waitForEvents([event])').not.toThrow();
       });
 
       it("waitForEvents(<invalid arguments>) must throw", function() {
-        if (!suite.preconditions) pending();
         argc('webcl.waitForEvents', API['webcl.waitForEvents'].validArgs);
         fuzz2('webcl.waitForEvents', API, [0], 'INVALID_VALUE');
       });
 
       it("waitForEvents(<invalid event in wait list>) must throw", function() {
-        if (!suite.preconditions) pending();
         expect('userEvent = ctx.createUserEvent()').not.toThrow();
         expect('webcl.waitForEvents([userEvent])').toThrow('INVALID_EVENT_WAIT_LIST');
         expect('webcl.waitForEvents([emptyEvent])').toThrow('INVALID_EVENT_WAIT_LIST');
       });
 
       it("waitForEvents(<events in different contexts>) must throw", function() {
-        if (!suite.preconditions) pending();
         eventCtx1 = new WebCLEvent();
         eventCtx2 = new WebCLEvent();
         ctx2 = createContext();
@@ -2292,7 +2097,6 @@ describe("Runtime", function() {
       };
 
       it("getInfo(<validEnum>) must work on a populated event", function() {
-        if (!suite.preconditions) pending();
         expect('queue.enqueueMarker(event); queue.finish();').not.toThrow();
         expect('event.getInfo(WebCL.EVENT_COMMAND_QUEUE)').not.toThrow();
         expect('event.getInfo(WebCL.EVENT_CONTEXT)').not.toThrow();
@@ -2305,7 +2109,6 @@ describe("Runtime", function() {
       });
 
       it("getInfo(<validEnum>) must throw on an unpopulated event", function() {
-        if (!suite.preconditions) pending();
         expect('event.getInfo(WebCL.EVENT_COMMAND_QUEUE)').toThrow('INVALID_EVENT');
         expect('event.getInfo(WebCL.EVENT_CONTEXT)').toThrow('INVALID_EVENT');
         expect('event.getInfo(WebCL.EVENT_COMMAND_TYPE)').toThrow('INVALID_EVENT');
@@ -2313,7 +2116,6 @@ describe("Runtime", function() {
       });
 
       it("getInfo(<invalid arguments>) must throw", function() {
-        if (!suite.preconditions) pending();
         expect('queue.enqueueMarker(event)').not.toThrow();
         argc2('event.getInfo', API, 'WEBCL_SYNTAX_ERROR');
         fuzz2('event.getInfo', API, [0], 'INVALID_VALUE');
@@ -2332,7 +2134,6 @@ describe("Runtime", function() {
       var invalid = [ 'WebCL.EVENT_CONTEXT' ]
 
       it("getProfilingInfo(<validEnum>) must work on a populated event", function() {
-        if (!suite.preconditions) pending();
         expect('queue.enqueueMarker(event); queue.finish();').not.toThrow();
         expect('event.getInfo(WebCL.EVENT_COMMAND_EXECUTION_STATUS) === WebCL.COMPLETE').toEvalAs(true);
         expect('event.getProfilingInfo(WebCL.PROFILING_COMMAND_QUEUED)').not.toThrow();
@@ -2342,7 +2143,6 @@ describe("Runtime", function() {
       });
 
       it("getProfilingInfo(<validEnum>) return values must be ordered QUEUED <= SUBMIT <= START <= END", function() {
-        if (!suite.preconditions) pending();
         buffer = ctx.createBuffer(WebCL.MEM_READ_WRITE, 16);
         hostPtr = new Uint8Array(16);
         expect('queue.enqueueReadBuffer(buffer, true, 0, 16, hostPtr, null, event)').not.toThrow();
@@ -2357,7 +2157,6 @@ describe("Runtime", function() {
       });
 
       it("getProfilingInfo(<validEnum>) must throw on an unpopulated event", function() {
-        if (!suite.preconditions) pending();
         expect('event.getProfilingInfo(WebCL.PROFILING_COMMAND_QUEUED)').toThrow('PROFILING_INFO_NOT_AVAILABLE');
         expect('event.getProfilingInfo(WebCL.PROFILING_COMMAND_SUBMIT)').toThrow('PROFILING_INFO_NOT_AVAILABLE');
         expect('event.getProfilingInfo(WebCL.PROFILING_COMMAND_START)').toThrow('PROFILING_INFO_NOT_AVAILABLE');
@@ -2365,7 +2164,6 @@ describe("Runtime", function() {
       });
 
       it("getProfilingInfo(<validEnum>) must throw on a user event", function() {
-        if (!suite.preconditions) pending();
         expect('userEvent = ctx.createUserEvent()').not.toThrow();
         expect('userEvent.getProfilingInfo(WebCL.PROFILING_COMMAND_QUEUED)').toThrow('PROFILING_INFO_NOT_AVAILABLE');
         expect('userEvent.getProfilingInfo(WebCL.PROFILING_COMMAND_SUBMIT)').toThrow('PROFILING_INFO_NOT_AVAILABLE');
@@ -2374,7 +2172,6 @@ describe("Runtime", function() {
       });
 
       it("getProfilingInfo(<invalid arguments>) must throw", function() {
-        if (!suite.preconditions) pending();
         expect('queue.enqueueMarker(event); queue.finish();').not.toThrow();
         argc('event.getProfilingInfo', valid, 'WEBCL_SYNTAX_ERROR');
         fuzz('event.getProfilingInfo', signature, valid, invalid, [0], 'INVALID_VALUE');
@@ -2428,7 +2225,6 @@ describe("Runtime", function() {
     });
 
     it("enqueueWriteImage + enqueueNDRangeKernel + enqueueReadImage", function() {
-      if (!suite.preconditions) pending();
       hostArraySrc = new Float32Array(W*H*Ch);
       hostArrayDst = new Float32Array(W*H*Ch);
       fillRandomBytes(hostArraySrc);

@@ -24,7 +24,6 @@ describe("Robustness", function() {
   // WORKAROUND: Do not use clRetain in the WebCL layer.
   //
   it("must not crash or throw on releaseAll()", function() {
-    if (!suite.preconditions) pending();
     program = ctx.createProgram("kernel void dummy(global uint* buf) { buf[0]=0xdeadbeef; }");
     expect('program.build()').not.toThrow();
     expect('kernel = program.createKernel("dummy")').not.toThrow();
@@ -35,7 +34,6 @@ describe("Robustness", function() {
   // WORKAROUND: Do not use clRetain in the WebCL layer.
   //
   it("must not crash or throw when calling release() more than once", function()  {
-    if (!suite.preconditions) pending();
     ctx.release();
     expect('ctx.release()').not.toThrow();
     expect('webcl.releaseAll()').not.toThrow();
@@ -45,7 +43,6 @@ describe("Robustness", function() {
   // WORKAROUND: Do not use clRetain in the WebCL layer.
   //
   it("must not crash or throw when manually releasing objects in 'wrong' order", function() {
-    if (!suite.preconditions) pending();
     program = ctx.createProgram("kernel void dummy(global uint* buf) { buf[0]=0xdeadbeef; }");
     expect('program.build()').not.toThrow();
     expect('kernel = program.createKernel("dummy")').not.toThrow();
@@ -58,7 +55,6 @@ describe("Robustness", function() {
   // WORKAROUND: Do not use clRetain in the WebCL layer.
   //
   it("must throw when trying to use an object that has been released", function() {
-    if (!suite.preconditions) pending();
     program = ctx.createProgram("kernel void dummy(global uint* buf) { buf[0]=0xdeadbeef; }");
     expect('program.build()').not.toThrow();
     expect('kernel = program.createKernel("dummy")').not.toThrow();
@@ -72,7 +68,6 @@ describe("Robustness", function() {
   // WORKAROUND: Force user event status to -1 before clReleaseEvent.
   //
   it("must not crash or throw when releasing user events", function() {
-    if (!suite.preconditions) pending();
     expect('userEvent = ctx.createUserEvent()').not.toThrow();
     expect('userEvent.release()').not.toThrow();
     expect('ctx.release()').not.toThrow();
@@ -83,7 +78,6 @@ describe("Robustness", function() {
   //  * Win7 / Intel CPU driver (crashes)
   //
   it("must not crash or throw on build(<callback>)", function() {
-    if (!suite.preconditions) pending();
     //var r = confirm("This test case may crash your browser. Run anyway?");
     //if (r === false) pending();
     buildCallback = function() {
@@ -103,7 +97,6 @@ describe("Robustness", function() {
   // RESOLVED: Erroneous typecast in WebCL bindings (lib_ocl/commandqueue.jsm).
   //
   it("must not crash or throw on enqueueNDRangeKernel if workDim === 2", function() {
-    if (!suite.preconditions) pending();
     ctx = createContext();
     queue = ctx.createCommandQueue();
     buffer = ctx.createBuffer(WebCL.MEM_READ_ONLY, 128);
@@ -121,7 +114,6 @@ describe("Robustness", function() {
   //  * Mac OSX 10.9 (crashes)
   //
   it("must not crash on setArg(<invalidArgument>)", function() {
-    if (!suite.preconditions) pending();
     var r = confirm("This test case will crash your browser on all known OpenCL drivers. Run anyway?");
     if (r === false) pending();
     src = loadSource('kernels/argtypes.cl');
@@ -144,7 +136,6 @@ describe("Robustness", function() {
   //  * Win7 / Intel CPU driver (freezes)
   //
   it("must not crash compiling a kernel that allocates 6 GB of 'local' memory", function() {
-    if (!suite.preconditions) pending();
     var r = confirm("This test case will crash your browser on Windows. Run anyway?");
     if (r === false) pending();
     expect('kernels/largeArrayLocal.cl').not.toBuild();
