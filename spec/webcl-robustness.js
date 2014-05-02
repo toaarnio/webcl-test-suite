@@ -59,8 +59,9 @@ describe("Robustness", function() {
     expect('program.build()').not.toThrow();
     expect('kernel = program.createKernel("dummy")').not.toThrow();
     expect('webcl.releaseAll()').not.toThrow();
-    expect('ctx.getInfo(WebCL.CONTEXT_NUM_DEVICES)').toThrow('WEBCL_IMPLEMENTATION_FAILURE');
-    expect('kernel.getInfo(WebCL.PROGRAM_CONTEXT)').toThrow('WEBCL_IMPLEMENTATION_FAILURE');
+    expect('ctx.getInfo(WebCL.CONTEXT_NUM_DEVICES)').toThrow('INVALID_CONTEXT');
+    expect('program.getInfo(WebCL.PROGRAM_CONTEXT)').toThrow('INVALID_PROGRAM');
+    expect('kernel.getInfo(WebCL.KERNEL_CONTEXT)').toThrow('INVALID_KERNEL');
     expect('webcl.releaseAll()').not.toThrow();
   });
 
