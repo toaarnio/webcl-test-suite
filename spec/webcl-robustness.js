@@ -59,6 +59,7 @@ describe("Robustness", function() {
     event = new WebCLEvent();
     userEvent = ctx.createUserEvent();
     queue = ctx.createCommandQueue();
+    sampler = ctx.createSampler(true, WebCL.ADDRESS_REPEAT, WebCL.FILTER_NEAREST);
     expect('program.build()').not.toThrow();
     expect('kernel = program.createKernel("dummy")').not.toThrow();
     expect('queue.enqueueMarker(event)').not.toThrow();
@@ -68,6 +69,7 @@ describe("Robustness", function() {
     expect('program.getInfo(WebCL.PROGRAM_CONTEXT)').toThrow('INVALID_PROGRAM');
     expect('kernel.getInfo(WebCL.KERNEL_CONTEXT)').toThrow('INVALID_KERNEL');
     expect('queue.getInfo(WebCL.QUEUE_CONTEXT)').toThrow('INVALID_COMMAND_QUEUE');
+    expect('sampler.getInfo(WebCL.SAMPLER_CONTEXT)').toThrow('INVALID_SAMPLER');
     expect('userEvent.getInfo(WebCL.EVENT_CONTEXT)').toThrow('INVALID_EVENT');
     expect('event.getInfo(WebCL.EVENT_CONTEXT)').toThrow('INVALID_EVENT');
     expect('webcl.releaseAll()').not.toThrow();
