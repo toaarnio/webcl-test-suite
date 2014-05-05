@@ -33,6 +33,11 @@ describe("Signature", function() {
     }
   });
 
+  it("must have the expected kind of version string", function() {
+    expect('webcl.version.length').toEvalAs(51);
+    expect('webcl.version > "2014-05"').toEvalAs(true);
+  });
+
   it("must have all the expected member functions and properties", function() {
     checkSignature('webcl', true);
     for (var className in expectedClasses) {
