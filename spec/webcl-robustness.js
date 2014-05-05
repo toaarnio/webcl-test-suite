@@ -59,6 +59,8 @@ describe("Robustness", function() {
     event = new WebCLEvent();
     userEvent = ctx.createUserEvent();
     queue = ctx.createCommandQueue();
+    image = ctx.createImage(WebCL.MEM_READ_WRITE, { width: 16, height: 16 });
+    buffer = ctx.createBuffer(WebCL.MEM_READ_WRITE, 512);
     sampler = ctx.createSampler(true, WebCL.ADDRESS_REPEAT, WebCL.FILTER_NEAREST);
     expect('program.build()').not.toThrow();
     expect('kernel = program.createKernel("dummy")').not.toThrow();
@@ -66,6 +68,8 @@ describe("Robustness", function() {
     expect('queue.finish()').not.toThrow();
     expect('webcl.releaseAll()').not.toThrow();
     expect('ctx.getInfo(WebCL.CONTEXT_NUM_DEVICES)').toThrow('INVALID_CONTEXT');
+    expect('buffer.getInfo(WebCL.MEM_CONTEXT)').toThrow('INVALID_MEM_OBJECT');
+    expect('image.getInfo(WebCL.MEM_CONTEXT)').toThrow('INVALID_MEM_OBJECT');
     expect('program.getInfo(WebCL.PROGRAM_CONTEXT)').toThrow('INVALID_PROGRAM');
     expect('kernel.getInfo(WebCL.KERNEL_CONTEXT)').toThrow('INVALID_KERNEL');
     expect('queue.getInfo(WebCL.QUEUE_CONTEXT)').toThrow('INVALID_COMMAND_QUEUE');
