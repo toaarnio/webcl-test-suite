@@ -1964,6 +1964,7 @@ describe("Runtime", function() {
     beforeEach(setup.bind(this, function() {
       ctx = createContext();
       queue = ctx.createCommandQueue(null, WebCL.QUEUE_PROFILING_ENABLE);
+      userEvent = ctx.createUserEvent();
       emptyEvent = new WebCLEvent();
       event = new WebCLEvent();
       event1 = new WebCLEvent();
@@ -1996,7 +1997,6 @@ describe("Runtime", function() {
       });
 
       it("enqueue*(<userEvent>) must throw", function() {
-        expect('userEvent = ctx.createUserEvent()').not.toThrow();
         expect('queue.enqueueMarker(userEvent)').toThrow('INVALID_EVENT');
       });
 
@@ -2065,7 +2065,6 @@ describe("Runtime", function() {
       });
 
       it("waitForEvents(<invalid event in wait list>) must throw", function() {
-        expect('userEvent = ctx.createUserEvent()').not.toThrow();
         expect('webcl.waitForEvents([userEvent])').toThrow('INVALID_EVENT_WAIT_LIST');
         expect('webcl.waitForEvents([emptyEvent])').toThrow('INVALID_EVENT_WAIT_LIST');
       });
@@ -2078,6 +2077,14 @@ describe("Runtime", function() {
         expect('queue.enqueueMarker(eventCtx1)').not.toThrow();
         expect('queue2.enqueueMarker(eventCtx2)').not.toThrow();
         expect('webcl.waitForEvents([eventCtx1, eventCtx2])').toThrow('INVALID_CONTEXT');
+      });
+
+      it("enqueueWriteImage(<invalid event in wait list>) must throw", function() {
+        W = 32; H = 32;
+        hostPtr = new Uint8Array(W*H*4);
+        image = ctx.createImage(WebCL.MEM_READ_WRITE, { width: W, height: H});
+        expect('queue.enqueueWriteImage(image, true, [0, 0], [W, H], 0, hostPtr, [userEvent])').toThrow('INVALID_EVENT_WAIT_LIST');
+        expect('queue.enqueueWriteImage(image, true, [0, 0], [W, H], 0, hostPtr, [emptyEvent])').toThrow('INVALID_EVENT_WAIT_LIST');
       });
 
     });
@@ -2096,19 +2103,31 @@ describe("Runtime", function() {
         },
       };
 
-      it("getInfo(<validEnum>) must work on a populated event", function() {
+      it("getInfo(<valid enum>) must work on a populated event", function() {
         expect('queue.enqueueMarker(event); queue.finish();').not.toThrow();
-        expect('event.getInfo(WebCL.EVENT_COMMAND_QUEUE)').not.toThrow();
         expect('event.getInfo(WebCL.EVENT_CONTEXT)').not.toThrow();
+        expect('event.getInfo(WebCL.EVENT_COMMAND_QUEUE)').not.toThrow();
         expect('event.getInfo(WebCL.EVENT_COMMAND_TYPE)').not.toThrow();
         expect('event.getInfo(WebCL.EVENT_COMMAND_EXECUTION_STATUS)').not.toThrow();
-        expect('event.getInfo(WebCL.EVENT_COMMAND_QUEUE) === queue').toEvalAs(true);
         expect('event.getInfo(WebCL.EVENT_CONTEXT) === ctx').toEvalAs(true);
+        expect('event.getInfo(WebCL.EVENT_COMMAND_QUEUE) === queue').toEvalAs(true);
         expect('event.getInfo(WebCL.EVENT_COMMAND_TYPE) === WebCL.COMMAND_MARKER').toEvalAs(true);
         expect('event.getInfo(WebCL.EVENT_COMMAND_EXECUTION_STATUS) === WebCL.COMPLETE').toEvalAs(true);
       });
 
-      it("getInfo(<validEnum>) must throw on an unpopulated event", function() {
+      it("getInfo(<valid enum>) must work on a user event", function() {
+        expect('userEvent = ctx.createUserEvent()').not.toThrow();
+        expect('userEvent.getInfo(WebCL.EVENT_CONTEXT)').not.toThrow();
+        expect('userEvent.getInfo(WebCL.EVENT_COMMAND_QUEUE)').not.toThrow();
+        expect('userEvent.getInfo(WebCL.EVENT_COMMAND_TYPE)').not.toThrow();
+        expect('userEvent.getInfo(WebCL.EVENT_COMMAND_EXECUTION_STATUS)').not.toThrow();
+        expect('userEvent.getInfo(WebCL.EVENT_CONTEXT) === ctx').toEvalAs(true);
+        expect('userEvent.getInfo(WebCL.EVENT_COMMAND_QUEUE) === null').toEvalAs(true);
+        expect('userEvent.getInfo(WebCL.EVENT_COMMAND_TYPE) === WebCL.COMMAND_USER').toEvalAs(true);
+        expect('userEvent.getInfo(WebCL.EVENT_COMMAND_EXECUTION_STATUS) === WebCL.SUBMITTED').toEvalAs(true);
+      });
+
+      it("getInfo(<valid enum>) must throw on an unpopulated event", function() {
         expect('event.getInfo(WebCL.EVENT_COMMAND_QUEUE)').toThrow('INVALID_EVENT');
         expect('event.getInfo(WebCL.EVENT_CONTEXT)').toThrow('INVALID_EVENT');
         expect('event.getInfo(WebCL.EVENT_COMMAND_TYPE)').toThrow('INVALID_EVENT');
