@@ -286,7 +286,7 @@ describe("Runtime", function() {
     // 
     describe("createBuffer", function() {
 
-      var signature = [ 'Enum', 'UintNonZero', 'OptionalTypedArray' ];
+      var signature = [ 'Enum', 'Uint', 'OptionalTypedArray' ];
       var valid = [ 'WebCL.MEM_READ_WRITE', '1024', 'undefined' ];
       var invalid = [ 'WebCL.MEM_TYPE', '0x10000000000', 'new Uint8Array(1023)' ];
 
@@ -310,6 +310,8 @@ describe("Runtime", function() {
         fuzz('ctx.createBuffer', signature, valid, null, [0], 'INVALID_VALUE');
         fuzz('ctx.createBuffer', signature, valid, invalid, [1], 'INVALID_VALUE');
         fuzz('ctx.createBuffer', signature, valid, invalid, [2], 'INVALID_HOST_PTR');
+        expect('ctx.createBuffer(WebCL.MEM_READ_WRITE, 0)').toThrow('INVALID_BUFFER_SIZE');
+        expect('ctx.createBuffer(WebCL.MEM_READ_WRITE, device.getInfo(WebCL.DEVICE_MAX_MEM_ALLOC_SIZE)+1)').toThrow('INVALID_BUFFER_SIZE');
       });
 
     });
@@ -350,9 +352,11 @@ describe("Runtime", function() {
       });
 
       it("createImage(<valid dimensions>) must work", function() {
+        maxSupportedWidth = device.getInfo(WebCL.DEVICE_IMAGE2D_MAX_WIDTH);
         expect('ctx.createImage(WebCL.MEM_READ_ONLY, { width: 37, height: 1 })').not.toThrow();
         expect('ctx.createImage(WebCL.MEM_WRITE_ONLY, { width: 1, height: 1025 })').not.toThrow();
         expect('ctx.createImage(WebCL.MEM_READ_WRITE, { width: 19, height: 11 })').not.toThrow();
+        expect('ctx.createImage(WebCL.MEM_READ_WRITE, { width: maxSupportedWidth, height: 2 })').not.toThrow();
       });
 
       it("createImage(<valid hostPtr>) must work", function() {
@@ -402,8 +406,10 @@ describe("Runtime", function() {
       });
 
       it("createImage(<invalid dimensions>) must throw", function() {
+        maxSupportedWidth = device.getInfo(WebCL.DEVICE_IMAGE2D_MAX_WIDTH);
         expect('ctx.createImage(WebCL.MEM_READ_ONLY, { width: 4, height: 0 })').toThrow('INVALID_IMAGE_SIZE');
         expect('ctx.createImage(WebCL.MEM_READ_ONLY, { width: 1024*1024, height: 1 })').toThrow('INVALID_IMAGE_SIZE');
+        expect('ctx.createImage(WebCL.MEM_READ_ONLY, { width: maxSupportedWidth+1, height: 1 })').toThrow('INVALID_IMAGE_SIZE');
       });
 
       it("createImage(<invalid rowPitch>) must throw", function() {
