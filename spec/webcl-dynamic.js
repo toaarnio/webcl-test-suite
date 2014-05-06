@@ -569,6 +569,7 @@ describe("Runtime", function() {
           expect('buffer.createSubBuffer(WebCL.MEM_READ_WRITE, 0, 32)').not.toThrow();
           expect('buffer.createSubBuffer(WebCL.MEM_READ_WRITE, 0, 32) instanceof WebCLBuffer').toEvalAs(true);
           expect('buffer.createSubBuffer(WebCL.MEM_READ_WRITE, align, 32)').not.toThrow();
+          expect('buffer.createSubBuffer(WebCL.MEM_READ_WRITE, align, align)').not.toThrow();
         });
 
         it("createSubBuffer(<invalid arguments>) must throw", function() {
@@ -578,6 +579,7 @@ describe("Runtime", function() {
 
         it("createSubBuffer(<invalid origin/size>) must throw", function() {
           expect('buffer.createSubBuffer(WebCL.MEM_READ_ONLY, size, 1)').toThrow('INVALID_VALUE');
+          expect('buffer.createSubBuffer(WebCL.MEM_READ_ONLY, size-1, 2)').toThrow('INVALID_VALUE');
           expect('buffer.createSubBuffer(WebCL.MEM_READ_ONLY, align, align+1)').toThrow('INVALID_VALUE');
           expect('buffer.createSubBuffer(WebCL.MEM_READ_ONLY, 0, size+1)').toThrow('INVALID_VALUE');
           expect('buffer.createSubBuffer(WebCL.MEM_READ_ONLY, align-1, 1)').toThrow('MISALIGNED_SUB_BUFFER_OFFSET');
