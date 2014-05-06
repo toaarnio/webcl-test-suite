@@ -1588,6 +1588,9 @@ describe("Runtime", function() {
           expect('queue.enqueueReadImage(image, true, [0,0], [W, null], 0, pixels)').toThrow('INVALID_VALUE');
           expect('queue.enqueueReadImage(image, true, [0,0], [W, "foo"], 0, pixels)').toThrow('INVALID_VALUE');
           expect('queue.enqueueReadImage(image, true, [0,0], [W, -1], 0, pixels)').toThrow('INVALID_VALUE');
+          expect('queue.enqueueReadImage(image, true, [0,0], [0, 0], 0, pixels)').toThrow('INVALID_VALUE');
+          expect('queue.enqueueReadImage(image, true, [0,0], [1, 0], 0, pixels)').toThrow('INVALID_VALUE');
+          expect('queue.enqueueReadImage(image, true, [0,0], [0, 1], 0, pixels)').toThrow('INVALID_VALUE');
         });
 
         it("enqueueReadImage(<invalid hostRowPitch>) must throw", function() {
@@ -1679,6 +1682,9 @@ describe("Runtime", function() {
           expect('queue.enqueueWriteImage(image, true, [0,0], [W, null], 0, pixels)').toThrow('INVALID_VALUE');
           expect('queue.enqueueWriteImage(image, true, [0,0], [W, "foo"], 0, pixels)').toThrow('INVALID_VALUE');
           expect('queue.enqueueWriteImage(image, true, [0,0], [W, -1], 0, pixels)').toThrow('INVALID_VALUE');
+          expect('queue.enqueueWriteImage(image, true, [0,0], [0, 0], 0, pixels)').toThrow('INVALID_VALUE');
+          expect('queue.enqueueWriteImage(image, true, [0,0], [1, 0], 0, pixels)').toThrow('INVALID_VALUE');
+          expect('queue.enqueueWriteImage(image, true, [0,0], [0, 1], 0, pixels)').toThrow('INVALID_VALUE');
         });
 
         it("enqueueWriteImage(<invalid hostRowPitch>) must throw", function() {
@@ -1761,6 +1767,9 @@ describe("Runtime", function() {
           expect('queue.enqueueCopyImage(image1, image2, [-1,0], [0,0], [W,H])').toThrow('INVALID_VALUE');
           expect('queue.enqueueCopyImage(image1, image2, [0,0], [0,.1], [W,H])').toThrow('INVALID_VALUE');
           expect('queue.enqueueCopyImage(image1, image2, [0,0], [0,0], [W,H-0.5])').toThrow('INVALID_VALUE');
+          expect('queue.enqueueCopyImage(image1, image2, [0,0], [0,0], [0,0])').toThrow('INVALID_VALUE');
+          expect('queue.enqueueCopyImage(image1, image2, [0,0], [0,0], [1,0])').toThrow('INVALID_VALUE');
+          expect('queue.enqueueCopyImage(image1, image2, [0,0], [0,0], [0,1])').toThrow('INVALID_VALUE');
         });
 
       });
@@ -2176,10 +2185,10 @@ describe("Runtime", function() {
       });
 
       it("getProfilingInfo(<validEnum>) must throw on an unpopulated event", function() {
-        expect('event.getProfilingInfo(WebCL.PROFILING_COMMAND_QUEUED)').toThrow('PROFILING_INFO_NOT_AVAILABLE');
-        expect('event.getProfilingInfo(WebCL.PROFILING_COMMAND_SUBMIT)').toThrow('PROFILING_INFO_NOT_AVAILABLE');
-        expect('event.getProfilingInfo(WebCL.PROFILING_COMMAND_START)').toThrow('PROFILING_INFO_NOT_AVAILABLE');
-        expect('event.getProfilingInfo(WebCL.PROFILING_COMMAND_END)').toThrow('PROFILING_INFO_NOT_AVAILABLE');
+        expect('event.getProfilingInfo(WebCL.PROFILING_COMMAND_QUEUED)').toThrow('INVALID_EVENT');
+        expect('event.getProfilingInfo(WebCL.PROFILING_COMMAND_SUBMIT)').toThrow('INVALID_EVENT');
+        expect('event.getProfilingInfo(WebCL.PROFILING_COMMAND_START)').toThrow('INVALID_EVENT');
+        expect('event.getProfilingInfo(WebCL.PROFILING_COMMAND_END)').toThrow('INVALID_EVENT');
       });
 
       it("getProfilingInfo(<validEnum>) must throw on a user event", function() {
