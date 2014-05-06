@@ -123,6 +123,13 @@ describe("Kernel language", function() {
       expect('kernels/constantWrite.cl').not.toBuild();
     });
 
+    // Known failures as of 2014-05-06:
+    //  * <none>
+    //
+    it("must not allow the 'long long' datatype", function() {
+      expect('kernels/longlong.cl').not.toBuild();
+    });
+
     // Known failures as of 2014-04-14:
     //  * Win7 / NVIDIA GPU driver
     //
