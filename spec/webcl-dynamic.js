@@ -2036,6 +2036,11 @@ describe("Runtime", function() {
         },
       };
 
+      it("waitForEvents(<valid eventWaitList>) must work", function() {
+        expect('queue.enqueueMarker(event)').not.toThrow();
+        expect('webcl.waitForEvents([event])').not.toThrow();
+      });
+
       it("enqueueWaitForEvents(<valid eventWaitList>) must work", function() {
         expect('queue.enqueueMarker(event)').not.toThrow();
         expect('queue.enqueueWaitForEvents([event])').not.toThrow();
@@ -2071,11 +2076,6 @@ describe("Runtime", function() {
         expect('queue.finish()').not.toThrow();
       });
       
-      it("waitForEvents(<valid eventWaitList>) must work", function() {
-        expect('queue.enqueueMarker(event)').not.toThrow();
-        expect('webcl.waitForEvents([event])').not.toThrow();
-      });
-
       it("waitForEvents(<invalid arguments>) must throw", function() {
         argc('webcl.waitForEvents', API['webcl.waitForEvents'].validArgs);
         fuzz2('webcl.waitForEvents', API, [0], 'INVALID_VALUE');
@@ -2096,6 +2096,25 @@ describe("Runtime", function() {
         expect('webcl.waitForEvents([eventCtx1, eventCtx2])').toThrow('INVALID_CONTEXT');
       });
 
+      it("enqueueWaitForEvents(<invalid event in wait list>) must throw", function() {
+        userEvent.setStatus(-1);
+        expect('queue.enqueueWaitForEvents([userEvent])').toThrow('EXEC_STATUS_ERROR_FOR_EVENTS_IN_WAIT_LIST');
+        expect('queue.enqueueWaitForEvents([emptyEvent])').toThrow('INVALID_EVENT_WAIT_LIST');
+        expect('queue.enqueueMarker(emptyEvent)').not.toThrow();
+        expect('queue.enqueueWaitForEvents([emptyEvent])').not.toThrow();
+        expect('queue.finish()').not.toThrow();
+      });
+
+      it("enqueueWaitForEvents(<events in different contexts>) must throw", function() {
+        eventCtx1 = new WebCLEvent();
+        eventCtx2 = new WebCLEvent();
+        ctx2 = createContext();
+        queue2 = ctx2.createCommandQueue();
+        expect('queue.enqueueMarker(eventCtx1)').not.toThrow();
+        expect('queue2.enqueueMarker(eventCtx2)').not.toThrow();
+        expect('queue.enqueueWaitForEvents([eventCtx1, eventCtx2])').toThrow('INVALID_CONTEXT');
+      });
+      
       it("enqueueWriteImage(<invalid event in wait list>) must throw", function() {
         W = 32; H = 32;
         hostPtr = new Uint8Array(W*H*4);
