@@ -1280,7 +1280,7 @@ describe("Runtime", function() {
       var signature = [ 'WebCLObject',            // buffer
                         'Boolean',                // blockingRead/Write
                         'Uint',                   // bufferOffset
-                        'Uint',                   // numBytes
+                        'UintNonZero',            // numBytes
                         'TypedArray',             // hostPtr
                         'OptionalArray',          // eventWaitList
                         'OptionalWebCLObject'     // event
@@ -1407,7 +1407,7 @@ describe("Runtime", function() {
                           'WebCLObject',            // dstBuffer
                           'Uint',                   // srcOffset
                           'Uint',                   // dstOffset
-                          'Uint',                   // numBytes
+                          'UintNonZero',            // numBytes
                           'OptionalArray',          // eventWaitList
                           'OptionalWebCLObject'     // event
                         ];
