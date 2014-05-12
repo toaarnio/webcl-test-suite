@@ -15,9 +15,8 @@
 describe("Robustness", function() {
 
   beforeEach(setup.bind(this, function() {
-    aPlatform = webcl.getPlatforms()[0];
-    aDevice = aPlatform.getDevices()[0];
     ctx = createContext();
+    device = ctx.getInfo(WebCL.CONTEXT_DEVICES)[0];
   }));
 
   // RESOLVED: Some OpenCL drivers screw up reference counting if using clRetain.
@@ -89,25 +88,25 @@ describe("Robustness", function() {
   });
 
   // Known failures as of 2014-03-05:
-  //  * Win7 / NVIDIA GPU driver (crashes)
-  //  * Win7 / Intel CPU driver (crashes)
+  //  * None
   //
-  oit("must not crash or throw on build(<callback>)", function() {
+  oit("must not crash or throw on build(<callback>)", function(done) {
     if (!suite.preconditions) pending;
-    //var r = confirm("This test case may crash your browser. Run anyway?");
-    //if (r === false) pending();
-    buildCallback = function() {
-      DEBUG("WebCLProgram.build() callback invoked!");
+    var src = loadSource('kernels/rng.cl');
+    program = ctx.createProgram(src);
+    program.build(null, null, function() {
+      var elapsed = Date.now() - start;
+      DEBUG("program.build() callback invoked, build took " + elapsed + " ms");
+      DEBUG("Program build status: " + program.getBuildInfo(device, WebCL.PROGRAM_BUILD_STATUS));
+      DEBUG("Program build log: " + program.getBuildInfo(device, WebCL.PROGRAM_BUILD_LOG));
+      expect('program.getBuildInfo(device, WebCL.PROGRAM_BUILD_STATUS)').not.toThrow();
+      expect('program.getBuildInfo(device, WebCL.PROGRAM_BUILD_STATUS)').toEvalAs('WebCL.BUILD_SUCCESS');
+      expect('program.createKernelsInProgram()').not.toThrow();
       expect('webcl.releaseAll()').not.toThrow();
-    }
-    src = loadSource('kernels/rng.cl');
-    expect('program = ctx.createProgram(src)').not.toThrow();
-    try {
-      program.build(null, null, buildCallback);
-    } catch (e) {
-      expect('program.build(null, null, buildCallback)').not.toThrow();
-      expect('webcl.releaseAll()').not.toThrow();
-    }
+      done();
+    })
+    DEBUG("program.build() initiated, waiting for callback...");
+    var start = Date.now();
   });
 
   // RESOLVED: Erroneous typecast in WebCL bindings (lib_ocl/commandqueue.jsm).

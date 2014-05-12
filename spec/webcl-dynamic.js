@@ -33,8 +33,8 @@ describe("Runtime", function() {
     }));
 
     it("createContext() must work", function() {
-      expect('webcl.createContext()').not.toThrow();
-      expect('webcl.createContext() instanceof WebCLContext').toEvalAs(true);
+      expect('ctx = webcl.createContext()').not.toThrow();
+      expect('ctx instanceof WebCLContext').toEvalAs(true);
     });
 
     it("createContext(DEVICE_TYPE_DEFAULT) must work", function() {
@@ -46,6 +46,7 @@ describe("Runtime", function() {
       for (var t=0, found=false; t < types.length && !found; t++) {
         try {
           ctx = webcl.createContext(types[t]);
+          found = true;
         } catch (e) {
           if (e.name !== 'DEVICE_NOT_FOUND') throw e;
         }
@@ -62,6 +63,7 @@ describe("Runtime", function() {
       for (var t=0, found=false; t < types.length && !found; t++) {
         try {
           ctx = webcl.createContext(aPlatform, types[t]);
+          found = true;
         } catch (e) {
           if (e.name !== 'DEVICE_NOT_FOUND') throw e;
         }
@@ -177,11 +179,10 @@ describe("Runtime", function() {
       var signature = [ 'OptionalEnum' ];
       var valid = [ 'undefined' ];
 
-      it("getSupportedImageFormats(<validEnum>) must work", function() {
-        expect('ctx.getSupportedImageFormats()').not.toThrow();
-        expect('ctx.getSupportedImageFormats() instanceof Array').toEvalAs(true);
-        expect('ctx.getSupportedImageFormats().length >= 10').toEvalAs(true);
-        expect('ctx.getSupportedImageFormats()[0] instanceof WebCLImageDescriptor').toEvalAs(true);
+      it("getSupportedImageFormats() must work", function() {
+        expect('formats = ctx.getSupportedImageFormats()').not.toThrow();
+        expect('formats instanceof Array').toEvalAs(true);
+        expect('formats[0] instanceof WebCLImageDescriptor').toEvalAs(true);
         expect('ctx.getSupportedImageFormats(WebCL.MEM_READ_WRITE)').not.toThrow();
         expect('ctx.getSupportedImageFormats(WebCL.MEM_WRITE_ONLY)').not.toThrow();
         expect('ctx.getSupportedImageFormats(WebCL.MEM_READ_ONLY)').not.toThrow();
@@ -197,7 +198,7 @@ describe("Runtime", function() {
         }
       });
 
-      it("getSupportedImageFormats(<validEnum>) must return the mandatory formats", function() {
+      it("getSupportedImageFormats() must return the mandatory formats", function() {
         function rgbaFilter(item) { return (item.channelOrder === WebCL.RGBA); }
         rgbaFormatsReadWrite = ctx.getSupportedImageFormats(WebCL.MEM_READ_WRITE).filter(rgbaFilter);
         rgbaFormatsReadWrite = ctx.getSupportedImageFormats(WebCL.MEM_READ_WRITE).filter(rgbaFilter);
@@ -756,19 +757,25 @@ describe("Runtime", function() {
     // 
     describe("build", function() {
 
-      var signature = [ 'OptionalArray', 'OptionalString', 'OptionalArray' ]; // TODO: 'OptionalCallback'
+      var signature = [ 'OptionalArray', 'OptionalString', 'OptionalFunction' ];
       var valid = [ 'undefined', 'undefined', 'undefined' ];
       var invalid = [ 'device', '[program]', '{}' ];
 
-      it("build(<validDeviceArray>) must not throw", function() {
+      it("build() must work in synchronous form", function() {
         expect('program.build()').not.toThrow();
-        expect('program.build(undefined)').not.toThrow();
         expect('program.build(null)').not.toThrow();
         expect('program.build(devices)').not.toThrow();
       });
 
-      it("build(<validBuildOption>) must not throw", function() {
-        expect('program.build(devices, undefined)').not.toThrow();
+      wait("build() must work in asynchronous form", function(done) {
+        program.build([device], null, function() { 
+          expect('program.getBuildInfo(device, WebCL.PROGRAM_BUILD_STATUS)').toEvalAs('WebCL.BUILD_SUCCESS');
+          done(); 
+        });
+        expect('program.getBuildInfo(device, WebCL.PROGRAM_BUILD_STATUS) < 0').toEvalAs(true);
+      });
+
+      it("build(<valid build options>) must not throw", function() {
         expect('program.build(devices, null)').not.toThrow();
         [ '',
           '-D foo',
@@ -791,7 +798,7 @@ describe("Runtime", function() {
         });
       });
 
-      it("build(<multipleValidBuildOptions>) must not throw", function() {
+      it("build(<multiple valid build options>) must not throw", function() {
         expect('program.build(devices, "-cl-opt-disable -Werror")').not.toThrow();
       });
 
@@ -799,6 +806,7 @@ describe("Runtime", function() {
         argc('program.build', valid, 'WEBCL_SYNTAX_ERROR');
         fuzz('program.build', signature, valid, invalid, [0], 'INVALID_VALUE');
         fuzz('program.build', signature, valid, invalid, [1], 'INVALID_BUILD_OPTIONS');
+        fuzz('program.build', signature, valid, invalid, [2], 'INVALID_VALUE');
       });
 
       it("build(<invalid build options>) must throw", function() {
@@ -814,21 +822,28 @@ describe("Runtime", function() {
         expect('program.build(devices, "-D =bar")').toThrow('INVALID_BUILD_OPTIONS');
       });
 
-      it("build(<invalid callback>) must throw", function() {
-        fuzz('program.build', signature, valid, invalid, [2], 'INVALID_VALUE');
-      });
-
-      it("must throw if program source is invalid", function() {
+      it("build() must throw if program source is invalid", function() {
         program = ctx.createProgram("obviously invalid");
         expect('program.build(devices)').toThrow('BUILD_PROGRAM_FAILURE');
       });
 
-      it("must throw if called synchronously from a WebCLCallback", function() {
-        pending();
+      wait("build() must throw if called synchronously from a WebCLCallback", function(done) {
+        program.build(null, null, function() {
+          expect('program.build()').toThrow('INVALID_OPERATION');
+          expect('program.build(null)').toThrow('INVALID_OPERATION');
+          expect('program.build(devices)').toThrow('INVALID_OPERATION');
+          expect('program.build([device])').toThrow('INVALID_OPERATION');
+          expect('program.build([device])').toThrow('INVALID_OPERATION');
+          done();
+        });
       });
 
-      it("must throw if a previous build has not completed", function() {
-        pending();
+      wait("build() must throw if a previous build is still in progress", function(done) {
+        program.build(null, null, function() {
+          expect('program.getBuildInfo(device, WebCL.PROGRAM_BUILD_STATUS)').toEvalAs('WebCL.BUILD_SUCCESS');
+          done();
+        });
+        expect('program.build()').toThrow('INVALID_OPERATION');
       });
 
     });

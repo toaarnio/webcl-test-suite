@@ -18,6 +18,7 @@
 //
 //  * INFO(msg)
 //  * ERROR(msg)
+//  * WARN(msg)
 //  * DEBUG(msg)
 //  * TRACE(msg)
 //  * setup()
@@ -36,8 +37,9 @@
   (function getURLParameters() {
     READY = (getURLParameter('run') === 'true');
     STRICT = (getURLParameter('strict') === 'true');
-    INFO = (getURLParameter('info') === 'true') ? console.info.bind(console) : new Function();
+    INFO = (getURLParameter('info') === 'false') ? new Function() : console.info.bind(console);
     ERROR = (getURLParameter('debug') === 'false') ? new Function() : console.error.bind(console);
+    WARN = (getURLParameter('warn') === 'false') ? new Function() : console.warn.bind(console);
     DEBUG = (getURLParameter('debug') === 'false') ? new Function() : console.debug.bind(console);
     TRACE = (getURLParameter('trace') === 'true') ? console.log.bind(console) : new Function();
     SELECTED_DEVICE_INDEX = isNaN(+getURLParameter('device')) ? null : +getURLParameter('device');
@@ -45,11 +47,14 @@
 
   // ### setup() ###
   //
-  // Calls the given 'setupFunction' and sets 'suite.preconditions' to either true or false,
-  // depending on whether the setup function returns successfully or throws an exception.
-  // Individual tests may then check the flag and set their status to "pending", for example.
+  // Defines 'window.suite' and sets 'suite.preconditions' to either true or false, depending on
+  // whether the given 'setupFunction' returns successfully or throws an exception.  This function
+  // must be called from the beforeEach context, as in the example below.  Note that setupFunction
+  // is mandatory, but may be null (in which case suite.preconditions is set to true).
   // 
-  // Example:
+  // Examples:
+  //    beforeEach(setup.bind(this, null));
+  //
   //    beforeEach(setup.bind(this, function() { 
   //      ctx = createContext();
   //      queue = ctx.createCommandQueue();
@@ -60,7 +65,12 @@
     suite.preconditions = false;
     if (suite.parentSuite.preconditions !== false) {
       try {
+        var start = Date.now();
         if (setupFunction) setupFunction.call(suite);
+        var elapsed = Date.now() - start;
+        if (elapsed > 10) {
+          WARN("PERF: " + elapsed + " ms: beforeEach " + suite.description);
+        }
         suite.preconditions = true;
       } catch (e) {
         ERROR(suite.parentSuite.description + " -> " + suite.description + ": Test preconditions failed: " + e);
@@ -158,7 +168,7 @@
       var ctx = webcl.createContext(selected);
       var device = ctx.getInfo(WebCL.CONTEXT_DEVICES)[0];
       var vendorId = device.getInfo(WebCL.DEVICE_VENDOR_ID);
-      DEBUG("Creating a Context for Device " + deviceVendors[vendorId] + " (VENDOR_ID="+vendorId+")");
+      INFO("Creating a Context for Device " + deviceVendors[vendorId] + " (VENDOR_ID="+vendorId+")");
       ctx.vendor = deviceVendors[vendorId];
       return ctx;
     } catch (e) {
@@ -545,16 +555,36 @@
 
   oit = jasmine.getEnv().it;
 
-  jasmine.getEnv().it = function(desc, func) {
-    return oit(desc, function(done) { 
+  it = function(testDescription, testFunc) {
+    return oit(testDescription, function() { 
       if (!suite || suite.preconditions) {
-        func(done);
+        var start = Date.now();
+        testFunc();
+        var elapsed = Date.now() - start;
+        if (elapsed > 20) {
+          WARN("PERF: " + elapsed + " ms: " + testDescription);
+        }
       } else {
         pending();
       }
-      done();
     });
   };
+
+  wait = function(testDescription, asyncTestFunc) {
+    return oit(testDescription, function(done) { 
+      if (!suite || suite.preconditions) {
+        suite.startTime = Date.now();
+        asyncTestFunc(done);  // asyncTestFunc is expected to call done()
+      } else {
+        pending();
+        done();
+      }
+    });
+  };
+
+  jasmine.getEnv().wait = wait;
+  jasmine.getEnv().oit = oit;
+  jasmine.getEnv().it = it;
 
 })();
 
@@ -565,11 +595,27 @@
 //
 xdescribe("Test framework", function() {
 
-  describe("beforeEach", function() {
+  describe("extended forms of 'it'", function() {
+    
+    beforeEach(setup.bind(this, null));
 
-    oit("must not be required", function() {
+    oit("'oit'", function() {
       expect(true).toEqual(true);
     });
+    
+    it("'it'", function() {
+      expect(true).toEqual(true);
+      expect(false).toEqual(false);
+    });
+
+    wait("'wait'", function(done) {
+      setTimeout(done, 1);
+    });
+
+  });
+
+
+  describe("beforeEach", function() {
 
     describe("setup.bind(this, null)", function() {
       
@@ -581,6 +627,15 @@ xdescribe("Test framework", function() {
       
       oit("must set suite.preconditions === true", function() {
         expect(window.suite && suite.preconditions).toEqual(true);
+      });
+
+      it("must work with 'it'", function() {
+        expect(window.suite && suite.preconditions).toEqual(true);
+      });
+
+      wait("must work with 'wait'", function(done) {
+        expect(window.suite && suite.preconditions).toEqual(true);
+        setTimeout(done, 1);
       });
 
     });
@@ -603,24 +658,13 @@ xdescribe("Test framework", function() {
         expect(window.suite.foo).toEqual('bar');
       });
 
-    });
-
-    describe("setup.bind(this, functionThatThrows)", function() {
-      
-      beforeEach(setup.bind(this, function() { 
-        invalidStatement; 
-      }));
-
-      oit("must define the global 'suite' namespace", function() {
-        expect(window.suite).toBeDefined();
-      });
-      
-      oit("must set suite.preconditions === false", function() {
-        expect(window.suite.preconditions).toEqual(false);
+      it("must work with 'it'", function() {
+        expect(window.suite.foo).toEqual('bar');
       });
 
-      it("must set this test as 'pending'", function() {
-        expect(true).toEqual(false);
+      wait("must work with 'wait'", function(done) {
+        expect(window.suite.foo).toEqual('bar');
+        setTimeout(done, 1);
       });
 
     });
@@ -643,6 +687,42 @@ xdescribe("Test framework", function() {
         expect(typeof suite.source).toEqual('string');
       });
       
+      it("must work with 'it'", function() {
+        expect(typeof suite.source).toEqual('string');
+      });
+
+      wait("must work with 'wait'", function(done) {
+        setTimeout(function() {
+          expect(typeof suite.source).toEqual('string');
+          done();
+        }, 1);
+      });
+
+    });
+
+    describe("setup.bind(this, functionThatThrows)", function() {
+      
+      beforeEach(setup.bind(this, function() { 
+        invalidStatement; 
+      }));
+
+      oit("must define the global 'suite' namespace", function() {
+        expect(window.suite).toBeDefined();
+      });
+      
+      oit("must set suite.preconditions === false", function() {
+        expect(window.suite.preconditions).toEqual(false);
+      });
+
+      it("must set this 'it' test as 'pending'", function() {
+        expect(true).toEqual(false);
+      });
+
+      wait("must set this 'wait' test as 'pending'", function(done) {
+        expect(true).toEqual(false);
+        setTimeout(done, 1);
+      });
+
     });
 
     describe("setupWithSource.bind(this, uri, functionThatThrows)", function() {
@@ -657,8 +737,13 @@ xdescribe("Test framework", function() {
         expect(window.suite.preconditions).toEqual(false);
       });
       
-      it("must set this test as 'pending'", function() {
+      it("must set this 'it' test as 'pending'", function() {
         expect(true).toEqual(false);
+      });
+
+      wait("must set this 'wait' test as 'pending'", function(done) {
+        expect(true).toEqual(false);
+        setTimeout(done, 1);
       });
 
     });
@@ -675,8 +760,13 @@ xdescribe("Test framework", function() {
         expect(window.suite.preconditions).toEqual(false);
       });
       
-      it("must set this test as 'pending'", function() {
+      it("must set this 'it' test as 'pending'", function() {
         expect(true).toEqual(false);
+      });
+
+      wait("must set this 'wait' test as 'pending'", function(done) {
+        expect(true).toEqual(false);
+        setTimeout(done, 1);
       });
 
     });
