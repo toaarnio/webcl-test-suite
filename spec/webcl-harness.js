@@ -280,9 +280,9 @@
       Int :                 [ 'undefined', 'null',                      '1.01', '[]', '[1]', '{}', '""', '"foo"', 'true', 'new Uint32Array(1)' ],
       Uint :                [ 'undefined', 'null', '-1',                '1.01', '[]', '[1]', '{}', '""', '"foo"', 'true', 'new Uint32Array(1)' ],
       OptionalUint:         [                      '-1',                '1.01', '[]', '[1]', '{}', '""', '"foo"', 'true', 'new Uint32Array(1)' ],
-      UintNonZero :         [ 'undefined', 'null', '-1', '0',           '1.01', '[]', '[1]', '{}', '""', '"foo"', 'true', 'new Uint32Array(1)' ],
-      Enum :                [ 'undefined', 'null', '-1', '0', '0x2001', '1.01', '[]', '[1]', '{}', '""', '"foo"', 'true', 'new Uint32Array(1)' ],
-      OptionalEnum :        [              'null', '-1', '0', '0x2001', '1.01', '[]', '[1]', '{}', '""', '"foo"', 'true', 'new Uint32Array(1)' ],
+      UintNonZero :         [ 'undefined', 'null', '-1',                '1.01', '[]', '[1]', '{}', '""', '"foo"', 'true', 'new Uint32Array(1)' ],
+      Enum :                [ 'undefined', 'null', '-1',                '1.01', '[]', '[1]', '{}', '""', '"foo"', 'true', 'new Uint32Array(1)' ],
+      OptionalEnum :        [              'null', '-1',                '1.01', '[]', '[1]', '{}', '""', '"foo"', 'true', 'new Uint32Array(1)' ],
       String :              [ 'undefined', 'null', '-1', '0',                   '[]', '[1]', '{}',                'true',                      ],
       NonEmptyString :      [ 'undefined', 'null', '-1', '0',                   '[]', '[1]', '{}', '""',          'true',                      ],
       OptionalString :      [                      '-1', '0', '1',              '[]', '[1]', '{}',                'true',                      ],
@@ -304,18 +304,9 @@
 
     for (var i=0; i < signature.length; i++) {
       var invalidArgs = undefined;
-      if (Array.isArray(signature[i])) {
-        var arrayElementTypes = signature[i];
-        invalidArgs = [ '[0]', '[0, 0]', '[0, 0, 0, 0]' ];
-        var invalidArgsForElement0 = fuzzMap[arrayElementTypes[0]];
-        var invalidArgsForElement1 = fuzzMap[arrayElementTypes[1]];
-        var invalidArgsForElement2 = fuzzMap[arrayElementTypes[2]];
-        var invalidArrayArgs = "'["+invalidArgsForElement0+", "+invalidArgsForElement1+", "+invalidArgsForElement2+"]'";
-        DEBUG("fuzz args for UintArray3: ", invalidArrayArgs);
-      } else {
-        invalidArgs = fuzzMap[signature[i]];
-        expect(invalidArgs).not.toBeUndefined();
-      }
+      invalidArgs = fuzzMap[signature[i]];
+      expect(invalidArgs).not.toBeUndefined();
+
       if (argsToTest.indexOf(i) !== -1) {
         if (customInvalidArgs && customInvalidArgs[i]) {
           invalidArgs = invalidArgs.concat(customInvalidArgs[i]);
@@ -424,7 +415,7 @@
               message: "Expected '" + actual + "' to throw " + (expected || "any exception") + ", but it threw nothing.",
             };
           } catch(e) {
-            DEBUG(e);
+            DEBUG(e.name + ": " + e.message);
             var result = {};
             result.pass = (expected === undefined) || (e.name === expected && e.message && e.message.length > 0 && e.message !== e.name);
             if (expected === undefined) {
