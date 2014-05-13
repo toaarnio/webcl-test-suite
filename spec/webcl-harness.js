@@ -14,7 +14,7 @@
 
 //////////////////////////////////////////////////////////////////////////////
 //
-// Test suite setup & utility functions:
+// Test suite setup & utility functions + global variables:
 //
 //  * INFO(msg)
 //  * ERROR(msg)
@@ -33,6 +33,27 @@
 //  * fuzz()
 //
 (function() {
+
+  targetVersion = "2014-05-13";
+
+  (function promptForInstall() {
+    var isFirefox = (navigator.userAgent.toLowerCase().indexOf('firefox') >= 0);
+    var hasWebCL = (window.webcl && webcl.version);
+    if (isFirefox && !hasWebCL) {
+      var message = "This page requires Nokia WebCL for Firefox. Install?"
+      if (confirm(message)) window.location = 'webcl-1.0.xpi';
+    }
+  })();
+
+  (function promptForUpdate() {
+    if (window.webcl && webcl.version) {
+      var currentVersion = webcl.version.slice(0,10);
+      if (currentVersion < targetVersion) {
+        var message = "Update Nokia WebCL?\n\nLatest version:\t\t"+targetVersion+"\nCurrently installed:\t"+currentVersion;
+        if (confirm(message)) window.location = 'webcl-1.0.xpi';
+      }
+    }
+  })();
 
   (function getURLParameters() {
     READY = (getURLParameter('run') === 'true');
