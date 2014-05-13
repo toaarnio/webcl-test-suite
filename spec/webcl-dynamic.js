@@ -806,7 +806,7 @@ describe("Runtime", function() {
         argc('program.build', valid, 'WEBCL_SYNTAX_ERROR');
         fuzz('program.build', signature, valid, invalid, [0], 'INVALID_VALUE');
         fuzz('program.build', signature, valid, invalid, [1], 'INVALID_BUILD_OPTIONS');
-        fuzz('program.build', signature, valid, invalid, [2], 'INVALID_VALUE');
+        fuzz('program.build', signature, valid, invalid, [2], 'TypeError');
       });
 
       it("build(<invalid build options>) must throw", function() {
