@@ -1012,7 +1012,7 @@ describe("Runtime", function() {
     // 
     describe("getWorkGroupInfo", function() {
 
-      var signature = [ 'WebCLObject', 'Enum' ];
+      var signature = [ 'OptionalWebCLObject', 'Enum' ];
       var valid = [ 'device', 'WebCL.KERNEL_WORK_GROUP_SIZE' ];
 
       beforeEach(setup.bind(this, function() {
@@ -1024,7 +1024,7 @@ describe("Runtime", function() {
         kernel = program.createKernel("dummy");
       }));
 
-      it("getWorkGroupInfo(<validEnum>) must work", function() {
+      it("getWorkGroupInfo(<valid enum>) must work", function() {
         expect('kernel.getWorkGroupInfo(device, WebCL.KERNEL_WORK_GROUP_SIZE)').not.toThrow();
         expect('kernel.getWorkGroupInfo(device, WebCL.KERNEL_COMPILE_WORK_GROUP_SIZE)').not.toThrow();
         expect('kernel.getWorkGroupInfo(device, WebCL.KERNEL_LOCAL_MEM_SIZE)').not.toThrow();
@@ -1038,6 +1038,9 @@ describe("Runtime", function() {
         expect('kernel.getWorkGroupInfo(device, WebCL.KERNEL_LOCAL_MEM_SIZE) >= 0').toEvalAs(true);
         expect('kernel.getWorkGroupInfo(device, WebCL.KERNEL_PREFERRED_WORK_GROUP_SIZE_MULTIPLE)').not.toEvalAs(0);
         expect('kernel.getWorkGroupInfo(device, WebCL.KERNEL_PRIVATE_MEM_SIZE) >= 0').toEvalAs(true);
+        expect('kernel.getWorkGroupInfo(device, WebCL.KERNEL_WORK_GROUP_SIZE)').not.toThrow();
+        expect('kernel.getWorkGroupInfo(undefined, WebCL.KERNEL_WORK_GROUP_SIZE)').not.toThrow();
+        expect('kernel.getWorkGroupInfo(null, WebCL.KERNEL_WORK_GROUP_SIZE)').not.toThrow();
       });
 
       it("getWorkGroupInfo(COMPILE_WORK_GROUP_SIZE) must report the expected reqd_work_group_size", function() {
@@ -1336,7 +1339,7 @@ describe("Runtime", function() {
           argc('queue.enqueueReadBuffer', valid, 'WEBCL_SYNTAX_ERROR');
           fuzz('queue.enqueueReadBuffer', signature, valid, null, [0], 'INVALID_MEM_OBJECT');
           fuzz('queue.enqueueReadBuffer', signature, valid, null, [1, 2, 3, 4], 'TypeError');
-          fuzz('queue.enqueueReadBuffer', signature, valid, null, [5], 'INVALID_EVENT_WAIT_LIST');
+          fuzz('queue.enqueueReadBuffer', signature, valid, null, [5], 'TypeError');
           fuzz('queue.enqueueReadBuffer', signature, valid, null, [6], 'INVALID_EVENT');
         });
 
@@ -1384,7 +1387,7 @@ describe("Runtime", function() {
           argc('queue.enqueueWriteBuffer', valid, 'WEBCL_SYNTAX_ERROR');
           fuzz('queue.enqueueWriteBuffer', signature, valid, null, [0], 'INVALID_MEM_OBJECT');
           fuzz('queue.enqueueWriteBuffer', signature, valid, null, [1, 2, 3, 4], 'TypeError');
-          fuzz('queue.enqueueWriteBuffer', signature, valid, null, [5], 'INVALID_EVENT_WAIT_LIST');
+          fuzz('queue.enqueueWriteBuffer', signature, valid, null, [5], 'TypeError');
           fuzz('queue.enqueueWriteBuffer', signature, valid, null, [6], 'INVALID_EVENT');
         });
 
@@ -1451,7 +1454,7 @@ describe("Runtime", function() {
           argc('queue.enqueueCopyBuffer', valid, 'WEBCL_SYNTAX_ERROR');
           fuzz('queue.enqueueCopyBuffer', signature, valid, null, [0, 1], 'INVALID_MEM_OBJECT');
           fuzz('queue.enqueueCopyBuffer', signature, valid, null, [2, 3, 4], 'TypeError');
-          fuzz('queue.enqueueCopyBuffer', signature, valid, null, [5], 'INVALID_EVENT_WAIT_LIST');
+          fuzz('queue.enqueueCopyBuffer', signature, valid, null, [5], 'TypeError');
           fuzz('queue.enqueueCopyBuffer', signature, valid, null, [6], 'INVALID_EVENT');
         });
 
@@ -1498,7 +1501,7 @@ describe("Runtime", function() {
           argc('queue.enqueueCopyBufferRect', valid, 'WEBCL_SYNTAX_ERROR');
           fuzz('queue.enqueueCopyBufferRect', signature, valid, null, [0, 1], 'INVALID_MEM_OBJECT');
           fuzz('queue.enqueueCopyBufferRect', signature, valid, null, [2, 3, 4, 5, 6, 7, 8], 'TypeError');
-          fuzz('queue.enqueueCopyBufferRect', signature, valid, null, [9], 'INVALID_EVENT_WAIT_LIST');
+          fuzz('queue.enqueueCopyBufferRect', signature, valid, null, [9], 'TypeError');
           fuzz('queue.enqueueCopyBufferRect', signature, valid, null, [10], 'INVALID_EVENT');
         });
 
@@ -1583,7 +1586,7 @@ describe("Runtime", function() {
           argc('queue.enqueueReadImage', valid, 'WEBCL_SYNTAX_ERROR');
           fuzz('queue.enqueueReadImage', signature, valid, null, [0], 'INVALID_MEM_OBJECT');
           fuzz('queue.enqueueReadImage', signature, valid, null, [1, 2, 3, 4, 5], 'TypeError');
-          fuzz('queue.enqueueReadImage', signature, valid, null, [6], 'INVALID_EVENT_WAIT_LIST');
+          fuzz('queue.enqueueReadImage', signature, valid, null, [6], 'TypeError');
           fuzz('queue.enqueueReadImage', signature, valid, null, [7], 'INVALID_EVENT');
         });
 
@@ -1676,7 +1679,7 @@ describe("Runtime", function() {
           argc('queue.enqueueWriteImage', valid, 'WEBCL_SYNTAX_ERROR');
           fuzz('queue.enqueueWriteImage', signature, valid, null, [0], 'INVALID_MEM_OBJECT');
           fuzz('queue.enqueueWriteImage', signature, valid, null, [1, 2, 3, 4, 5], 'TypeError');
-          fuzz('queue.enqueueWriteImage', signature, valid, null, [6], 'INVALID_EVENT_WAIT_LIST');
+          fuzz('queue.enqueueWriteImage', signature, valid, null, [6], 'TypeError');
           fuzz('queue.enqueueWriteImage', signature, valid, null, [7], 'INVALID_EVENT');
         });
 
@@ -1780,7 +1783,7 @@ describe("Runtime", function() {
           argc('queue.enqueueCopyImage', valid, 'WEBCL_SYNTAX_ERROR');
           fuzz('queue.enqueueCopyImage', signature, valid, null, [0, 1], 'INVALID_MEM_OBJECT');
           fuzz('queue.enqueueCopyImage', signature, valid, null, [2, 3, 4], 'TypeError');
-          fuzz('queue.enqueueCopyImage', signature, valid, null, [5], 'INVALID_EVENT_WAIT_LIST');
+          fuzz('queue.enqueueCopyImage', signature, valid, null, [5], 'TypeError');
           fuzz('queue.enqueueCopyImage', signature, valid, null, [6], 'INVALID_EVENT');
           expect('queue.enqueueCopyImage(image1, image2, [0,0,0], [0,0], [W,H])').toThrow('INVALID_VALUE');
           expect('queue.enqueueCopyImage(image1, image2, [0,0], [0,0,0], [W,H])').toThrow('INVALID_VALUE');
@@ -1890,7 +1893,7 @@ describe("Runtime", function() {
         argc('queue.enqueueNDRangeKernel', valid, 'WEBCL_SYNTAX_ERROR');
         fuzz('queue.enqueueNDRangeKernel', signature, valid, null, [0], 'INVALID_KERNEL');
         fuzz('queue.enqueueNDRangeKernel', signature, valid, null, [1, 2, 3, 4], 'TypeError');
-        fuzz('queue.enqueueNDRangeKernel', signature, valid, null, [5], 'INVALID_EVENT_WAIT_LIST');
+        fuzz('queue.enqueueNDRangeKernel', signature, valid, null, [5], 'TypeError');
         fuzz('queue.enqueueNDRangeKernel', signature, valid, null, [6], 'INVALID_EVENT');
       });
 
@@ -2042,7 +2045,7 @@ describe("Runtime", function() {
 
       var API = {
         'webcl.waitForEvents' : { 
-          signature : [ 'NonEmptyArray', 'OptionalFunction' ],
+          signature : [ 'Array', 'OptionalFunction' ],
           validArgs : [ '[ emptyEvent ]', 'undefined' ],
         },
       };
@@ -2089,7 +2092,8 @@ describe("Runtime", function() {
       
       it("waitForEvents(<invalid arguments>) must throw", function() {
         argc('webcl.waitForEvents', API['webcl.waitForEvents'].validArgs);
-        fuzz2('webcl.waitForEvents', API, [0], 'INVALID_VALUE');
+        fuzz2('webcl.waitForEvents', API, [0], 'TypeError');
+        expect('webcl.waitForEvents([])').toThrow('INVALID_VALUE');
       });
 
       it("waitForEvents(<invalid event in wait list>) must throw", function() {

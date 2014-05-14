@@ -34,7 +34,7 @@
 //
 (function() {
 
-  targetVersion = "2014-05-13";
+  targetVersion = "2014-05-14";
 
   (function promptForInstall() {
     var isFirefox = (navigator.userAgent.toLowerCase().indexOf('firefox') >= 0);
