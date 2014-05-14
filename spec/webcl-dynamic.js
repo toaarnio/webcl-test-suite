@@ -277,6 +277,9 @@ describe("Runtime", function() {
       it("createProgram(<invalid arguments>) must throw", function() {
         argc('ctx.createProgram', valid, 'WEBCL_SYNTAX_ERROR');
         fuzz('ctx.createProgram', signature, valid, null, [0], 'INVALID_VALUE');
+        expect('ctx.createProgram("")').toThrow('INVALID_VALUE');
+        expect('ctx.createProgram(null)').toThrow('TypeError');
+        expect('ctx.createProgram(undefined)').toThrow('TypeError');
       });
 
     });
