@@ -327,7 +327,6 @@
       Enum :                [ 'undefined', 'null', '-1',                '1.01', '[]', '[1]', '{}', '""', '"foo"', 'true', 'new Uint32Array(1)' ],
       OptionalEnum :        [              'null', '-1',                '1.01', '[]', '[1]', '{}', '""', '"foo"', 'true', 'new Uint32Array(1)' ],
       String :              [ 'undefined', 'null', '-1', '0',                   '[]', '[1]', '{}',                'true',                      ],
-      NonEmptyString :      [ 'undefined', 'null', '-1', '0',                   '[]', '[1]', '{}', '""',          'true',                      ],
       OptionalString :      [                      '-1', '0', '1',              '[]', '[1]', '{}',                'true',                      ],
       Array :               [ 'undefined', 'null', '-1', '0', '1',                           '{}', '""', '"foo"', 'true', 'new Uint32Array(8)' ],
       OptionalArray :       [                      '-1', '0', '1',                           '{}', '""', '"foo"', 'true', 'new Uint32Array(8)' ],

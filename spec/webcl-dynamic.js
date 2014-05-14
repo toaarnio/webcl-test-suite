@@ -266,20 +266,18 @@ describe("Runtime", function() {
     // 
     describe("createProgram", function() {
 
-      var signature = [ 'NonEmptyString' ];
+      var signature = [ 'String' ];
       var valid = [ '"foo"' ];
 
-      it("createProgram(<validString>) must not throw", function() {
+      it("createProgram(<valid string>) must not throw", function() {
         expect('ctx.createProgram("foobar")').not.toThrow();
         expect('ctx.createProgram("foobar") instanceof WebCLProgram').toEvalAs(true);
       });
 
       it("createProgram(<invalid arguments>) must throw", function() {
         argc('ctx.createProgram', valid, 'WEBCL_SYNTAX_ERROR');
-        fuzz('ctx.createProgram', signature, valid, null, [0], 'INVALID_VALUE');
+        fuzz('ctx.createProgram', signature, valid, null, [0], 'TypeError');
         expect('ctx.createProgram("")').toThrow('INVALID_VALUE');
-        expect('ctx.createProgram(null)').toThrow('TypeError');
-        expect('ctx.createProgram(undefined)').toThrow('TypeError');
       });
 
     });
@@ -929,8 +927,9 @@ describe("Runtime", function() {
       it("createKernel*(<invalid arguments>) must throw", function() {
         expect('program.build()').not.toThrow();
         argc('program.createKernel', valid, 'WEBCL_SYNTAX_ERROR');
-        fuzz('program.createKernel', signature, valid, null, [0], 'INVALID_KERNEL_NAME');
         argc('program.createKernelsInProgram', [], 'WEBCL_SYNTAX_ERROR');
+        fuzz('program.createKernel', signature, valid, null, [0], 'TypeError');
+        expect('program.createKernel("")').toThrow('INVALID_KERNEL_NAME');
       });
 
       it("createKernel*() must throw if the program has not been built successfully", function() {
