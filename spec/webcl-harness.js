@@ -34,7 +34,9 @@
 //
 (function() {
 
-  targetVersion = "2014-05-14";
+  GLOBALS = {};
+  GLOBALS.targetVersion = "2014-05-14";
+  GLOBALS.DEVICES = [];
 
   (function promptForInstall() {
     var isFirefox = (navigator.userAgent.toLowerCase().indexOf('firefox') >= 0);
@@ -48,10 +50,18 @@
   (function promptForUpdate() {
     if (window.webcl && webcl.version) {
       var currentVersion = webcl.version.slice(0,10);
-      if (currentVersion < targetVersion) {
+      if (currentVersion < GLOBALS.targetVersion) {
         var message = "Update Nokia WebCL?\n\nLatest version:\t\t"+targetVersion+"\nCurrently installed:\t"+currentVersion;
         if (confirm(message)) window.location = 'webcl-1.0.xpi';
       }
+    }
+  })();
+
+  (function generateDeviceList() {
+    if (window.webcl) {
+      webcl.getPlatforms().forEach(function(plat) {
+        Array.prototype.push.apply(GLOBALS.DEVICES, plat.getDevices());
+      });
     }
   })();
 
@@ -63,7 +73,8 @@
     WARN = (getURLParameter('warn') === 'false') ? new Function() : console.warn.bind(console);
     DEBUG = (getURLParameter('debug') === 'false') ? new Function() : console.debug.bind(console);
     TRACE = (getURLParameter('trace') === 'true') ? console.log.bind(console) : new Function();
-    SELECTED_DEVICE_INDEX = isNaN(+getURLParameter('device')) ? null : +getURLParameter('device');
+    GLOBALS.DEVICE_INDEX = isNaN(+getURLParameter('device')) ? 0 : +getURLParameter('device');
+    GLOBALS.DEVICE_INDEX = Math.min(GLOBALS.DEVICE_INDEX, GLOBALS.DEVICES.length-1);
   })();
 
   // ### setup() ###
@@ -167,16 +178,11 @@
   // Returns the currently selected WebCLDevice.
   // 
   getSelectedDevice = function() {
-    index = SELECTED_DEVICE_INDEX || 0;
-    var devices = [];
-    webcl.getPlatforms().forEach(function(plat) {
-      Array.prototype.push.apply(devices, plat.getDevices());
-    });
+    index = GLOBALS.DEVICE_INDEX;
+    if (GLOBALS.DEVICES[index] === undefined)
+      throw "WebCL Test Suite: Requested the device at index "+index+", but there are only "+GLOBALS.DEVICES.length+" device(s) in this system."
 
-    if (devices[index] === undefined)
-      throw "WebCL Test Suite: Requested the device at index "+index+", but there are only "+devices.length+" device(s) in this system."
-
-    return devices[index];
+    return GLOBALS.DEVICES[index];
   };
 
   // ### createContext() ###
@@ -184,17 +190,33 @@
   // Creates a new WebCLContext for the currently selected Device.
   //
   createContext = function() {
-    try {
-      var selected = getSelectedDevice();
-      var ctx = webcl.createContext(selected);
-      var device = ctx.getInfo(WebCL.CONTEXT_DEVICES)[0];
-      var vendorId = device.getInfo(WebCL.DEVICE_VENDOR_ID);
-      INFO("Creating a Context for Device " + deviceVendors[vendorId] + " (VENDOR_ID="+vendorId+")");
-      ctx.vendor = deviceVendors[vendorId];
-      return ctx;
-    } catch (e) {
-      throw e;
-    }
+    var selected = getSelectedDevice();
+    var ctx = webcl.createContext(selected);
+    var device = ctx.getInfo(WebCL.CONTEXT_DEVICES)[0];
+    var deviceName = getDeviceName(device);
+    INFO("Creating a Context for Device " + deviceName);
+    return ctx;
+  };
+
+  // ### getDeviceName() ###
+  //
+  // Returns a human-readable name for the given WebCLDevice.
+  //
+  getDeviceName = function(device) {
+
+    var deviceVendors = {
+      999 : "Qualcomm - Android",
+      4098 : "AMD - Windows",
+      4318 : "NVIDIA - Windows",
+      32902 : "Intel - Windows",
+      16918016 : "NVIDIA Discrete GPU - Apple",
+      33695232 : "NVIDIA Integrated GPU - Apple",
+      0xffffffff : "Intel CPU - Apple",
+    };
+
+    var vendorId = device.getInfo(WebCL.DEVICE_VENDOR_ID);
+    var vendorString = deviceVendors[vendorId];
+    return vendorString || "<unidentified: "+ vendorId +">";
   };
 
   // ### loadSource() ###
@@ -540,18 +562,6 @@
   //
   function getURLParameter(name) {
     return decodeURIComponent((new RegExp('[?|&]' + name + '=' + '([^&;]+?)(&|#|;|$)').exec(location.search)||[,""])[1].replace(/\+/g, '%20'))||null
-  };
-
-  // [PRIVATE]
-  //
-  var deviceVendors = {
-    999 : "Qualcomm - Android",
-    4098 : "AMD - Windows",
-    4318 : "NVIDIA - Windows",
-    32902 : "Intel - Windows",
-    16918016 : "NVIDIA Discrete GPU - Apple",
-    33695232 : "NVIDIA Integrated GPU - Apple",
-    0xffffffff : "Intel CPU - Apple",
   };
 
   //////////////////////////////////////////////////////////////////////////////
