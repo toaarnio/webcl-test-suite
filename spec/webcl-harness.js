@@ -50,7 +50,8 @@
   (function promptForUpdate() {
     if (window.webcl && webcl.version) {
       var currentVersion = webcl.version.slice(0,10);
-      if (currentVersion < GLOBALS.targetVersion) {
+      var targetVersion = GLOBALS.targetVersion;
+      if (currentVersion < targetVersion) {
         var message = "Update Nokia WebCL?\n\nLatest version:\t\t"+targetVersion+"\nCurrently installed:\t"+currentVersion;
         if (confirm(message)) window.location = 'webcl-1.0.xpi';
       }
