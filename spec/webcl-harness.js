@@ -35,7 +35,7 @@
 (function() {
 
   GLOBALS = {};
-  GLOBALS.targetVersion = "2014-05-14";
+  GLOBALS.targetVersion = "2014-05-15";
   GLOBALS.DEVICES = [];
 
   (function promptForInstall() {
