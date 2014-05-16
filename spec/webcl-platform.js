@@ -21,9 +21,9 @@ describe("Platform", function() {
 
   beforeEach(addCustomMatchers);
 
-  beforeEach(setup.bind(this, function() {
+  customBeforeEach(this, function() {
     if (!window.webcl) throw "WebCL is not available";
-  }));
+  });
 
 
   describe("getPlatforms", function() {
@@ -81,9 +81,9 @@ describe("Platform", function() {
 
   describe("getDevices", function() {
 
-    beforeEach(setup.bind(this, function() {
+    customBeforeEach(this, function() {
       platforms = webcl.getPlatforms();
-    }));
+    });
 
     it("getDevices(ALL || DEFAULT) must work", function() {
       for (i=0; i < platforms.length; i++) {
@@ -143,9 +143,9 @@ describe("Platform", function() {
 
   describe("device.getInfo", function() {
     
-    beforeEach(setup.bind(this, function() {
+    customBeforeEach(this, function() {
       device = getSelectedDevice();
-    }));
+    });
 
     it("device.getInfo(<valid enum>) must not throw", function() {
       for (enumName in deviceInfoEnums) {
@@ -185,10 +185,10 @@ describe("Platform", function() {
 
   describe("JavaScript semantics", function() {
 
-    beforeEach(setup.bind(this, function() {
+    customBeforeEach(this, function() {
       aPlatform = webcl.getPlatforms()[0];
       aDevice = aPlatform.getDevices()[0];
-    }));
+    });
 
     it("objects must accommodate user-defined fields", function() {
       expect('webcl.foo = "bar"').not.toThrow();

@@ -18,10 +18,10 @@
 // 
 describe("Signature", function() {
 
-  beforeEach(setup.bind(this, function() {
+  customBeforeEach(this, function() {
     if (window.webcl === undefined && window.WebCL === undefined)
       throw "Both window.webcl and window.WebCL are undefined."
-  }));
+  });
 
   oit("must have the singleton 'webcl' object", function() {
     expect(window).toHaveProperty('webcl');
