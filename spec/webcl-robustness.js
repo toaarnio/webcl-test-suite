@@ -14,10 +14,10 @@
 
 describe("Robustness", function() {
 
-  beforeEach(setup.bind(this, function() {
+  customBeforeEach(this, function() {
     ctx = createContext();
     device = ctx.getInfo(WebCL.CONTEXT_DEVICES)[0];
-  }));
+  });
 
   // RESOLVED: Some OpenCL drivers screw up reference counting if using clRetain.
   // WORKAROUND: Do not use clRetain in the WebCL layer.
@@ -90,21 +90,26 @@ describe("Robustness", function() {
   // Known failures as of 2014-03-05:
   //  * None
   //
-  oit("must not crash or throw on build(<callback>)", function(done) {
-    if (!suite.preconditions) pending();
+  wait("must not crash or throw on build(<callback>)", function(done) {
     var src = loadSource('kernels/rng.cl');
     program = ctx.createProgram(src);
     program.build(null, null, function() {
-      var elapsed = Date.now() - start;
-      DEBUG("program.build() callback invoked, build took " + elapsed + " ms");
-      DEBUG("Program build status: " + program.getBuildInfo(device, WebCL.PROGRAM_BUILD_STATUS));
-      DEBUG("Program build log: " + program.getBuildInfo(device, WebCL.PROGRAM_BUILD_LOG));
-      expect('program.getBuildInfo(device, WebCL.PROGRAM_BUILD_STATUS)').not.toThrow();
-      expect('program.getBuildInfo(device, WebCL.PROGRAM_BUILD_STATUS)').toEvalAs('WebCL.BUILD_SUCCESS');
-      expect('program.createKernelsInProgram()').not.toThrow();
-      expect('webcl.releaseAll()').not.toThrow();
-      done();
-    })
+      try {
+        var elapsed = Date.now() - start;
+        DEBUG("program.build() callback invoked, build took " + elapsed + " ms");
+        DEBUG("Program build status: " + program.getBuildInfo(device, WebCL.PROGRAM_BUILD_STATUS));
+        DEBUG("Program build log: " + program.getBuildInfo(device, WebCL.PROGRAM_BUILD_LOG));
+        expect('program.getBuildInfo(device, WebCL.PROGRAM_BUILD_STATUS)').not.toThrow();
+        expect('program.getBuildInfo(device, WebCL.PROGRAM_BUILD_STATUS)').toEvalAs('WebCL.BUILD_SUCCESS');
+        expect('program.createKernelsInProgram()').not.toThrow();
+        expect('webcl.releaseAll()').not.toThrow();
+        expect('webcl.createContext()').toThrow('INVALID_OPERATION');
+        done();
+      } catch(e) {
+        DEBUG("program.build() callback threw exception " + e);
+        done();
+      }
+    });
     DEBUG("program.build() initiated, waiting for callback...");
     var start = Date.now();
   });
@@ -128,8 +133,7 @@ describe("Robustness", function() {
   //  * Win7 / Firefox 64-bit / Intel CPU driver (crashes randomly)
   //  * Mac OSX 10.9 (crashes)
   //
-  oit("must not crash on setArg(<invalidArgument>)", function() {
-    if (!suite.preconditions) pending();
+  it("must not crash on setArg(<invalidArgument>)", function() {
     var r = confirm("This test case will crash your browser on all known OpenCL drivers. Run anyway?");
     if (r === false) pending();
     src = loadSource('kernels/argtypes.cl');
@@ -151,8 +155,7 @@ describe("Robustness", function() {
   //  * Win7 / NVIDIA GPU driver (crashes)
   //  * Win7 / Intel CPU driver (freezes)
   //
-  oit("must not crash compiling a kernel that allocates 6 GB of 'local' memory", function() {
-    if (!suite.preconditions) pending();
+  it("must not crash compiling a kernel that allocates 6 GB of 'local' memory", function() {
     var r = confirm("This test case will crash your browser on Windows. Run anyway?");
     if (r === false) pending();
     expect('kernels/largeArrayLocal.cl').not.toBuild();
