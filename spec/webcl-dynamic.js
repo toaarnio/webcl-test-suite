@@ -2113,10 +2113,13 @@ describe("Runtime", function() {
         expect('webcl.waitForEvents([eventCtx1, eventCtx2])').toThrow('INVALID_CONTEXT');
       });
 
-      it("enqueueWaitForEvents(<invalid event in wait list>) must throw", function() {
+      it("enqueueWaitForEvents(<invalid eventWaitList>) must throw", function() {
         userEvent.setStatus(-1);
         expect('queue.enqueueWaitForEvents([userEvent])').toThrow('EXEC_STATUS_ERROR_FOR_EVENTS_IN_WAIT_LIST');
         expect('queue.enqueueWaitForEvents([emptyEvent])').toThrow('INVALID_EVENT_WAIT_LIST');
+        expect('queue.enqueueWaitForEvents([])').toThrow('INVALID_VALUE');
+        expect('queue.enqueueWaitForEvents(null)').toThrow('TypeError');
+        expect('queue.enqueueWaitForEvents({})').toThrow('TypeError');
         expect('queue.enqueueMarker(emptyEvent)').not.toThrow();
         expect('queue.enqueueWaitForEvents([emptyEvent])').not.toThrow();
         expect('queue.finish()').not.toThrow();
