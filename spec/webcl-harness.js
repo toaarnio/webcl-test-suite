@@ -40,7 +40,7 @@ jasmine.webclTestHarness = function() {
 
   GLOBALS = {};
 
-  GLOBALS.targetVersion = "2014-05-19";
+  GLOBALS.targetVersion = "2014-05-20";
 
   GLOBALS.DEVICES = getDeviceList();
 
@@ -110,10 +110,11 @@ jasmine.webclTestHarness = function() {
   this.getDeviceName = function(device) {
 
     var deviceVendors = {
+      604 : "ARM - Android",
       999 : "Qualcomm - Android",
-      4098 : "AMD - Windows",
+      4098 : "AMD - Windows/Linux",
       4318 : "NVIDIA - Windows",
-      32902 : "Intel - Windows",
+      32902 : "Intel - Windows/Linux",
       16918016 : "NVIDIA Discrete GPU - Apple",
       33695232 : "NVIDIA Integrated GPU - Apple",
       0xffffffff : "Intel CPU - Apple",
