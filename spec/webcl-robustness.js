@@ -15,7 +15,7 @@
 describe("Robustness", function() {
 
   beforeEach(function(done) {
-    jasmine.DEFAULT_TIMEOUT_INTERVAL = 2000;
+    jasmine.DEFAULT_TIMEOUT_INTERVAL = 5000;
     setTimeout(done, 5);
   });
 
@@ -92,6 +92,19 @@ describe("Robustness", function() {
     expect('ctx.release()').not.toThrow();
   });
 
+  // RESOLVED: Erroneous typecast in WebCL bindings (lib_ocl/commandqueue.jsm).
+  //
+  it("must not crash or throw on enqueueNDRangeKernel if workDim === 2", function() {
+    queue = ctx.createCommandQueue();
+    buffer = ctx.createBuffer(WebCL.MEM_READ_ONLY, 128);
+    program = ctx.createProgram("kernel void dummy(global uint* buf) { buf[0]=0xdeadbeef; }");
+    devices = ctx.getInfo(WebCL.CONTEXT_DEVICES);
+    program.build(devices);
+    kernel = program.createKernelsInProgram()[0];
+    kernel.setArg(0, buffer);
+    expect('queue.enqueueNDRangeKernel(kernel, 2, null, [8, 2   ]); queue.finish()').not.toThrow();
+  });
+
   // Known failures as of 2014-03-05:
   //  * None
   //
@@ -110,27 +123,12 @@ describe("Robustness", function() {
     });
   });
 
-  // RESOLVED: Erroneous typecast in WebCL bindings (lib_ocl/commandqueue.jsm).
-  //
-  it("must not crash or throw on enqueueNDRangeKernel if workDim === 2", function() {
-    ctx = createContext();
-    queue = ctx.createCommandQueue();
-    buffer = ctx.createBuffer(WebCL.MEM_READ_ONLY, 128);
-    program = ctx.createProgram("kernel void dummy(global uint* buf) { buf[0]=0xdeadbeef; }");
-    devices = ctx.getInfo(WebCL.CONTEXT_DEVICES);
-    program.build(devices);
-    kernel = program.createKernelsInProgram()[0];
-    kernel.setArg(0, buffer);
-    expect('queue.enqueueNDRangeKernel(kernel, 2, null, [8, 2   ]); queue.finish()').not.toThrow();
-  });
-
-
   // Known failures as of 2014-05-21:
   //  * Win7 / Firefox 32-bit / NVIDIA GPU driver (crashes)
   //
   wait("must not crash on waitForEvents(<valid eventWaitList>, <valid callback>)", function(done) {
-    var r = confirm("This test case will crash your browser on NVIDIA OpenCL on Windows. Run anyway?");
-    if (r === false) pending();
+    queue = ctx.createCommandQueue();
+    event = new WebCLEvent();
     window.waitForEventsHandler = function() {
       suite.done = true;
       DEBUG("waitForEvents callback");
@@ -167,7 +165,7 @@ describe("Robustness", function() {
   //  * Win7 / Intel CPU driver
   //  * Win7 / Intel GPU driver (crashes)
   //
-  it("must not allow 'extern' variables", function() {
+  it("must not crash on compiling a program that uses 'extern' variables", function() {
     var r = confirm("This test case will crash your browser on the Intel HD4400 GPU on Windows. Run anyway?");
     if (r === false) pending();
     expect('kernels/externVariable.cl').not.toBuild();
