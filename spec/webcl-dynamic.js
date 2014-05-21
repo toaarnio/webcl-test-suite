@@ -14,10 +14,11 @@
 
 describe("Runtime", function() {
 
-  // Inject a 5-millisecond "sleep" between each test to avoid freezing
-  // the browser on slow machines.
+  // Inject a 5-millisecond "sleep" between each test to avoid freezing the browser on slow
+  // machines. Also set the default timeout for async tests to 2000 ms (default = 5000 ms).
 
   beforeEach(function(done) {
+    jasmine.DEFAULT_TIMEOUT_INTERVAL = 2000;
     setTimeout(done, 5);
   });
 
@@ -770,8 +771,8 @@ describe("Runtime", function() {
 
       wait("build() must work in asynchronous form", function(done) {
         program.build([device], null, function() { 
+          suite.done = true;
           expect('program.getBuildInfo(device, WebCL.PROGRAM_BUILD_STATUS)').toEvalAs('WebCL.BUILD_SUCCESS');
-          done(); 
         });
         expect('program.getBuildInfo(device, WebCL.PROGRAM_BUILD_STATUS) < 0').toEvalAs(true);
       });
@@ -830,19 +831,19 @@ describe("Runtime", function() {
 
       wait("build() must throw if called synchronously from a WebCLCallback", function(done) {
         program.build(null, null, function() {
+          suite.done = true;
           expect('program.build()').toThrow('INVALID_OPERATION');
           expect('program.build(null)').toThrow('INVALID_OPERATION');
           expect('program.build(devices)').toThrow('INVALID_OPERATION');
           expect('program.build([device])').toThrow('INVALID_OPERATION');
           expect('program.build([device])').toThrow('INVALID_OPERATION');
-          done();
         });
       });
 
       wait("build() must throw if a previous build is still in progress", function(done) {
         program.build(null, null, function() {
+          suite.done = true;
           expect('program.getBuildInfo(device, WebCL.PROGRAM_BUILD_STATUS)').toEvalAs('WebCL.BUILD_SUCCESS');
-          done();
         });
         expect('program.build()').toThrow('INVALID_OPERATION');
       });
@@ -2006,7 +2007,7 @@ describe("Runtime", function() {
 
     //////////////////////////////////////////////////////////////////////////////
     //
-    // Runtime -> WebCLEvent -> Initialization
+    // Runtime -> WebCLEvent -> Initializing
     // 
     describe("Initializing", function() {
 
@@ -2041,7 +2042,7 @@ describe("Runtime", function() {
 
     //////////////////////////////////////////////////////////////////////////////
     //
-    // Runtime -> WebCLEvent -> Wait lists
+    // Runtime -> WebCLEvent -> Waiting
     // 
     describe("Waiting", function() {
 
