@@ -18,6 +18,14 @@
 // 
 describe("Kernel language", function() {
 
+  // Inject a 5-millisecond "sleep" between each test to avoid freezing the browser on slow
+  // machines. Also set the default timeout for async tests to 2000 ms (default = 5000 ms).
+
+  beforeEach(function(done) {
+    jasmine.DEFAULT_TIMEOUT_INTERVAL = 2000;
+    setTimeout(done, 5);
+  });
+
   beforeEach(setup.bind(this, function() {
     ctx = createContext();
     mustBuild = ctx.createProgram("kernel void dummy(global uint* buf) { buf[0]=0xdeadbeef; }");
@@ -65,8 +73,9 @@ describe("Kernel language", function() {
     // Known failures as of 2014-02-12:
     //  * Win7 / NVIDIA GPU driver
     //  * Win7 / Intel CPU driver
+    //  * Win7 / Intel GPU driver (crashes)
     //
-    it("must not allow 'extern' variables", function() {
+    xit("must not allow 'extern' variables", function() {
       expect('kernels/externVariable.cl').not.toBuild();
     });
 

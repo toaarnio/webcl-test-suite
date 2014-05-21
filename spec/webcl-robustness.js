@@ -14,6 +14,11 @@
 
 describe("Robustness", function() {
 
+  beforeEach(function(done) {
+    jasmine.DEFAULT_TIMEOUT_INTERVAL = 2000;
+    setTimeout(done, 5);
+  });
+
   customBeforeEach(this, function() {
     ctx = createContext();
     device = ctx.getInfo(WebCL.CONTEXT_DEVICES)[0];
@@ -95,23 +100,14 @@ describe("Robustness", function() {
     program = ctx.createProgram(src);
     program.build(null, null, function() {
       try {
-        var elapsed = Date.now() - start;
+        suite.done = true;
+        var elapsed = Date.now() - suite.startTime;
         DEBUG("program.build() callback invoked, build took " + elapsed + " ms");
-        DEBUG("Program build status: " + program.getBuildInfo(device, WebCL.PROGRAM_BUILD_STATUS));
-        DEBUG("Program build log: " + program.getBuildInfo(device, WebCL.PROGRAM_BUILD_LOG));
         expect('program.getBuildInfo(device, WebCL.PROGRAM_BUILD_STATUS)').not.toThrow();
         expect('program.getBuildInfo(device, WebCL.PROGRAM_BUILD_STATUS)').toEvalAs('WebCL.BUILD_SUCCESS');
         expect('program.createKernelsInProgram()').not.toThrow();
-        expect('webcl.releaseAll()').not.toThrow();
-        expect('webcl.createContext()').toThrow('INVALID_OPERATION');
-        done();
-      } catch(e) {
-        DEBUG("program.build() callback threw exception " + e);
-        done();
-      }
+      } catch(e) {}
     });
-    DEBUG("program.build() initiated, waiting for callback...");
-    var start = Date.now();
   });
 
   // RESOLVED: Erroneous typecast in WebCL bindings (lib_ocl/commandqueue.jsm).
@@ -126,6 +122,21 @@ describe("Robustness", function() {
     kernel = program.createKernelsInProgram()[0];
     kernel.setArg(0, buffer);
     expect('queue.enqueueNDRangeKernel(kernel, 2, null, [8, 2   ]); queue.finish()').not.toThrow();
+  });
+
+
+  // Known failures as of 2014-05-21:
+  //  * Win7 / Firefox 32-bit / NVIDIA GPU driver (crashes)
+  //
+  wait("must not crash on waitForEvents(<valid eventWaitList>, <valid callback>)", function(done) {
+    var r = confirm("This test case will crash your browser on NVIDIA OpenCL on Windows. Run anyway?");
+    if (r === false) pending();
+    window.waitForEventsHandler = function() {
+      suite.done = true;
+      DEBUG("waitForEvents callback");
+    };
+    expect('queue.enqueueMarker(event)').not.toThrow();
+    expect('webcl.waitForEvents([event], window.waitForEventsHandler)').not.toThrow();
   });
 
   // Known failures as of 2014-03-05:
@@ -149,6 +160,17 @@ describe("Robustness", function() {
     expect('kernel.setArg(3, new Uint32Array( [0xdeadbeef] ))').toThrow('INVALID_SAMPLER');     // WebCLSampler expected
     expect('kernel.setArg(3, new Uint32Array( [-1, -2, -3] ))').toThrow('INVALID_SAMPLER');     // WebCLSampler expected
     expect('webcl.releaseAll()').not.toThrow();
+  });
+
+  // Known failures as of 2014-02-12:
+  //  * Win7 / NVIDIA GPU driver
+  //  * Win7 / Intel CPU driver
+  //  * Win7 / Intel GPU driver (crashes)
+  //
+  it("must not allow 'extern' variables", function() {
+    var r = confirm("This test case will crash your browser on the Intel HD4400 GPU on Windows. Run anyway?");
+    if (r === false) pending();
+    expect('kernels/externVariable.cl').not.toBuild();
   });
 
   // Known failures as of 2014-02-12:
