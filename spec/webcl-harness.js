@@ -311,11 +311,31 @@ jasmine.webclTestHarness = function() {
     //
     // wait("equivalent to 'it', but used for asynchronous tests", asyncTestFunc);
     //
+    // Rules concerning the asyncTestFunc:
+    //  1. The test function MUST set 'suite.done = true' when ready.
+    //  2. If the flag is not set within 1000 ms, the test is marked as a failure.
+    //  3. The test function MUST NOT throw exceptions from any callback.
+    //
+    // Example:
+    // 
+    //   wait("must not crash or throw on build(<callback>)", function(done) {
+    //     var src = loadSource('kernels/rng.cl');
+    //     program = ctx.createProgram(src);
+    //     program.build(null, null, function() {
+    //       try {                   // <== !IMPORTANT! Wrap everything in a try-catch.
+    //         suite.done = true;    // <== !IMPORTANT! Set this flag to signal completion.
+    //         expect(...);          // <== !IMPORTANT! Use expectations as usual.
+    //       } catch(e) {}
+    //     });
+    //   });
+    //
     wait = function(testDescription, asyncTestFunc) {
       return oit(testDescription, function(done) { 
         if (!suite || suite.preconditions) {
           suite.startTime = Date.now();
-          asyncTestFunc(done);  // asyncTestFunc is expected to call done()
+          suite.done = false;
+          asyncTestFunc(done);
+          waitFor(done);
         } else {
           pending();
           done();
@@ -326,6 +346,21 @@ jasmine.webclTestHarness = function() {
     jasmine.getEnv().wait = wait;
     jasmine.getEnv().oit = oit;
     jasmine.getEnv().it = it;
+
+    // [PRIVATE]
+    //
+    function waitFor(done) {
+      var count = 0;
+      var intervalId = window.setInterval(function() {
+        if (suite.done) {
+          done();
+          window.clearInterval(intervalId);
+        } else if (++count > 100) {
+          window.clearInterval(intervalId);
+        }
+      }, 10);
+    };
+
   };
 
   // [PRIVATE]

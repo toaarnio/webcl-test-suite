@@ -20,6 +20,10 @@
 
 xdescribe("Test framework", function() {
 
+  beforeEach(function() {
+    jasmine.DEFAULT_TIMEOUT_INTERVAL = 1500;
+  });
+
   describe("extended forms of 'it'", function() {
     
     customBeforeEach(this);
@@ -33,8 +37,29 @@ xdescribe("Test framework", function() {
       expect(false).toEqual(false);
     });
 
-    wait("'wait'", function(done) {
-      setTimeout(done, 1);
+    wait("'wait' that does not fail", function(done) {
+      setTimeout(function() { suite.done = true; }, 100);
+    });
+
+    wait("'wait' that fails an expectation [MUST FAIL]", function(done) {
+      expect(true).toEqual(false);
+      setTimeout(function() { suite.done = true; }, 100);
+    });
+
+    wait("'wait' that fails an expectation in a callback [MUST FAIL]", function(done) {
+      setTimeout(function() { 
+        expect(true).toEqual(false); 
+        suite.done = true; 
+      }, 100);
+    });
+
+    wait("'wait' that doesn't complete in 1000 ms  [MUST FAIL]", function(done) {
+      setTimeout(function() { 
+        try {
+          expect(true).toEqual(false); 
+          suite.done = true; 
+        } catch(e) {}
+      }, 2000);
     });
 
   });
@@ -60,7 +85,7 @@ xdescribe("Test framework", function() {
 
       wait("must work with 'wait'", function(done) {
         expect(window.suite && suite.preconditions).toEqual(true);
-        setTimeout(done, 1);
+        setTimeout(function() { suite.done = true; }, 100);
       });
 
     });
@@ -89,7 +114,7 @@ xdescribe("Test framework", function() {
 
       wait("must work with 'wait'", function(done) {
         expect(window.suite.foo).toEqual('bar');
-        setTimeout(done, 1);
+        setTimeout(function() { suite.done = true; }, 100);
       });
 
     });
@@ -119,8 +144,8 @@ xdescribe("Test framework", function() {
       wait("must work with 'wait'", function(done) {
         setTimeout(function() {
           expect(typeof suite.source).toEqual('string');
-          done();
-        }, 1);
+          suite.done = true;
+        }, 100);
       });
 
     });
@@ -145,7 +170,7 @@ xdescribe("Test framework", function() {
 
       wait("must set this 'wait' test as 'pending'", function(done) {
         expect(true).toEqual(false);
-        setTimeout(done, 1);
+        setTimeout(function() { suite.done = true; }, 100);
       });
 
     });
@@ -168,7 +193,7 @@ xdescribe("Test framework", function() {
 
       wait("must set this 'wait' test as 'pending'", function(done) {
         expect(true).toEqual(false);
-        setTimeout(done, 1);
+        setTimeout(function() { suite.done = true; }, 100);
       });
 
     });
@@ -191,7 +216,7 @@ xdescribe("Test framework", function() {
 
       wait("must set this 'wait' test as 'pending'", function(done) {
         expect(true).toEqual(false);
-        setTimeout(done, 1);
+        setTimeout(function() { suite.done = true; }, 100);
       });
 
     });
