@@ -160,14 +160,10 @@ describe("Robustness", function() {
     expect('webcl.releaseAll()').not.toThrow();
   });
 
-  // Known failures as of 2014-02-12:
-  //  * Win7 / NVIDIA GPU driver
-  //  * Win7 / Intel CPU driver
-  //  * Win7 / Intel GPU driver (crashes)
+  // RESOLVED: Intel HD 4400 driver crashes on 'extern' variables.
+  // WORKAROUND: Pass "-D extern=error" in build options.
   //
   it("must not crash on compiling a program that uses 'extern' variables", function() {
-    var r = confirm("This test case will crash your browser on the Intel HD4400 GPU on Windows. Run anyway?");
-    if (r === false) pending();
     expect('kernels/externVariable.cl').not.toBuild();
   });
 
