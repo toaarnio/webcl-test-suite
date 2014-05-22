@@ -161,7 +161,7 @@ describe("Robustness", function() {
   });
 
   // RESOLVED: Intel HD 4400 driver crashes on 'extern' variables.
-  // WORKAROUND: Pass "-D extern=error" in build options.
+  // WORKAROUND: Screen the source code for the string "extern".
   //
   it("must not crash on compiling a program that uses 'extern' variables", function() {
     expect('kernels/externVariable.cl').not.toBuild();

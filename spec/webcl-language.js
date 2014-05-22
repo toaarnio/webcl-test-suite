@@ -36,7 +36,7 @@ describe("Kernel language", function() {
   //
   // Kernel language -> Compiler
   // 
-  describe("Compiler (OpenCL 1.1 conformance)", function() {
+  describe("Compiler (OpenCL 1.2 conformance)", function() {
 
     // Status as of 2014-04-29:
     //  [pass] Win7 / NVIDIA GPU driver (332.21)
@@ -78,6 +78,7 @@ describe("Kernel language", function() {
     // Status as of 2014-04-29:
     //  [pass] Win7 / NVIDIA GPU driver (332.21)
     //  [pass] Win7 / Intel CPU driver (3.0.1.15216)
+    //  [FAIL] OSX 10.9.2 / MBP 2008 / All devices
     //  
     it("must not allow 'memcpy'", function() {
       expect('kernels/memcpy.cl').not.toBuild();
@@ -86,6 +87,7 @@ describe("Kernel language", function() {
     // Status as of 2014-04-29:
     //  [FAIL] Win7 / NVIDIA GPU driver (332.21)
     //  [FAIL] Win7 / Intel CPU driver (3.0.1.15216)
+    //  [FAIL] OSX 10.9.2 / MBP 2008 / All devices
     //
     it("must not allow pointer casts between address spaces", function() {
       expect('kernels/pointerAddressSpaceCast.cl').not.toBuild();
@@ -134,6 +136,7 @@ describe("Kernel language", function() {
     // Status as of 2014-04-29:
     //  [pass] Win7 / NVIDIA GPU driver (332.21)
     //  [pass] Win7 / Intel CPU driver (3.0.1.15216)
+    //  [FAIL] OSX 10.9.2 / MBP 2008 / All devices
     //
     it("must not allow the 'long long' datatype", function() {
       expect('kernels/longlong.cl').not.toBuild();
@@ -142,6 +145,7 @@ describe("Kernel language", function() {
     // Status as of 2014-04-29:
     //  [FAIL] Win7 / NVIDIA GPU driver (332.21)
     //  [pass] Win7 / Intel CPU driver (3.0.1.15216)
+    //  [FAIL] OSX 10.9.2 / MBP 2008 / All devices
     //
     it("must not allow uninitialized variables in 'constant' address space", function() {
       expect('kernels/uninitializedConstant.cl').not.toBuild();
@@ -150,6 +154,7 @@ describe("Kernel language", function() {
     // Status as of 2014-04-29:
     //  [FAIL] Win7 / NVIDIA GPU driver (332.21)
     //  [FAIL] Win7 / Intel CPU driver (3.0.1.15216)
+    //  [FAIL] OSX 10.9.2 / MBP 2008 / Intel CPU
     //
     it("must not allow allocating 6 GB of 'private' memory", function() {
       expect('kernels/largeArrayPrivate.cl').not.toBuild();
@@ -175,30 +180,40 @@ describe("Kernel language", function() {
     //  [CRASH] Win7 / Intel HD 4400
     //
     // WORKAROUND DEPLOYED: 
-    //  Pass "-D extern=error" in build options.
+    //  Reject program if source matches the regexp "extern[\s]+".
+    //  Cannot use "-D extern=error" because that causes a symbol
+    //  conflict on at least OSX 10.9.
     //
     it("must not allow 'extern' variables", function() {
       expect('kernels/externVariable.cl').not.toBuild();
     });
 
     // WORKAROUND DEPLOYED: 
-    //  Pass "-D extern=error" in build options.
+    //  Reject program if source matches the regexp "extern[\s]+".
+    //  Cannot use "-D extern=error" because that causes a symbol
+    //  conflict on at least OSX 10.9.
     //
     it("must not allow 'extern' functions", function() {
       expect('kernels/externFunction.cl').not.toBuild();
     });
 
     // WORKAROUND DEPLOYED: 
-    //  Pass "-D goto=error" in build options.
+    //  Reject program if source matches the regexp "goto[\s]+".
+    //  Cannot use "-D goto=error" because that causes a symbol
+    //  conflict on at least OSX 10.9.
     //
     it("must not allow 'goto'", function() {
       expect('kernels/goto.cl').not.toBuild();
     });
 
+    // NO WORKAROUND -- VALIDATOR REQUIRED
+    //
     it("must not allow 'printf'", function() {
       expect('kernels/printf.cl').not.toBuild();
     });
 
+    // NO WORKAROUND -- VALIDATOR REQUIRED
+    //
     it("must not allow kernel-to-kernel calls", function() {
       expect('kernels/kernel-to-kernel.cl').not.toBuild();
     });
@@ -213,10 +228,14 @@ describe("Kernel language", function() {
       expect('kernels/illegalSampler1.cl').not.toBuild();
     });
 
+    // NO WORKAROUND -- VALIDATOR REQUIRED
+    //
     it("must not allow CLK_NORMALIZED_COORDS_FALSE | CLK_ADDRESS_MODE_REPEAT", function() {
       expect('kernels/illegalSampler2.cl').not.toBuild();
     });
 
+    // NO WORKAROUND -- VALIDATOR REQUIRED
+    //
     // Performs an out-of-bounds write to an int variable through a long
     // pointer. The WebCL validator should catch the illegal pointer cast
     // from int* to long*.
