@@ -1,4 +1,5 @@
-extern constant uint table[256];
+extern
+constant uint table[256];
 
 kernel void use_extern(global uint* result) 
 {
