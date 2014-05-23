@@ -1080,6 +1080,8 @@ describe("Runtime", function() {
         kernelWithMemArgs = program.createKernel('objects');
         kernelWithScalarArgs = program.createKernel('scalars');
         kernelWithVectorArgs = program.createKernel('vectors');
+        kernelWithVector3Args = program.createKernel('vec3');
+        kernelWithVector4Args = program.createKernel('vec4');
         kernelWithLocalArgs = program.createKernel('localmem');
       }));
 
@@ -1105,16 +1107,27 @@ describe("Runtime", function() {
       });
 
       it("setArg(index, value) must work if value matches the expected vector type", function() {
-        expect('kernelWithVectorArgs instanceof WebCLKernel').toEvalAs(true);
-        expect('kernelWithVectorArgs.setArg(1, new Int8Array(4))').not.toThrow();    // char4
-        expect('kernelWithVectorArgs.setArg(2, new Int16Array(4))').not.toThrow();   // short4
-        expect('kernelWithVectorArgs.setArg(3, new Int32Array(4))').not.toThrow();   // int4
-        expect('kernelWithVectorArgs.setArg(4, new Uint32Array(8))').not.toThrow();  // long4
-        expect('kernelWithVectorArgs.setArg(5, new Uint8Array(4))').not.toThrow();   // uchar4
-        expect('kernelWithVectorArgs.setArg(6, new Uint16Array(4))').not.toThrow();  // ushort4
-        expect('kernelWithVectorArgs.setArg(7, new Uint32Array(4))').not.toThrow();  // uint4
-        expect('kernelWithVectorArgs.setArg(8, new Uint32Array(8))').not.toThrow();  // ulong4
-        expect('kernelWithVectorArgs.setArg(9, new Float32Array(4))').not.toThrow(); // float4
+        expect('kernelWithVector4Args instanceof WebCLKernel').toEvalAs(true);
+        expect('kernelWithVector4Args.setArg(1, new Int8Array(4))').not.toThrow();    // char4
+        expect('kernelWithVector4Args.setArg(2, new Int16Array(4))').not.toThrow();   // short4
+        expect('kernelWithVector4Args.setArg(3, new Int32Array(4))').not.toThrow();   // int4
+        expect('kernelWithVector4Args.setArg(4, new Uint32Array(8))').not.toThrow();  // long4
+        expect('kernelWithVector4Args.setArg(5, new Uint8Array(4))').not.toThrow();   // uchar4
+        expect('kernelWithVector4Args.setArg(6, new Uint16Array(4))').not.toThrow();  // ushort4
+        expect('kernelWithVector4Args.setArg(7, new Uint32Array(4))').not.toThrow();  // uint4
+        expect('kernelWithVector4Args.setArg(8, new Uint32Array(8))').not.toThrow();  // ulong4
+        expect('kernelWithVector4Args.setArg(9, new Float32Array(4))').not.toThrow(); // float4
+
+        expect('kernelWithVector3Args instanceof WebCLKernel').toEvalAs(true);
+        expect('kernelWithVector3Args.setArg(1, new Int8Array(3))').not.toThrow();    // char3
+        expect('kernelWithVector3Args.setArg(2, new Int16Array(3))').not.toThrow();   // short3
+        expect('kernelWithVector3Args.setArg(3, new Int32Array(3))').not.toThrow();   // int3
+        expect('kernelWithVector3Args.setArg(4, new Uint32Array(6))').not.toThrow();  // long3
+        expect('kernelWithVector3Args.setArg(5, new Uint8Array(3))').not.toThrow();   // uchar3
+        expect('kernelWithVector3Args.setArg(6, new Uint16Array(3))').not.toThrow();  // ushort3
+        expect('kernelWithVector3Args.setArg(7, new Uint32Array(3))').not.toThrow();  // uint3
+        expect('kernelWithVector3Args.setArg(8, new Uint32Array(6))').not.toThrow();  // ulong3
+        expect('kernelWithVector3Args.setArg(9, new Float32Array(3))').not.toThrow(); // float3
       });
 
       it("setArg(index, value) must work if a local memory size is passed in using Uint32Array of length 1", function() {
@@ -1201,17 +1214,29 @@ describe("Runtime", function() {
       });
 
       it("setArg(index, value) must throw if value does not match the expected vector size", function() {
-        expect('kernelWithVectorArgs instanceof WebCLKernel').toEvalAs(true);
-        expect('kernelWithVectorArgs.setArg(1, new Int8Array(0))').toThrow('INVALID_ARG_SIZE');    // char4
-        expect('kernelWithVectorArgs.setArg(2, new Int16Array(3))').toThrow('INVALID_ARG_SIZE');   // short4
-        expect('kernelWithVectorArgs.setArg(3, new Int32Array(5))').toThrow('INVALID_ARG_SIZE');   // int4
-        expect('kernelWithVectorArgs.setArg(4, new Uint32Array(16))').toThrow('INVALID_ARG_SIZE'); // long4
-        expect('kernelWithVectorArgs.setArg(5, new Uint8Array(8))').toThrow('INVALID_ARG_SIZE');   // uchar4
-        expect('kernelWithVectorArgs.setArg(6, new Uint16Array(2))').toThrow('INVALID_ARG_SIZE');  // ushort4
-        expect('kernelWithVectorArgs.setArg(7, new Uint32Array(8))').toThrow('INVALID_ARG_SIZE');  // uint4
-        expect('kernelWithVectorArgs.setArg(8, new Uint32Array(4))').toThrow('INVALID_ARG_SIZE');  // ulong4
-        expect('kernelWithVectorArgs.setArg(8, new Uint32Array(16))').toThrow('INVALID_ARG_SIZE'); // ulong4
-        expect('kernelWithVectorArgs.setArg(9, new Float32Array(8))').toThrow('INVALID_ARG_SIZE'); // float4
+        expect('kernelWithVector4Args instanceof WebCLKernel').toEvalAs(true);
+        expect('kernelWithVector4Args.setArg(1, new Int8Array(0))').toThrow('INVALID_ARG_SIZE');    // char4
+        expect('kernelWithVector4Args.setArg(2, new Int16Array(3))').toThrow('INVALID_ARG_SIZE');   // short4
+        expect('kernelWithVector4Args.setArg(3, new Int32Array(5))').toThrow('INVALID_ARG_SIZE');   // int4
+        expect('kernelWithVector4Args.setArg(4, new Uint32Array(16))').toThrow('INVALID_ARG_SIZE'); // long4
+        expect('kernelWithVector4Args.setArg(5, new Uint8Array(8))').toThrow('INVALID_ARG_SIZE');   // uchar4
+        expect('kernelWithVector4Args.setArg(6, new Uint16Array(2))').toThrow('INVALID_ARG_SIZE');  // ushort4
+        expect('kernelWithVector4Args.setArg(7, new Uint32Array(8))').toThrow('INVALID_ARG_SIZE');  // uint4
+        expect('kernelWithVector4Args.setArg(8, new Uint32Array(4))').toThrow('INVALID_ARG_SIZE');  // ulong4
+        expect('kernelWithVector4Args.setArg(8, new Uint32Array(16))').toThrow('INVALID_ARG_SIZE'); // ulong4
+        expect('kernelWithVector4Args.setArg(9, new Float32Array(8))').toThrow('INVALID_ARG_SIZE'); // float4
+
+        expect('kernelWithVector3Args instanceof WebCLKernel').toEvalAs(true);
+        expect('kernelWithVector3Args.setArg(1, new Int8Array(0))').toThrow('INVALID_ARG_SIZE');    // char3
+        expect('kernelWithVector3Args.setArg(2, new Int16Array(3))').toThrow('INVALID_ARG_SIZE');   // short3
+        expect('kernelWithVector3Args.setArg(3, new Int32Array(5))').toThrow('INVALID_ARG_SIZE');   // int3
+        expect('kernelWithVector3Args.setArg(4, new Uint32Array(16))').toThrow('INVALID_ARG_SIZE'); // long3
+        expect('kernelWithVector3Args.setArg(5, new Uint8Array(8))').toThrow('INVALID_ARG_SIZE');   // uchar3
+        expect('kernelWithVector3Args.setArg(6, new Uint16Array(2))').toThrow('INVALID_ARG_SIZE');  // ushort3
+        expect('kernelWithVector3Args.setArg(7, new Uint32Array(8))').toThrow('INVALID_ARG_SIZE');  // uint3
+        expect('kernelWithVector3Args.setArg(8, new Uint32Array(3))').toThrow('INVALID_ARG_SIZE');  // ulong3
+        expect('kernelWithVector3Args.setArg(8, new Uint32Array(16))').toThrow('INVALID_ARG_SIZE'); // ulong3
+        expect('kernelWithVector3Args.setArg(9, new Float32Array(8))').toThrow('INVALID_ARG_SIZE'); // float3
       });
 
       it("setArg(index, value) must throw if value type is wrong, even if the size is right", function() {
