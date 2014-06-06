@@ -845,6 +845,7 @@ describe("Runtime", function() {
           suite.done = true;
           expect('program.getBuildInfo(device, WebCL.PROGRAM_BUILD_STATUS)').toEvalAs('WebCL.BUILD_SUCCESS');
         });
+        expect('program.build(null, null, function() {})').toThrow('INVALID_OPERATION');
         expect('program.build()').toThrow('INVALID_OPERATION');
       });
 
