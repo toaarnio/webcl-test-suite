@@ -143,7 +143,7 @@ describe("Robustness", function() {
   //  * Mac OSX 10.9 (crashes)
   //
   it("must not crash on setArg(<invalidArgument>)", function() {
-    var r = confirm("This test case will crash your browser on all known OpenCL drivers. Run anyway?");
+    var r = confirm("This test case will crash your browser on most OpenCL drivers. Run anyway?");
     if (r === false) pending();
     src = loadSource('kernels/argtypes.cl');
     expect('program = ctx.createProgram(src)').not.toThrow();
@@ -172,7 +172,7 @@ describe("Robustness", function() {
   //  * Win7 / Intel CPU driver (freezes)
   //
   it("must not crash compiling a kernel that allocates 6 GB of 'local' memory", function() {
-    var r = confirm("This test case will crash your browser on Windows. Run anyway?");
+    var r = confirm("This test case will crash your browser on most OpenCL drivers on Windows. Run anyway?");
     if (r === false) pending();
     expect('kernels/largeArrayLocal.cl').not.toBuild();
     expect('kernels/largeArrayLocal.cl').not.toBuild();
