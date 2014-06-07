@@ -13,8 +13,11 @@
   <script type="text/javascript" src="lib/jasmine-2.0.0/jasmine-html.js"></script>
   <script type="text/javascript" src="lib/jasmine-2.0.0/boot.js"></script>
 
-  <!-- customize Jasmine html reporter output (hide stack trace and an unnecessary checkbox) -->
+  <!-- customize Jasmine html reporter output (hide clutter) -->
   <style>
+    .html-reporter .summary li.disabled { 
+      display: none; 
+    }
     .stack-trace {
       display: none;
     }
