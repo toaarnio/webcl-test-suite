@@ -2367,7 +2367,9 @@ describe("Runtime", function() {
       function arrayCompare(arr1, arr2) {
         var len = Math.min(arr1.length, arr2.length);
         for (var i=0; i < len; i++) {
-          expect(arr1[i]).toEqual(arr2[i]);
+          if (isNaN(arr1[i]) === false) {
+            expect(arr1[i]).toBeCloseTo(arr2[i], 3);
+          }
         }
       }
     });
