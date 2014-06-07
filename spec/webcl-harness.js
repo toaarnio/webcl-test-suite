@@ -110,19 +110,29 @@ jasmine.webclTestHarness = function() {
   this.getDeviceName = function(device) {
 
     var deviceVendors = {
-      604 : "ARM - Android",
-      999 : "Qualcomm - Android",
-      4098 : "AMD - Windows/Linux",
-      4318 : "NVIDIA - Windows",
-      32902 : "Intel - Windows/Linux",
-      16918016 : "NVIDIA Discrete GPU - Apple",
-      33695232 : "NVIDIA Integrated GPU - Apple",
-      0xffffffff : "Intel CPU - Apple",
+      604 : "ARM",
+      999 : "Qualcomm",
+      4098 : "AMD",
+      4318 : "NVIDIA",
+      32902 : "Intel",
+      16918016 : "NVIDIA Discrete",
+      33695232 : "NVIDIA Integrated",
+      0xffffffff : "Intel",
+    };
+
+    var deviceTypes = {
+      2 : "CPU",
+      4 : "GPU",
+      8 : "ACCELERATOR",
     };
 
     var vendorId = device.getInfo(WebCL.DEVICE_VENDOR_ID);
     var vendorString = deviceVendors[vendorId];
-    return vendorString || "<unidentified: "+ vendorId +">";
+    var deviceType = device.getInfo(WebCL.DEVICE_TYPE);
+    var deviceTypeString = deviceTypes[deviceType];
+    var deviceNameString = device.getInfo(WebCL.DEVICE_NAME);
+    var deviceName = vendorString + " " + deviceTypeString + " (" + deviceNameString + ")";
+    return vendorString? deviceName : "<unidentified: " + deviceName + ">";
   };
 
   // ### loadSource() ###
