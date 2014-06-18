@@ -1,4 +1,7 @@
-#pragma OPENCL EXTENSION cl_khr_fp64 : enable
+#pragma OPENCL EXTENSION cl_khr_fp64 : disable
+
+#undef M_PI
+#define M_PI 3.14159f
 
 //##############################################################################
 // Type definition
@@ -108,20 +111,22 @@ typedef struct{
 // Useful values
 //##############################################################################
 
+#define ONE 1.0f
+#define ZERO 0.0f
 #define EPSILON 0.01f
 #define AIR_REFRACTIVE 1.000277f
-__constant float4 zeros4 = (float4)(0.f, 0.f, 0.f, 0.f);
-__constant float3 zeros3 = (float3)(0.f, 0.f, 0.f);
-__constant float4 ones4 = (float4)(1.f, 1.f, 1.f, 1.f);
-__constant float3 ones3 = (float3)(1.f, 1.f, 1.f);
-__constant Stokes unpolarized = (float4)(1.f, 0.f, 0.f, 0.f);
-__constant float3 one3 = (float3)(1.f, 0.f, 0.f);
-__constant float3 RED = (float3)(1.f, 0.f, 0.f);
-__constant float3 GREEN = (float3)(0.f, 1.f, 0.f);
-__constant float3 BLUE = (float3)(0.f, 0.f, 1.f);
-__constant float3 CYAN = (float3)(0.f, 1.f, 1.f);
-__constant float3 YELLOW = (float3)(1.f, 1.f, 0.f);
-__constant float3 MAGENTA = (float3)(1.f, 0.f, 1.f);
+__constant float4 zeros4 = (float4)(ZERO, ZERO, ZERO, ZERO);
+__constant float3 zeros3 = (float3)(ZERO, ZERO, ZERO);
+__constant float4 ones4 = (float4)(ONE, ONE, ONE, ONE);
+__constant float3 ones3 = (float3)(ONE, ONE, ONE);
+__constant Stokes unpolarized = (float4)(ONE, ZERO, ZERO, ZERO);
+__constant float3 one3 = (float3)(ONE, ZERO, ZERO);
+__constant float3 RED = (float3)(ONE, ZERO, ZERO);
+__constant float3 GREEN = (float3)(ZERO, ONE, ZERO);
+__constant float3 BLUE = (float3)(ZERO, ZERO, ONE);
+__constant float3 CYAN = (float3)(ZERO, ONE, ONE);
+__constant float3 YELLOW = (float3)(ONE, ONE, ZERO);
+__constant float3 MAGENTA = (float3)(ONE, ZERO, ONE);
 
 
 
@@ -142,14 +147,14 @@ float random(uint *seed0, uint *seed1)
     } res;
     res.ui = (ires & 0x007fffff) | 0x40000000;
 
-    return (res.f - 2.f) / 2.f;
+    return (res.f - 2.0f) / 2.0f;
 }
 
 float3 samplePointOnUnitSphere(uint * seed0, uint * seed1){
-    float z = random(seed0, seed1) * 2. - 1.;
-    float phi = random(seed0, seed1) * 2. * M_PI;
+    float z = random(seed0, seed1) * 2.0f - ONE;
+    float phi = random(seed0, seed1) * 2.0f * M_PI;
 
-    float r = sqrt(1. - z * z);
+    float r = sqrt(ONE - z * z);
     float x = r * cos(phi);
     float y = r * sin(phi);
 
@@ -158,9 +163,9 @@ float3 samplePointOnUnitSphere(uint * seed0, uint * seed1){
 
 float3 samplePointOnUnitHemisphere(uint * seed0, uint * seed1){
     float z = random(seed0, seed1);
-    float phi = random(seed0, seed1) * 2.f * M_PI;
+    float phi = random(seed0, seed1) * 2.0f * M_PI;
 
-    float r = sqrt(1.f - z * z);
+    float r = sqrt(ONE - z * z);
     float x = r * cos(phi);
     float y = r * sin(phi);
 
@@ -176,18 +181,18 @@ float3 samplePointOnUnitHemisphereAlongDir(uint * seed0, uint * seed1,
     float3 dir2 = fabs(dir);
     float3 dir3 = dir;
 
-    if (dir2.x == 0.f){
-        dir3.x = 1.f;
-    } else if (dir2.y == 0.f){
-        dir3.y = 1.f;
+    if (dir2.x == ZERO){
+        dir3.x = ONE;
+    } else if (dir2.y == ZERO){
+        dir3.y = ONE;
     } if (dir2.x < dir2.y && dir2.x < dir2.z){
-        dir3.x = 1.f * sign(dir3.x);
+        dir3.x = ONE * sign(dir3.x);
     }
     else if (dir2.y < dir2.x && dir2.y < dir2.z){
-        dir3.y = 1.f * sign(dir3.y);
+        dir3.y = ONE * sign(dir3.y);
     }
     else{
-        dir3.z = 1.f * sign(dir3.z);
+        dir3.z = ONE * sign(dir3.z);
     }
 
     float3 U = normalize(cross(dir3, dir));
@@ -199,7 +204,7 @@ float3 samplePointOnUnitHemisphereAlongDir(uint * seed0, uint * seed1,
 
 
 bool isZero(float3 vec){
-  return (vec.x == 0.f || vec.y == 0.f || vec.z == 0.f);
+  return (vec.x == ZERO || vec.y == ZERO || vec.z == ZERO);
 }
 
 // Dir has to point to the surface
@@ -211,12 +216,12 @@ float3 getReflectedDir(float3 dir, float3 normal){
 // Dir has to point to the surface
 float3 getRefractedDir(float3 dir, float3 normal, 
                        float refractiveIndexOut,float refractiveIndexIn){
-  float cosThetaIn = clamp(dot(-dir, normal), 0.f, 1.f);
-  float sinThetaIn2 = 1.f - cosThetaIn * cosThetaIn;
+  float cosThetaIn = clamp(dot(-dir, normal), ZERO, ONE);
+  float sinThetaIn2 = ONE - cosThetaIn * cosThetaIn;
   float eta = refractiveIndexIn / refractiveIndexOut;
   float sinThetaOut2 = eta * eta * sinThetaIn2;
-  float cosThetaOut = sqrt(max(0.f, 1.f - sinThetaOut2));
-  if (dot(-dir, normal) > 0.f)
+  float cosThetaOut = sqrt(max(ZERO, ONE - sinThetaOut2));
+  if (dot(-dir, normal) > ZERO)
     cosThetaOut = -cosThetaOut;
   return normalize(normal * cosThetaOut + (dir - normal * cosThetaIn) * eta);
 
@@ -224,12 +229,12 @@ float3 getRefractedDir(float3 dir, float3 normal,
 
 bool doRefract(Ray * r, float3 normal, float refractiveIndex,
                uint * seed0, uint * seed1){
-  float cosThetaI = clamp(dot(-r->d, normal), 0.f, 1.f);
-  float a = refractiveIndex - 1.f;
-  float b = refractiveIndex + 1.f;
+  float cosThetaI = clamp(dot(-r->d, normal), ZERO, ONE);
+  float a = refractiveIndex - ONE;
+  float b = refractiveIndex + ONE;
   float r0 = a * a / (b * b);
-  float c = 1.f - cosThetaI;
-  float re = r0 + (1.f - r0) * pown(c,5);
+  float c = ONE - cosThetaI;
+  float re = r0 + (ONE - r0) * pown(c,5);
   float ra = random(seed0, seed1);
   if (ra < re)
     return false;
@@ -242,10 +247,10 @@ bool doRefract(Ray * r, float3 normal, float refractiveIndex,
 
 Mueller identity(){
     Mueller result;
-        result.l0 = zeros4; result.l0.s0 = 1.f;
-        result.l1 = zeros4; result.l1.s1 = 1.f;
-        result.l2 = zeros4; result.l2.s2 = 1.f;
-        result.l3 = zeros4; result.l3.s3 = 1.f;
+        result.l0 = zeros4; result.l0.s0 = ONE;
+        result.l1 = zeros4; result.l1.s1 = ONE;
+        result.l2 = zeros4; result.l2.s2 = ONE;
+        result.l3 = zeros4; result.l3.s3 = ONE;
 
     return result;
 }
@@ -354,7 +359,7 @@ Mueller maddm(Mueller m1, Mueller m2){
 
 Stokes rotateStokes(Stokes s, float cosPhi){
     float cos2Phi = cosPhi * cosPhi - 1.;
-    float sin2Phi = sqrt(1. - cos2Phi * cos2Phi);
+    float sin2Phi = sqrt(ONE - cos2Phi * cos2Phi);
     Stokes result;
         result.s0 = s.s0;
         result.s1 = cos2Phi * s.s1 + sin2Phi * s.s2;
@@ -364,9 +369,9 @@ Stokes rotateStokes(Stokes s, float cosPhi){
 }
 
 Mueller getRotationMatrix(float cosPhi, float signPhi){
-    float cosPhi2 = min(cosPhi * cosPhi, 1.f);
-    float cos2Phi = clamp(2.0f * cosPhi2 - 1., -1., 1.);
-    float sin2Phi = -sign(cosPhi) * signPhi * sqrt(1. - cos2Phi * cos2Phi);
+    float cosPhi2 = min(cosPhi * cosPhi, ONE);
+    float cos2Phi = clamp(2.0f * cosPhi2 - ONE, -ONE, ONE);
+    float sin2Phi = -sign(cosPhi) * signPhi * sqrt(ONE - cos2Phi * cos2Phi);
     Mueller result = identity();
         result.l1.s1 = cos2Phi;
         result.l1.s2 = sin2Phi;
@@ -379,7 +384,7 @@ Mueller getRotationMatrix(float cosPhi, float signPhi){
 Mueller getFresnelMatrix(float realRef, float imagRef, float cosTheta, 
                          bool debug){
     float cosTheta2 = cosTheta * cosTheta;
-    float sinTheta2 = 1.f - cosTheta * cosTheta;
+    float sinTheta2 = ONE - cosTheta * cosTheta;
     float sinTheta = sqrt(sinTheta2);
     float tanTheta = sinTheta / cosTheta;
     float tanTheta2 = tanTheta * tanTheta;
@@ -396,16 +401,16 @@ Mueller getFresnelMatrix(float realRef, float imagRef, float cosTheta,
     float b = sqrt(b2);
 
 
-    float tandpe = (2 * cosTheta) / (cosTheta2 - a2 - b2);
-    float tandpa = (realRef2 - imagRef2) * b - 2.f * realRef * imagRef * a;
+    float tandpe = (2.0f * cosTheta) / (cosTheta2 - a2 - b2);
+    float tandpa = (realRef2 - imagRef2) * b - 2.0f * realRef * imagRef * a;
     float denum = ((realRef2 + imagRef2) * (realRef2 + imagRef2)) * cosTheta2;
-    tandpa = 2.f * b * cosTheta * tandpa / (denum - a2 - b2);
+    tandpa = 2.0f * b * cosTheta * tandpa / (denum - a2 - b2);
     float dpe = atan(tandpe);
     float dpa = atan(tandpa);
 
     temp1 = a2 + b2;
-    temp2 = 2.f * a * cosTheta;
-    float temp3 = 2.f * a * sinTheta * tanTheta;
+    temp2 = 2.0f * a * cosTheta;
+    float temp3 = 2.0f * a * sinTheta * tanTheta;
     float Fpe = (temp1 - temp2 + cosTheta2) 
               / (temp1 + temp2 + cosTheta2);
     float Fpa = (temp1 - temp3 + sinTheta2 * tanTheta2) * Fpe
@@ -436,17 +441,17 @@ Mueller getJohnsMatrix(float2 refractiveIndex,
   float cosThetaI = dot(wi, normal);
   float cosThetaO = dot(wo, normal);
 
-  float2 n1 = (float2)(AIR_REFRACTIVE, 0.f);
+  float2 n1 = (float2)(AIR_REFRACTIVE, ZERO);
   float2 n2 = refractiveIndex;
 
   float2 ass, app;
   ass.x = (n1.x * cosThetaI - n2.x * cosThetaO) 
         / (n1.x * cosThetaI + n2.x * cosThetaO);
-  ass.y = -1.f; // Because n1.y = 0.f
+  ass.y = -ONE; // Because n1.y = ZERO
 
   app.x = (n2.x * cosThetaI - n1.x * cosThetaO)
         / (n2.x * cosThetaI + n1.x * cosThetaO);
-  app.y = 1.f; // Because n1.y = 0.f
+  app.y = ONE; // Because n1.y = ZERO
 
   float Tss2 = ass.x * ass.x + ass.y * ass.y;
   float Tpp2 = app.x * app.x + app.y * app.y;
@@ -455,33 +460,33 @@ Mueller getJohnsMatrix(float2 refractiveIndex,
   Mueller result;
     result.l0.s0 = (Tss2 + Tpp2);
     result.l0.s1 = (Tss2 - Tpp2);
-    result.l0.s2 = 0.f; result.l0.s3 = 0.f;
+    result.l0.s2 = ZERO; result.l0.s3 = ZERO;
 
     result.l1.s0 = (Tss2 - Tpp2);
     result.l1.s1 = (Tss2 + Tpp2);
-    result.l1.s2 = 0.f; result.l1.s3 = 0.f;
+    result.l1.s2 = ZERO; result.l1.s3 = ZERO;
 
-    result.l2.s0 = 0.f; result.l2.s1 = 0.f;
-    result.l2.s2 = 2.f * (ass.x * app.x - ass.y * app.y);
-    result.l2.s3 = 2.f * (ass.y * app.x + ass.x * app.y);
+    result.l2.s0 = ZERO; result.l2.s1 = ZERO;
+    result.l2.s2 = 2.0f * (ass.x * app.x - ass.y * app.y);
+    result.l2.s3 = 2.0f * (ass.y * app.x + ass.x * app.y);
 
-    result.l3.s0 = 0.f; result.l3.s1 = 0.f;
-    result.l3.s2 = -2.f * (ass.y * app.x + ass.x * app.y);
-    result.l3.s3 = 2.f * (ass.x * app.x - ass.y * app.y);
+    result.l3.s0 = ZERO; result.l3.s1 = ZERO;
+    result.l3.s2 = -2.0f * (ass.y * app.x + ass.x * app.y);
+    result.l3.s3 = 2.0f * (ass.x * app.x - ass.y * app.y);
 
   result = mmultf(result, 0.5f);
 
   // And multiply it by the BRDF coefficients
   float sigma = 0.7f;
   float cosBeta = dot(normal, wi);
-  float cosTheta = (cosThetaI + cosThetaO) / (2.f * cosBeta);
+  float cosTheta = (cosThetaI + cosThetaO) / (2.0f * cosBeta);
   float denum = 8.f * M_PI * sigma * sigma
               *  cosTheta * cosTheta * cosTheta * cosTheta
               * cosThetaO * cosThetaI;
   float cosTheta2 = cosTheta * cosTheta;
-  float sinTheta2 = 1.f - cosTheta2;
+  float sinTheta2 = ONE - cosTheta2;
   float tanTheta2 = sinTheta2 / cosTheta2;
-  float num = exp(-tanTheta2 / (2.f * sigma * sigma));
+  float num = exp(-tanTheta2 / (2.0f * sigma * sigma));
 
   result = mmultf(result, num / denum);
 
@@ -687,23 +692,23 @@ Mueller getBRDF(int idBRDF,
   int nbPhi = binarySearch(phiDiff, BRDFsPhis, nbPhis, &phiId0, &phiId1);
 
   // We compute the interpolation weights
-  float muiWeight = 1.f;
+  float muiWeight = ONE;
   if (nbMui > 1){
     float mui0 = BRDFsMus[muiId0];
     float mui1 = BRDFsMus[muiId1];
     muiWeight = (mui - mui0) / (mui1 - mui0);
-    muiWeight = 1.f - muiWeight;
+    muiWeight = ONE - muiWeight;
   }
 
-  float muoWeight = 1.f;
+  float muoWeight = ONE;
   if (nbMuo > 1){
     float muo0 = BRDFsMus[muoId0];
     float muo1 = BRDFsMus[muoId1];
     muoWeight = (muo - muo0) / (muo1 - muo0);
-    muoWeight = 1.f - muoWeight;
+    muoWeight = ONE - muoWeight;
   }
 
-  float phiWeight = 1.f;
+  float phiWeight = ONE;
   if (nbPhi > 1){
     float phi0 = BRDFsPhis[phiId0];
     float phi1 = BRDFsPhis[phiId1];
@@ -734,11 +739,11 @@ Mueller getBRDF(int idBRDF,
                                              BRDFs, nbMus, nbPhis,
                                              BRDFStartingPos);
   Mueller m_phi0_mui_0 = maddm(mmultf(m_mui_0_muo_0, muoWeight),
-                               mmultf(m_mui_0_muo_1, 1. - muoWeight));
+                               mmultf(m_mui_0_muo_1, ONE - muoWeight));
   Mueller m_phi0_mui_1 = maddm(mmultf(m_mui_1_muo_0, muoWeight),
-                               mmultf(m_mui_1_muo_1, 1. - muoWeight));
+                               mmultf(m_mui_1_muo_1, ONE - muoWeight));
   Mueller m_phi0 = maddm(mmultf(m_phi0_mui_0, muiWeight),
-                         mmultf(m_phi0_mui_1, 1. - muiWeight));
+                         mmultf(m_phi0_mui_1, ONE - muiWeight));
 
   // For phiId1
   m_mui_0_muo_0 = getBRDFFromIds(muiId0, muoId0, phiId1,
@@ -754,14 +759,14 @@ Mueller getBRDF(int idBRDF,
                                      BRDFs, nbMus, nbPhis,
                                      BRDFStartingPos);
   Mueller m_phi1_mui_0 = maddm(mmultf(m_mui_0_muo_0, muoWeight),
-                               mmultf(m_mui_0_muo_1, 1. - muoWeight));
+                               mmultf(m_mui_0_muo_1, ONE - muoWeight));
   Mueller m_phi1_mui_1 = maddm(mmultf(m_mui_1_muo_0, muoWeight),
-                               mmultf(m_mui_1_muo_1, 1. - muoWeight));
+                               mmultf(m_mui_1_muo_1, ONE - muoWeight));
   Mueller m_phi1 = maddm(mmultf(m_phi1_mui_0, muiWeight),
-                         mmultf(m_phi1_mui_1, 1. - muiWeight));
+                         mmultf(m_phi1_mui_1, ONE - muiWeight));
 
   // Final BRDF
-  return maddm(mmultf(m_phi0, phiWeight), mmultf(m_phi1, 1. - phiWeight));
+  return maddm(mmultf(m_phi0, phiWeight), mmultf(m_phi1, ONE - phiWeight));
 
 }
 
@@ -776,9 +781,9 @@ float3 getExitRightVector(float3 dir, float3 normal){
 }
 
 float getDOP(Stokes v){
-  if (v.s0 <= 0.001)
-    return 0.f;
-  return clamp(sqrt(v.s1 * v.s1 + v.s2 * v.s2 + v.s3 * v.s3) / v.s0, 0.f, 1.f);
+  if (v.s0 <= 0.001f)
+    return ZERO;
+  return clamp(sqrt(v.s1 * v.s1 + v.s2 * v.s2 + v.s3 * v.s3) / v.s0, ZERO, ONE);
 }
 
 
@@ -817,29 +822,29 @@ float intersectRayTriangle(Ray *ray, Triangle *t){
         float denominateur = dot(n, ray->d);
 
         // Ir Computation
-        float Ir  = -1.f * (dot(n, Otr)) / denominateur;
+        float Ir  = -ONE * (dot(n, Otr)) / denominateur;
         if (Ir < 0)
-                return -1.f;
+                return -ONE;
 
         // Iu Computation
         float3 temp = cross(Otr, v);
         float Iu = dot(temp,ray->d) / denominateur;
         if (Iu < 0 || Iu > 1)
-                return -1.f;
+                return -ONE;
         t->alpha = Iu;
 
         // Iv Computation
         temp = cross(u, Otr);
         float Iv = dot(temp,ray->d) / denominateur;
         if (Iv < 0 || Iv > 1 - Iu)
-                return -1.f;
+                return -ONE;
         t->beta = Iv;
 
-        return Ir - 0.0001;
+        return Ir - 0.0001f;
 }
 
 float3 computeNormal(Triangle * t){
-    return normalize((1.f - t->alpha - t->beta) * t->n0 
+    return normalize((ONE - t->alpha - t->beta) * t->n0 
            + t->alpha * t->n1 + t->beta * t->n2);
 }
 
@@ -874,12 +879,12 @@ float IntersectAABB(Ray *r, AABB * b){
     float tmin = max(max(tMin.x,tMin.y),tMin.z);
     float tmax = min(min(tMax.x,tMax.y),tMax.z);
 
-    b->tMin = max(tmin, 0.f);
+    b->tMin = max(tmin, ZERO);
     b->tMax = tmax;
 
     if (tmin>tmax)
-        return -1.f;
-    if (tmin > 0.)
+        return -ONE;
+    if (tmin > ZERO)
         return tmin;
     return tmax;
 }
@@ -898,7 +903,7 @@ float intersectRayVoxel(Intersection * result, Ray * r,
                         __global int * gridDimBuffer
                         ){
   bool hitSomething = false;
-  float mint = -1.f;
+  float mint = -ONE;
   int offsetIndex = voxelId->x * gridDimBuffer[1] * gridDimBuffer[2]
                     + voxelId->y * gridDimBuffer[2] + voxelId->z;
   Triangle closestTriangle;
@@ -923,7 +928,7 @@ float intersectRayVoxel(Intersection * result, Ray * r,
                       triangleVertices[currId3 * 3 + 2]);
 
       float currt = intersectRayTriangle(r, &t);
-      if (currt > 0.f && (mint < 0.f || currt < mint)
+      if (currt > ZERO && (mint < ZERO || currt < mint)
           // && (currt <= nextTx || fabs(currt - nextTx) < EPSILON)
           // && (currt <= nextTy || fabs(currt - nextTy) < EPSILON)
           // && (currt <= nextTy || fabs(currt - nextTy) < EPSILON)
@@ -934,8 +939,8 @@ float intersectRayVoxel(Intersection * result, Ray * r,
       }
   }
 
-  if (mint < 0.f)
-    return -1.f;
+  if (mint < ZERO)
+    return -ONE;
 
 
   uint i3 = closestTriangleId * 3;
@@ -980,7 +985,7 @@ float intersectRayTriangles(Intersection * result, Ray * r,
                             __global float * voxelSizeBuffer
                             ){
   // Brute force
-  float t = -1.f;
+  float t = -ONE;
   int tnbTriangles = nbTriangles;
   int closestTriangleId;
   Triangle closestTriangle;
@@ -1001,7 +1006,7 @@ float intersectRayTriangles(Intersection * result, Ray * r,
                       triangleVertices[currId3 * 3 + 2]);
 
       float tempt = intersectRayTriangle(r, &tt);
-      if (tempt > 0. && (t < 0. || tempt < t)){
+      if (tempt > ZERO && (t < ZERO || tempt < t)){
           t = tempt;
           closestTriangleId = idTriangle;
           closestTriangle = tt;
@@ -1051,8 +1056,8 @@ float intersectRayGrid(Intersection * result, Ray * r,
 
     // We check if we intersect the bounding box
     float tbox = IntersectAABB(r, aabb);
-    if (tbox < 0.)
-      return -1.f;
+    if (tbox < ZERO)
+      return -ONE;
 
     float3 gridIntersectP = r->o + tbox * r->d;
 
@@ -1061,14 +1066,14 @@ float intersectRayGrid(Intersection * result, Ray * r,
 
     VoxelId originVoxelId = voxelId;
 
-    int stepX = (r->d.x >= 0.f)?1:-1;
-    int stepY = (r->d.y >= 0.f)?1:-1;
-    int stepZ = (r->d.z >= 0.f)?1:-1;
+    int stepX = (r->d.x >= ZERO)?1:-1;
+    int stepY = (r->d.y >= ZERO)?1:-1;
+    int stepZ = (r->d.z >= ZERO)?1:-1;
 
 
-    int outRangeX = (r->d.x >= 0.f)?gridDimBuffer[0]:-1;
-    int outRangeY = (r->d.y >= 0.f)?gridDimBuffer[1]:-1;
-    int outRangeZ = (r->d.z >= 0.f)?gridDimBuffer[2]:-1;
+    int outRangeX = (r->d.x >= ZERO)?gridDimBuffer[0]:-1;
+    int outRangeY = (r->d.y >= ZERO)?gridDimBuffer[1]:-1;
+    int outRangeZ = (r->d.z >= ZERO)?gridDimBuffer[2]:-1;
 
 
     float deltaTx = voxelSizeBuffer[0] / fabs(r->d.x);
@@ -1113,7 +1118,7 @@ float intersectRayGrid(Intersection * result, Ray * r,
                              voxelOffsetBuffer,
                              gridDimBuffer);
 
-    while (mint < 0.f){
+    while (mint < ZERO){
       if (nextTx <= nextTy && nextTx <= nextTz){
         nextTx += deltaTx;
         voxelId.x += stepX;
@@ -1142,8 +1147,8 @@ float intersectRayGrid(Intersection * result, Ray * r,
                                gridDimBuffer);
 
     }
-    if (mint < 0.f)
-      return -1.f;
+    if (mint < ZERO)
+      return -ONE;
 
     result->p = inter.p;
     result->n = inter.n;
@@ -1166,15 +1171,15 @@ float intersectRaySphere(Ray *r, Sphere *s)
     float gamma = dot(r->o,r->o)+dot(s->c,s->c)-2.*dot(r->o,s->c)-s->r*s->r;
     float delta = beta*beta - 4.*alpha*gamma;
     
-    if(delta<0.)
-        return -1.f;
+    if(delta<ZERO)
+        return -ONE;
     float U1 = (-beta-sqrt(delta))/(2.*alpha) ;
-    if(delta == 0.)
+    if(delta == ZERO)
         return U1;
     float U2 = (-beta+sqrt(delta))/(2.*alpha);
-    if (U1 < 0.)
+    if (U1 < ZERO)
         return U2;
-    if (U2 < 0.)
+    if (U2 < ZERO)
         return U1;
     return min(U1, U2);
 }
@@ -1186,7 +1191,7 @@ float intersectRaySpheres(Intersection * result, Ray * r,
                           __global float * sphereRadii,
                           __global uint * sphereMaterialIds,
                           uint nbSpheres){
-    float mint = -1.f;
+    float mint = -ONE;
 
     Sphere closestSphere;
     for (uint idSphere = 0; idSphere < nbSpheres; ++idSphere){
@@ -1198,13 +1203,13 @@ float intersectRaySpheres(Intersection * result, Ray * r,
             currS.r = sphereRadii[idSphere];
             currS.m = sphereMaterialIds[idSphere];
         float currt = intersectRaySphere(r, &currS);
-        if (currt > 0. && (mint < 0. || currt < mint)){
+        if (currt > ZERO && (mint < ZERO || currt < mint)){
             mint = currt;
             closestSphere = currS;
         }
     }
 
-    if (mint >= 0.f){
+    if (mint >= ZERO){
         result->p = r->o + mint * r->d;
         result->n = normalize(result->p - closestSphere.c);
         // result->n *= -sign(dot(result->n, r->d));
@@ -1268,11 +1273,11 @@ float intersectRayScene(Intersection * result, Ray * r,
                             );
 
 
-    if (minSphere < 0.f){ // No sphere encountered
+    if (minSphere < ZERO){ // No sphere encountered
         (*result) = triangleIntersection;
         return minTriangle;
     } 
-    else if (minTriangle < 0.f){ // No triangle encountered
+    else if (minTriangle < ZERO){ // No triangle encountered
         (*result) = sphereIntersection;
         return minSphere;
     } else if (minSphere < minTriangle){ // Sphere encountered first
@@ -1304,7 +1309,7 @@ bool intersectRaySpheresShadow(Ray * r,
             currS.r = sphereRadii[idSphere];
             currS.m = 0;
         float currt = intersectRaySphere(r, &currS);
-        if (currt >= 0.f && currt < tLight)
+        if (currt >= ZERO && currt < tLight)
             return true;
     }
     return false;
@@ -1342,12 +1347,12 @@ bool intersectRayTrianglesShadow(Ray * r,
             currTriangle.n1 = zeros3;
             currTriangle.n2 = zeros3;
 
-            currTriangle.alpha = 0.f;
-            currTriangle.beta = 0.f;
+            currTriangle.alpha = ZERO;
+            currTriangle.beta = ZERO;
 
         float currt = intersectRayTriangle(r, &currTriangle);
 
-        if (currt >= 0.f && currt < tLight)
+        if (currt >= ZERO && currt < tLight)
             return true;
     }
 
@@ -1390,13 +1395,13 @@ float intersectRayLights(Ray * r, float3 * emittance,
                          __global float3 * lightEmittance,
                          uint nbLights){
 
-    float mint = -1.f;
+    float mint = -ONE;
     for (uint idLight = 0; idLight < nbLights; ++idLight){
         Sphere s;
             s.c = lightCenters[idLight];
             s.r = lightRadii[idLight];
         float currt = intersectRaySphere(r, &s);
-        if (currt >= 0. && (mint < 0. || currt < mint)){
+        if (currt >= ZERO && (mint < ZERO || currt < mint)){
             mint = currt;
             (*emittance) = lightEmittance[idLight];
         }
@@ -1471,12 +1476,12 @@ pColor getDirect(Intersection * inter,
     sampledPos = shadowRay.o + tLight * shadowRay.d;
     sampledDir = normalize(sampledPos - l.c);
 
-    float cos1 = clamp(dot(inter->n, shadowRay.d), 0.f, 1.f);
-    float cos3 = clamp(dot(sampledDir, -shadowRay.d), 0.f, 1.f);
+    float cos1 = clamp(dot(inter->n, shadowRay.d), ZERO, ONE);
+    float cos3 = clamp(dot(sampledDir, -shadowRay.d), ZERO, ONE);
 
     float distance = length(inter->p - sampledPos);
 
-    float deltaRad = 2.f * M_PI * l.r * l.r  * cos3 * cos1
+    float deltaRad = 2.0f * M_PI * l.r * l.r  * cos3 * cos1
                      / (distance * distance);                     
 
     direct.R += deltaRad * l.e.s0 * temp;
@@ -1585,21 +1590,21 @@ void getRadiance(pColor * radiance,
                                       lightEmittance,
                                       nbLights);
 
-    if (tLight >= 0. && (tLight < t || t < 0.)){ // We intersect the light
+    if (tLight >= ZERO && (tLight < t || t < ZERO)){ // We intersect the light
       radiance->R += mmults(mod->R, emittance.x * unpolarized);
       radiance->G += mmults(mod->G, emittance.y * unpolarized);
       radiance->B += mmults(mod->B, emittance.z * unpolarized);
-      mod->R = mmultf(mod->R, 0.f);
-      mod->G = mmultf(mod->G, 0.f);
-      mod->B = mmultf(mod->B, 0.f);
+      mod->R = mmultf(mod->R, ZERO);
+      mod->G = mmultf(mod->G, ZERO);
+      mod->B = mmultf(mod->B, ZERO);
       return;
     }
 
 
-    if (t < 0.){ // We don't intersect anything, we stop
-      mod->R = mmultf(mod->R, 0.f);
-      mod->G = mmultf(mod->G, 0.f);
-      mod->B = mmultf(mod->B, 0.f);
+    if (t < ZERO){ // We don't intersect anything, we stop
+      mod->R = mmultf(mod->R, ZERO);
+      mod->G = mmultf(mod->G, ZERO);
+      mod->B = mmultf(mod->B, ZERO);
 
       return;
     }
@@ -1614,9 +1619,9 @@ void getRadiance(pColor * radiance,
       radiance->R += mmults(mod->R, (float4)(1.0, 0.0, 0.0, 0.0));
       radiance->G += mmults(mod->G, (float4)(1.0, 0.0, 0.0, 0.0));
       radiance->B += mmults(mod->B, (float4)(1.0, 0.0, 0.0, 0.0));
-      mod->R = mmultf(mod->R, 0.f);
-      mod->G = mmultf(mod->G, 0.f);
-      mod->B = mmultf(mod->B, 0.f);
+      mod->R = mmultf(mod->R, ZERO);
+      mod->G = mmultf(mod->G, ZERO);
+      mod->B = mmultf(mod->B, ZERO);
       return;
     }
      // Phong BRDF
@@ -1653,8 +1658,8 @@ void getRadiance(pColor * radiance,
                     idLight,
                     &lightDir);
 
-        float diffuse = max(0.f, kd * dot(lightDir, inter.n));
-        float specular = max(0.f, ks * pow(dot(lightDir, refl),exponent));
+        float diffuse = max(ZERO, kd * dot(lightDir, inter.n));
+        float specular = max(ZERO, ks * pow(dot(lightDir, refl),exponent));
 
         float3 coeff = diffuse * mat.diffuseReflectance + specular * mat.specularReflectance;
         coeff = coeff / (float)M_PI;
@@ -1676,8 +1681,8 @@ void getRadiance(pColor * radiance,
       r->o = inter.p + EPSILON * newDir;
 
       // We update the modificator matrix
-      float diffuse = max(0.f, kd * dot(newDir, inter.n));
-      float specular = max(0.f, ks * pow(dot(newDir, refl), exponent));
+      float diffuse = max(ZERO, kd * dot(newDir, inter.n));
+      float specular = max(ZERO, ks * pow(dot(newDir, refl), exponent));
 
       float3 coeff = diffuse * mat.diffuseReflectance + specular * mat.specularReflectance;
       coeff = coeff / (float)M_PI;
@@ -1849,7 +1854,7 @@ void getRadiance(pColor * radiance,
     //--------------------------------------------------------------------------
     else if (mat.idBRDF == 2){
       // We need to know if we enter or exit the material
-      bool entering = (dot(r->d, inter.n) > 0.f);
+      bool entering = (dot(r->d, inter.n) > ZERO);
  
       // We get the refracted direction
       float3 refrDir;
@@ -1942,9 +1947,9 @@ void getRadiance(pColor * radiance,
         radiance->B += mmults(mod->B, direct.B);
       }
  
-      radiance->R.s1 = 0.f; radiance->R.s2 = 0.f; radiance->R.s3 = 0.f;
-      radiance->G.s1 = 0.f; radiance->G.s2 = 0.f; radiance->G.s3 = 0.f;
-      radiance->B.s1 = 0.f; radiance->B.s2 = 0.f; radiance->B.s3 = 0.f;
+      radiance->R.s1 = ZERO; radiance->R.s2 = ZERO; radiance->R.s3 = ZERO;
+      radiance->G.s1 = ZERO; radiance->G.s2 = ZERO; radiance->G.s3 = ZERO;
+      radiance->B.s1 = ZERO; radiance->B.s2 = ZERO; radiance->B.s3 = ZERO;
   
       float3 newDir =samplePointOnUnitHemisphereAlongDir(seed0, seed1, inter.n);
       r->d = newDir;
@@ -1976,7 +1981,7 @@ float3 getDOCP(Stokes v){
 float3 getTOPColor(Stokes v){
     float lin = v.s1 * v.s1 + v.s2 * v.s2;
     float cir = v.s3 * v.s3;
-    if ((lin + cir) == 0.)
+    if ((lin + cir) == ZERO)
         return zeros3;
     float DOPL = sqrt(lin / (lin + cir));
     float DOPC = sqrt(cir / (lin + cir));
@@ -1986,22 +1991,22 @@ float3 getTOPColor(Stokes v){
 
 float3 getOPLColor(Stokes v){
     float factor = (fabs(v.s1) + fabs(v.s2));
-    if (factor == 0.)
+    if (factor == ZERO)
         return zeros3;
-    float Ph = max(0.f,  v.s1); // Horizontal polarization
-    float Pv = max(0.f, -v.s1); // Vertical polarization
-    float P45 = max(0.f,  v.s2); // Polarization along 45°
-    float P225 = max(0.f, -v.s2); // Polarization along 225°
+    float Ph = max(ZERO,  v.s1); // Horizontal polarization
+    float Pv = max(ZERO, -v.s1); // Vertical polarization
+    float P45 = max(ZERO,  v.s2); // Polarization along 45°
+    float P225 = max(ZERO, -v.s2); // Polarization along 225°
     
     return (Ph * RED + Pv * GREEN + P45 * BLUE + P225 * YELLOW) / factor;
 }
 
 float3 getCCPColor(Stokes v){
-    if (v.s3 == 0.)
+    if (v.s3 == ZERO)
         return zeros3;
-    float factor = 1. / fabs(v.s3);
-    float right = max(0.f, v.s3);
-    float left = max(0.f, -v.s3);
+    float factor = ONE / fabs(v.s3);
+    float right = max(ZERO, v.s3);
+    float left = max(ZERO, -v.s3);
 
     return (right * BLUE + left * YELLOW) * factor;
 }
@@ -2036,20 +2041,20 @@ float3 getColorFromPRad(pColor prad,
       result = dop * getCCPColor(average) * getDOCP(average);
       break;
     case DEBUG:
-      if (dop > 1.f) return MAGENTA;
+      if (dop > ONE) return MAGENTA;
       return greyColor;
       break;
     case REGULAR:
     default:
-      result.x = clamp(prad.R.x, 0.f, 1.f);
-      result.y = clamp(prad.G.x, 0.f, 1.f);
-      result.z = clamp(prad.B.x, 0.f, 1.f);
+      result.x = clamp(prad.R.x, ZERO, ONE);
+      result.y = clamp(prad.G.x, ZERO, ONE);
+      result.z = clamp(prad.B.x, ZERO, ONE);
   }
 
   if (scaleType == SCALED){
   }
   if (scaleType == DIRECT){
-    float3 temp = result + (1.f - dop) * greyColor;
+    float3 temp = result + (ONE - dop) * greyColor;
     result = temp;
   }
 
@@ -2132,7 +2137,7 @@ __kernel void updateStokes(// Image parameters
     // We create the ray for the current pixel
     float height = 2 * tan((float)c.fov * M_PI / 360.f);
     float width = height * (float)nbColumns / (float)nbRows;
-    float ray_z = -1.f;
+    float ray_z = -ONE;
     float ray_x = width * ((i+random(&seed0, &seed1)) / (float)nbColumns-0.5f);
     float ray_y = height * (0.5f - (j+random(&seed0, &seed1)) / (float)nbRows);
     Ray r;
@@ -2145,7 +2150,7 @@ __kernel void updateStokes(// Image parameters
     AABB box;
       box.pMin = (float3)(aabb[0], aabb[1], aabb[2]);
       box.pMax = (float3)(aabb[3], aabb[4], aabb[5]);
-      box.tMin = 0.f; box.tMax = 0.f;
+      box.tMin = ZERO; box.tMax = ZERO;
 
 
     pColor radiance;
@@ -2185,9 +2190,9 @@ __kernel void updateStokes(// Image parameters
                            &seed1);
     }
 
-    radiance.R.s0 = clamp(radiance.R.s0, 0.f, 1.f);
-    radiance.G.s0 = clamp(radiance.G.s0, 0.f, 1.f);
-    radiance.B.s0 = clamp(radiance.B.s0, 0.f, 1.f);
+    radiance.R.s0 = clamp(radiance.R.s0, ZERO, ONE);
+    radiance.G.s0 = clamp(radiance.G.s0, ZERO, ONE);
+    radiance.B.s0 = clamp(radiance.B.s0, ZERO, ONE);
 
     uint id12 = idPixel1D * 12;
     if (iterationId > 0){
@@ -2199,7 +2204,7 @@ __kernel void updateStokes(// Image parameters
         previous.B = (float4)(stokes[id12 + 8],  stokes[id12 + 9],
                               stokes[id12 + 10], stokes[id12 + 11]);
 
-        float denum = 1.f / ((float)(iterationId) + 1.f);
+        float denum = ONE / ((float)(iterationId) + ONE);
         radiance.R = (radiance.R + previous.R * (float)(iterationId)) * denum;
         radiance.G = (radiance.G + previous.G * (float)(iterationId)) * denum;
         radiance.B = (radiance.B + previous.B * (float)(iterationId)) * denum;
@@ -2266,13 +2271,13 @@ __kernel void render3(uint nbColumns,
   if (i >= nbColumns || j >= nbRows) return;
   int idPixel1D = j * nbColumns + i;
 
-  float3 fcolor = (float3)(0., 0., 0.);
+  float3 fcolor = (float3)(ZERO, ZERO, ZERO);
 
   // We create the camera
     Cam c;
-        c.o = (float3)(0., 0., 0.);
-        c.at = (float3)(0., 0., -1.);
-        c.up = (float3)(0., 1., 0.);
+        c.o = (float3)(ZERO, ZERO, ZERO);
+        c.at = (float3)(ZERO, ZERO, -1.);
+        c.up = (float3)(ZERO, ONE, ZERO);
         c.fov = 0.75;
     float3 cam_W = normalize(c.o - c.at);
     float3 cam_U = normalize(cross(c.up, cam_W));
@@ -2281,7 +2286,7 @@ __kernel void render3(uint nbColumns,
     // We create the ray for the current pixel
     float height = 2 * tan((float)c.fov * M_PI / 360.f);
     float width = height * (float)nbColumns / (float)nbRows;
-    float ray_z = -1.f;
+    float ray_z = -ONE;
     float ray_x = width * (i / (float)nbColumns-0.5f);
     float ray_y = height * (0.5f - j / (float)nbRows);
     Ray r;
@@ -2291,16 +2296,16 @@ __kernel void render3(uint nbColumns,
 
     // We create a sphere to intersect
     Sphere s;
-      s.c = (float3)(0., 0., -100.);
+      s.c = (float3)(ZERO, ZERO, -100.);
       s.r = 0.3;
       s.m = 0;
 
     float t = intersectRaySphere(&r, &s);
 
 
-    // float3 incidentLightDirection = normalize((float3)(0., 1., 0.));
-    float3 lightPos = (float3)(0., 8., -90.);
-    if (t > 0.){
+    // float3 incidentLightDirection = normalize((float3)(ZERO, ONE, ZERO));
+    float3 lightPos = (float3)(ZERO, 8., -90.);
+    if (t > ZERO){
       float3 intersectionPoint = r.o + t * r.d;
       float3 camDirection = normalize(r.o - intersectionPoint);
       float3 n = normalize(intersectionPoint - s.c);
