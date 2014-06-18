@@ -38,11 +38,20 @@ describe("Kernel language", function() {
   // 
   describe("Compiler (OpenCL 1.2 conformance)", function() {
 
+    // Status as of 2014-06-18:
+    //  [pass] Win7 / NVIDIA GPU driver (332.21)
+    //  [pass] Win7 / Intel CPU driver (3.0.1.15216)
+    //  
+    it("must be able to compile a complex raytracing kernel", function() {
+      expect('kernels/polarizedRaytracer.cl').toBuild();
+      expect('webcl.releaseAll()').not.toThrow();
+    });
+
     // Status as of 2014-04-29:
     //  [pass] Win7 / NVIDIA GPU driver (332.21)
     //  [FAIL] Win7 / Intel CPU driver (3.0.1.15216)
     //  
-    it("-D options must not be sticky", function() {
+    it("must be able to compile the same program with different -D options", function() {
       program = mustBuild;
       expect('program.build(null, "-D kernel=foo")').toThrow('BUILD_PROGRAM_FAILURE');
       expect('program.build()').not.toThrow();
