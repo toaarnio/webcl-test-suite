@@ -38,17 +38,6 @@ describe("Kernel language", function() {
   // 
   describe("Compiler (OpenCL 1.2 conformance)", function() {
 
-    // Status as of 2014-06-18:
-    //  [pass] Win7 / NVIDIA GPU driver (332.21)
-    //  [pass] Win7 / Intel CPU driver (3.0.1.15216)
-    //  [FAIL] Win7 / Intel HD 4400
-    //   * CAUSE: The constant M_PI is undefined, although required by OpenCL
-    //  
-    it("must be able to compile a complex raytracing kernel", function() {
-      expect('kernels/polarizedRaytracer.cl').toBuild();
-      expect('webcl.releaseAll()').not.toThrow();
-    });
-
     // Status as of 2014-04-29:
     //  [pass] Win7 / NVIDIA GPU driver (332.21)
     //  [FAIL] Win7 / Intel CPU driver (3.0.1.15216)
@@ -172,11 +161,21 @@ describe("Kernel language", function() {
     });
 
     // Status as of 2014-04-29:
-    //  [FAIL] Win7 / NVIDIA GPU driver (332.21) (crashes on second run)
-    //  [FAIL] Win7 / Intel CPU driver (3.0.1.15216) (freezes on first run)
+    //  [CRASH] Win7 / NVIDIA GPU driver (332.21) (crashes on second run)
+    //  [CRASH] Win7 / Intel CPU driver (3.0.1.15216) (freezes on first run)
     //
     xit("must not allow allocating 6 GB of 'local' memory", function() {
       expect('kernels/largeArrayLocal.cl').not.toBuild();
+    });
+
+    // Status as of 2014-06-18:
+    //  [pass] Win7 / NVIDIA GPU driver (332.21)
+    //  [pass] Win7 / Intel CPU driver (3.0.1.15216)
+    //  [CRASH] Win7 / Intel HD 4400
+    //  
+    xit("must be able to compile a complex raytracing kernel", function() {
+      expect('kernels/polarizedRaytracer.cl').toBuild();
+      expect('webcl.releaseAll()').not.toThrow();
     });
 
   });

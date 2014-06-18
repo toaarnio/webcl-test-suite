@@ -179,5 +179,17 @@ describe("Robustness", function() {
     expect('webcl.releaseAll()').not.toThrow();
   });
 
+    // Status as of 2014-06-18:
+    //  [pass] Win7 / NVIDIA GPU driver (332.21)
+    //  [pass] Win7 / Intel CPU driver (3.0.1.15216)
+    //  [CRASH] Win7 / Intel HD 4400
+    //  
+  it("must not crash compiling a complex raytracing kernel", function() {
+    var r = confirm("This test case will crash your browser on the Intel HD 4400 GPU. Run anyway?");
+    if (r === false) pending();
+    expect('kernels/polarizedRaytracer.cl').toBuild();
+    expect('webcl.releaseAll()').not.toThrow();
+  });
+
   beforeEach(addCustomMatchers);
 });
