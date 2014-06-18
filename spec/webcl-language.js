@@ -41,6 +41,8 @@ describe("Kernel language", function() {
     // Status as of 2014-06-18:
     //  [pass] Win7 / NVIDIA GPU driver (332.21)
     //  [pass] Win7 / Intel CPU driver (3.0.1.15216)
+    //  [FAIL] Win7 / Intel HD 4400
+    //   * CAUSE: The constant M_PI is undefined, although required by OpenCL
     //  
     it("must be able to compile a complex raytracing kernel", function() {
       expect('kernels/polarizedRaytracer.cl').toBuild();
