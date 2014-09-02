@@ -919,6 +919,7 @@ describe("Runtime", function() {
 
       it("createKernel*(<valid arguments>) must work", function() {
         expect('program.build()').not.toThrow();
+        expect('program.getBuildInfo(device, WebCL.PROGRAM_BUILD_STATUS)').toEvalAs('WebCL.BUILD_SUCCESS');
         expect('program.createKernel("dummy")').not.toThrow();
         expect('program.createKernel("dummy") instanceof WebCLKernel').toEvalAs(true);
         expect('program.createKernelsInProgram()').not.toThrow();
@@ -1163,7 +1164,7 @@ describe("Runtime", function() {
         expect('ctx2 = createContext()').not.toThrow();
         expect('queue2 = ctx2.createCommandQueue()').not.toThrow();
         expect('bufferFromAnotherContext = ctx2.createBuffer(WebCL.MEM_READ_WRITE, 1024)').not.toThrow();
-        expect('kernelWithMemArgs.setArg(0, bufferFromAnotherContext)').toThrow('INVALID_CONTEXT');
+        expect('kernelWithMemArgs.setArg(0, bufferFromAnotherContext)').toThrow('INVALID_MEM_OBJECT');
       });
 
       it("setArg(index, clObject) must throw if clObject does not match the expected type (CRITICAL)", function() {
