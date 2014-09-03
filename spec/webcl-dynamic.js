@@ -1029,7 +1029,7 @@ describe("Runtime", function() {
         kernel = program.createKernel("dummy");
       }));
 
-      it("getWorkGroupInfo(<valid enum>) must work", function() {
+      it("getWorkGroupInfo(<valid device>, <valid enum>) must work", function() {
         expect('kernel.getWorkGroupInfo(device, WebCL.KERNEL_WORK_GROUP_SIZE)').not.toThrow();
         expect('kernel.getWorkGroupInfo(device, WebCL.KERNEL_COMPILE_WORK_GROUP_SIZE)').not.toThrow();
         expect('kernel.getWorkGroupInfo(device, WebCL.KERNEL_LOCAL_MEM_SIZE)').not.toThrow();
@@ -1044,11 +1044,15 @@ describe("Runtime", function() {
         expect('kernel.getWorkGroupInfo(device, WebCL.KERNEL_PREFERRED_WORK_GROUP_SIZE_MULTIPLE)').not.toEvalAs(0);
         expect('kernel.getWorkGroupInfo(device, WebCL.KERNEL_PRIVATE_MEM_SIZE) >= 0').toEvalAs(true);
         expect('kernel.getWorkGroupInfo(device, WebCL.KERNEL_WORK_GROUP_SIZE)').not.toThrow();
-        expect('kernel.getWorkGroupInfo(undefined, WebCL.KERNEL_WORK_GROUP_SIZE)').not.toThrow();
-        expect('kernel.getWorkGroupInfo(null, WebCL.KERNEL_WORK_GROUP_SIZE)').not.toThrow();
       });
 
-      it("getWorkGroupInfo(COMPILE_WORK_GROUP_SIZE) must report the expected reqd_work_group_size", function() {
+      it("getWorkGroupInfo(<null device>, <valid enum>) must work", function() {
+        expect('kernel.getWorkGroupInfo(null, WebCL.KERNEL_WORK_GROUP_SIZE)').not.toThrow();
+        expect('kernel.getWorkGroupInfo(null, WebCL.KERNEL_WORK_GROUP_SIZE) >= 1').toEvalAs(true);
+        expect('kernel.getWorkGroupInfo(undefined, WebCL.KERNEL_WORK_GROUP_SIZE)').not.toThrow();
+      });
+
+      it("getWorkGroupInfo(COMPILE_WORK_GROUP_SIZE) must equal reqd_work_group_size", function() {
         program = ctx.createProgram("kernel __attribute__((reqd_work_group_size(4, 3, 2))) void dummy(global uint* buf) { buf[0]=0xdeadbeef; }");
         expect('program.build()').not.toThrow();
         expect('kernel = program.createKernel("dummy")').not.toThrow();
@@ -1057,6 +1061,7 @@ describe("Runtime", function() {
         expect('kernel.getWorkGroupInfo(device, WebCL.KERNEL_COMPILE_WORK_GROUP_SIZE)[0]').toEvalAs(4);
         expect('kernel.getWorkGroupInfo(device, WebCL.KERNEL_COMPILE_WORK_GROUP_SIZE)[1]').toEvalAs(3);
         expect('kernel.getWorkGroupInfo(device, WebCL.KERNEL_COMPILE_WORK_GROUP_SIZE)[2]').toEvalAs(2);
+        expect('kernel.getWorkGroupInfo(null, WebCL.KERNEL_COMPILE_WORK_GROUP_SIZE)[2]').toEvalAs(2);
       });
 
       it("getWorkGroupInfo(<invalid arguments>) must throw", function() {
