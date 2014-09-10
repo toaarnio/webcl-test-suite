@@ -40,7 +40,7 @@ jasmine.webclTestHarness = function() {
 
   GLOBALS = {};
 
-  GLOBALS.targetVersion = "2014-09-03";
+  GLOBALS.targetVersion = "2014-09-10";
 
   GLOBALS.DEVICES = getDeviceList();
 
