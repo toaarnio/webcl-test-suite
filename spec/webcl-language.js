@@ -38,7 +38,8 @@ describe("Kernel language", function() {
   // 
   describe("Compiler (OpenCL 1.2 conformance)", function() {
 
-    // Status as of 2014-04-29:
+    // Status:
+    //  [pass] Khronos WebCL Validator (2014-09-10)
     //  [pass] Win7 / NVIDIA GPU driver (332.21)
     //  [FAIL] Win7 / Intel CPU driver (3.0.1.15216)
     //  
@@ -48,7 +49,8 @@ describe("Kernel language", function() {
       expect('program.build()').not.toThrow();
     });
 
-    // Status as of 2014-04-29:
+    // Status:
+    //  [pass] Khronos WebCL Validator (2014-09-10)
     //  [pass] Win7 / NVIDIA GPU driver (332.21)
     //  [pass] Win7 / Intel CPU driver (3.0.1.15216)
     //  
@@ -56,7 +58,8 @@ describe("Kernel language", function() {
       expect('kernels/copyImage.cl').toBuild();
     });
 
-    // Status as of 2014-04-29:
+    // Status:
+    //  [pass?] Khronos WebCL Validator (2014-09-10)
     //  [pass] Win7 / NVIDIA GPU driver (332.21)
     //  [pass] Win7 / Intel CPU driver (3.0.1.15216)
     //  
@@ -65,7 +68,8 @@ describe("Kernel language", function() {
       expect('program.build()').toThrow('BUILD_PROGRAM_FAILURE');
     });
 
-    // Status as of 2014-04-29:
+    // Status:
+    //  [pass?] Khronos WebCL Validator (2014-09-10)
     //  [pass] Win7 / NVIDIA GPU driver (332.21)
     //  [pass] Win7 / Intel CPU driver (3.0.1.15216)
     //  
@@ -75,7 +79,8 @@ describe("Kernel language", function() {
       expect('program.build()').toThrow('BUILD_PROGRAM_FAILURE');
     });
 
-    // Status as of 2014-04-29:
+    // Status:
+    //  [FAIL] Khronos WebCL Validator (2014-09-10)
     //  [pass] Win7 / NVIDIA GPU driver (332.21)
     //  [pass] Win7 / Intel CPU driver (3.0.1.15216)
     //  [FAIL] OSX 10.9.2 / MBP 2008 / All devices
@@ -84,7 +89,8 @@ describe("Kernel language", function() {
       expect('kernels/memcpy.cl').not.toBuild();
     });
 
-    // Status as of 2014-04-29:
+    // Status:
+    //  [FAIL] Khronos WebCL Validator (2014-09-10)
     //  [FAIL] Win7 / NVIDIA GPU driver (332.21)
     //  [FAIL] Win7 / Intel CPU driver (3.0.1.15216)
     //  [FAIL] OSX 10.9.2 / MBP 2008 / All devices
@@ -93,7 +99,8 @@ describe("Kernel language", function() {
       expect('kernels/pointerAddressSpaceCast.cl').not.toBuild();
     });
 
-    // Status as of 2014-04-29:
+    // Status:
+    //  [pass] Khronos WebCL Validator (2014-09-10)
     //  [pass] Win7 / NVIDIA GPU driver (332.21)
     //  [pass] Win7 / Intel CPU driver (3.0.1.15216)
     //
@@ -101,7 +108,8 @@ describe("Kernel language", function() {
       expect('kernels/localMemInit.cl').not.toBuild();
     });
 
-    // Status as of 2014-04-29:
+    // Status:
+    //  [FAIL] Khronos WebCL Validator (2014-09-10)
     //  [FAIL] Win7 / NVIDIA GPU driver (332.21)
     //  [FAIL] Win7 / Intel CPU driver (3.0.1.15216)
     //
@@ -109,7 +117,8 @@ describe("Kernel language", function() {
       expect('kernels/localMemAlloc.cl').not.toBuild();
     });
 
-    // Status as of 2014-04-29:
+    // Status:
+    //  [pass] Khronos WebCL Validator (2014-09-10)
     //  [pass] Win7 / NVIDIA GPU driver (332.21)
     //  [pass] Win7 / Intel CPU driver (3.0.1.15216)
     //
@@ -117,7 +126,8 @@ describe("Kernel language", function() {
       expect('kernels/dynamicArray.cl').not.toBuild();
     });
 
-    // Status as of 2014-04-29:
+    // Status:
+    //  [FAIL] Khronos WebCL Validator (2014-09-10)
     //  [FAIL] Win7 / NVIDIA GPU driver (332.21)
     //  [FAIL] Win7 / Intel CPU driver (3.0.1.15216)
     //
@@ -125,7 +135,8 @@ describe("Kernel language", function() {
       expect('kernels/localMemReturn.cl').not.toBuild();
     });
 
-    // Status as of 2014-04-29:
+    // Status:
+    //  [pass] Khronos WebCL Validator (2014-09-10)
     //  [pass] Win7 / NVIDIA GPU driver (332.21)
     //  [pass] Win7 / Intel CPU driver (3.0.1.15216)
     //
@@ -133,7 +144,8 @@ describe("Kernel language", function() {
       expect('kernels/constantWrite.cl').not.toBuild();
     });
 
-    // Status as of 2014-04-29:
+    // Status:
+    //  [pass] Khronos WebCL Validator (2014-09-10)
     //  [pass] Win7 / NVIDIA GPU driver (332.21)
     //  [pass] Win7 / Intel CPU driver (3.0.1.15216)
     //  [FAIL] OSX 10.9.2 / MBP 2008 / All devices
@@ -142,7 +154,8 @@ describe("Kernel language", function() {
       expect('kernels/longlong.cl').not.toBuild();
     });
 
-    // Status as of 2014-04-29:
+    // Status:
+    //  [pass] Khronos WebCL Validator (2014-09-10)
     //  [FAIL] Win7 / NVIDIA GPU driver (332.21)
     //  [pass] Win7 / Intel CPU driver (3.0.1.15216)
     //  [FAIL] OSX 10.9.2 / MBP 2008 / All devices
@@ -151,7 +164,8 @@ describe("Kernel language", function() {
       expect('kernels/uninitializedConstant.cl').not.toBuild();
     });
 
-    // Status as of 2014-04-29:
+    // Status:
+    //  [FAIL] Khronos WebCL Validator (2014-09-10)
     //  [FAIL] Win7 / NVIDIA GPU driver (332.21)
     //  [FAIL] Win7 / Intel CPU driver (3.0.1.15216)
     //  [FAIL] OSX 10.9.2 / MBP 2008 / Intel CPU
@@ -160,18 +174,24 @@ describe("Kernel language", function() {
       expect('kernels/largeArrayPrivate.cl').not.toBuild();
     });
 
-    // Status as of 2014-04-29:
-    //  [CRASH] Win7 / NVIDIA GPU driver (332.21) (crashes on second run)
+    // Status:
+    //  [FAIL] Khronos WebCL Validator (2014-09-10)
+    //  [CRASH] Win7 / NVIDIA GPU driver (332.21)
     //  [CRASH] Win7 / Intel CPU driver (3.0.1.15216) (freezes on first run)
     //
     xit("must not allow allocating 6 GB of 'local' memory", function() {
       expect('kernels/largeArrayLocal.cl').not.toBuild();
     });
 
-    // Status as of 2014-06-18:
+    // Status:
+    //  [FAIL] Khronos WebCL Validator (2014-09-10)
     //  [pass] Win7 / NVIDIA GPU driver (332.21)
     //  [pass] Win7 / Intel CPU driver (3.0.1.15216)
     //  [CRASH] Win7 / Intel HD 4400
+    //
+    // TODO: WebCL Validator "fails" only because the kernel uses cl_khr_fp64,
+    // which is not supposed to be enabled! Need to make a separate test case
+    // for cl_khr_fp64, and convert the raytracing kernel to fp32.
     //  
     xit("must be able to compile a complex raytracing kernel", function() {
       expect('kernels/polarizedRaytracer.cl').toBuild();
@@ -218,11 +238,17 @@ describe("Kernel language", function() {
 
     // NO WORKAROUND -- VALIDATOR REQUIRED
     //
+    // Status:
+    //  [pass] Khronos WebCL Validator (2014-09-10)
+    //
     it("must not allow 'printf'", function() {
       expect('kernels/printf.cl').not.toBuild();
     });
 
     // NO WORKAROUND -- VALIDATOR REQUIRED
+    //
+    // Status:
+    //  [pass] Khronos WebCL Validator (2014-09-10)
     //
     it("must not allow kernel-to-kernel calls", function() {
       expect('kernels/kernel-to-kernel.cl').not.toBuild();

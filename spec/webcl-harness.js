@@ -515,6 +515,12 @@ jasmine.webclTestHarness = function() {
               return { pass: true };
             } catch(e) {
               DEBUG("Building '" + actual + "' threw " + e.name + ":\n" + e.message);
+              try {
+                var log = program.getBuildInfo(devices[0], WebCL.PROGRAM_BUILD_LOG);
+                DEBUG("Build log: " + (log || "<empty>"));
+              } catch (e) {
+                DEBUG("Failed to query PROGRAM_BUILD_LOG: " + e);
+              }
               return { pass: false };
             }
           },
@@ -532,6 +538,12 @@ jasmine.webclTestHarness = function() {
             } catch(e) {
               if (program instanceof WebCLProgram) {
                 DEBUG("Building '" + actual + "' threw " + e.name + ":\n" + e.message);
+                try {
+                  var log = program.getBuildInfo(devices[0], WebCL.PROGRAM_BUILD_LOG);
+                  DEBUG("Build log: " + (log || "<empty>"));
+                } catch (e) {
+                  DEBUG("Failed to query PROGRAM_BUILD_LOG: " + e);
+                }
                 return { pass: true };
               }
               return { 
