@@ -1155,13 +1155,13 @@ describe("Runtime", function() {
       });
 
       it("setArg(<invalid arguments>) must throw", function() {
-        var signature = [ 'Uint', 'Array' ];
+        var signature = [ 'Uint', 'TypedArray' ];
         var valid = [ '0', 'new Int8Array(1)' ];
         var invalid = [ '10', '0xdeadbeef' ]; 
         expect('kernelWithScalarArgs instanceof WebCLKernel').toEvalAs(true);
         argc('kernelWithScalarArgs.setArg', valid, 'WEBCL_SYNTAX_ERROR');
         fuzz("kernelWithScalarArgs.setArg", signature, valid, invalid, [0], "INVALID_ARG_INDEX");
-        fuzz("kernelWithScalarArgs.setArg", signature, valid, invalid, [1], "INVALID_ARG_VALUE");
+        fuzz("kernelWithScalarArgs.setArg", signature, valid, invalid, [1], "TypeError");
       });
 
       it("setArg(<buffer from another context>) must throw", function() {
@@ -1174,17 +1174,17 @@ describe("Runtime", function() {
 
       it("setArg(index, clObject) must throw if clObject does not match the expected type (CRITICAL)", function() {
         expect('kernelWithMemArgs instanceof WebCLKernel').toEvalAs(true);
-        expect('kernelWithMemArgs.setArg(0, image)').toThrow();
-        expect('kernelWithMemArgs.setArg(0, sampler)').toThrow();
-        expect('kernelWithMemArgs.setArg(1, buffer)').toThrow();
-        expect('kernelWithMemArgs.setArg(1, sampler)').toThrow();
-        expect('kernelWithMemArgs.setArg(2, buffer)').toThrow();
-        expect('kernelWithMemArgs.setArg(2, sampler)').toThrow();
-        expect('kernelWithMemArgs.setArg(3, buffer)').toThrow();
-        expect('kernelWithMemArgs.setArg(3, image)').toThrow();
+        expect('kernelWithMemArgs.setArg(0, image)').toThrow('INVALID_MEM_OBJECT');   // global uint* expected
+        expect('kernelWithMemArgs.setArg(0, sampler)').toThrow('INVALID_MEM_OBJECT'); // global uint* expected
+        expect('kernelWithMemArgs.setArg(1, buffer)').toThrow('INVALID_MEM_OBJECT');  // read_only image2d_t expected
+        expect('kernelWithMemArgs.setArg(1, sampler)').toThrow('INVALID_MEM_OBJECT'); // read_only image2d_t expected
+        expect('kernelWithMemArgs.setArg(2, buffer)').toThrow('INVALID_MEM_OBJECT');  // write_only image2d_t expected
+        expect('kernelWithMemArgs.setArg(2, sampler)').toThrow('INVALID_MEM_OBJECT'); // write_only image2d_t expected
+        expect('kernelWithMemArgs.setArg(3, buffer)').toThrow('INVALID_SAMPLER');     // sampler_t expected
+        expect('kernelWithMemArgs.setArg(3, image)').toThrow('INVALID_SAMPLER');      // sampler_t expected
       });
 
-      xit("setArg(index, clObject) must throw if an arbitrary integer is passed in (CRITICAL)", function() {
+      it("setArg(index, clObject) must throw if an arbitrary integer is passed in (CRITICAL)", function() {
         expect('kernelWithMemArgs instanceof WebCLKernel').toEvalAs(true);
         expect('kernelWithMemArgs.setArg(0, new Uint32Array(1))').toThrow('INVALID_MEM_OBJECT'); // global uint* expected
         expect('kernelWithMemArgs.setArg(0, new Uint32Array(2))').toThrow('INVALID_MEM_OBJECT'); // global uint* expected
@@ -1198,22 +1198,22 @@ describe("Runtime", function() {
 
       it("setArg(index, value) must throw if value is not an ArrayBufferView (CRITICAL)", function() {
         expect('kernelWithScalarArgs instanceof WebCLKernel').toEvalAs(true);
-        expect('kernelWithScalarArgs.setArg(3, new ArrayBuffer(4))').toThrow('INVALID_ARG_VALUE'); // int expected
-        expect('kernelWithScalarArgs.setArg(4, new ArrayBuffer(8))').toThrow('INVALID_ARG_VALUE'); // long expected
-        expect('kernelWithScalarArgs.setArg(3, [42])').toThrow('INVALID_ARG_VALUE');               
-        expect('kernelWithScalarArgs.setArg(4, [42])').toThrow('INVALID_ARG_VALUE');               
-        expect('kernelWithScalarArgs.setArg(3, 42)').toThrow('INVALID_ARG_VALUE');                
-        expect('kernelWithScalarArgs.setArg(4, 42)').toThrow('INVALID_ARG_VALUE');
-        expect('kernelWithScalarArgs.setArg(3, {})').toThrow('INVALID_ARG_VALUE');
-        expect('kernelWithScalarArgs.setArg(4, {})').toThrow('INVALID_ARG_VALUE');
+        expect('kernelWithScalarArgs.setArg(3, new ArrayBuffer(4))').toThrow('TypeError'); // int expected
+        expect('kernelWithScalarArgs.setArg(4, new ArrayBuffer(8))').toThrow('TypeError'); // long expected
+        expect('kernelWithScalarArgs.setArg(3, kernelWithScalarArgs)').toThrow('TypeError');
+        expect('kernelWithScalarArgs.setArg(4, kernelWithScalarArgs)').toThrow('TypeError');
+        expect('kernelWithScalarArgs.setArg(3, [42])').toThrow('TypeError');
+        expect('kernelWithScalarArgs.setArg(4, [42])').toThrow('TypeError');
+        expect('kernelWithScalarArgs.setArg(3, 42)').toThrow('TypeError');
+        expect('kernelWithScalarArgs.setArg(4, 42)').toThrow('TypeError');
+        expect('kernelWithScalarArgs.setArg(3, {})').toThrow('TypeError');
+        expect('kernelWithScalarArgs.setArg(4, {})').toThrow('TypeError');
         expect('kernelWithScalarArgs.setArg(3, buffer)').toThrow('INVALID_ARG_VALUE');
         expect('kernelWithScalarArgs.setArg(4, buffer)').toThrow('INVALID_ARG_VALUE');
         expect('kernelWithScalarArgs.setArg(3, image)').toThrow('INVALID_ARG_VALUE');
         expect('kernelWithScalarArgs.setArg(4, image)').toThrow('INVALID_ARG_VALUE');
         expect('kernelWithScalarArgs.setArg(3, sampler)').toThrow('INVALID_ARG_VALUE');
         expect('kernelWithScalarArgs.setArg(4, sampler)').toThrow('INVALID_ARG_VALUE');
-        expect('kernelWithScalarArgs.setArg(3, kernelWithScalarArgs)').toThrow('INVALID_ARG_VALUE');
-        expect('kernelWithScalarArgs.setArg(4, kernelWithScalarArgs)').toThrow('INVALID_ARG_VALUE');
       });
 
       it("setArg(index, value) must throw if value is the right type of ArrayBufferView, but has the wrong byteLength", function() {
@@ -1245,6 +1245,11 @@ describe("Runtime", function() {
         expect('kernelWithScalarArgs.setArg(3, new Int8Array(4))').toThrow('INVALID_ARG_VALUE');     // int
         expect('kernelWithScalarArgs.setArg(3, new Float32Array(1))').toThrow('INVALID_ARG_VALUE');  // int
         expect('kernelWithScalarArgs.setArg(4, new Float32Array(2))').toThrow('INVALID_ARG_VALUE');  // long
+        expect('kernelWithScalarArgs.setArg(5, new Int8Array(1))').toThrow('INVALID_ARG_VALUE');     // uchar
+        expect('kernelWithScalarArgs.setArg(6, new Int16Array(1))').toThrow('INVALID_ARG_VALUE');    // ushort
+        expect('kernelWithScalarArgs.setArg(7, new Int32Array(1))').toThrow('INVALID_ARG_VALUE');    // uint
+        expect('kernelWithScalarArgs.setArg(8, new Int32Array(2))').toThrow('INVALID_ARG_VALUE');    // ulong
+        expect('kernelWithScalarArgs.setArg(9, new Int32Array(1))').toThrow('INVALID_ARG_VALUE');    // float
       });
 
       it("setArg(index, value) must throw if value.length does not match the expected vector length", function() {
@@ -1276,18 +1281,18 @@ describe("Runtime", function() {
 
       it("setArg(index, value) must throw if a local memory size is passed in using anything but Uint32Array of length 1", function() {
         expect('kernelWithLocalArgs instanceof WebCLKernel').toEvalAs(true);
-        expect('kernelWithLocalArgs.setArg(1, new Int32Array(1))').toThrow();
-        expect('kernelWithLocalArgs.setArg(1, new Uint16Array(2))').toThrow();
-        expect('kernelWithLocalArgs.setArg(1, new ArrayBuffer(4))').toThrow();
-        expect('kernelWithLocalArgs.setArg(1, new Uint32Array(0))').toThrow();
-        expect('kernelWithLocalArgs.setArg(1, new Uint32Array(2))').toThrow();
-        expect('kernelWithLocalArgs.setArg(1, [42])').toThrow();
-        expect('kernelWithLocalArgs.setArg(1, 42)').toThrow();
-        expect('kernelWithLocalArgs.setArg(1, {})').toThrow();
-        expect('kernelWithLocalArgs.setArg(1, buffer)').toThrow();
-        expect('kernelWithLocalArgs.setArg(1, image)').toThrow();
-        expect('kernelWithLocalArgs.setArg(1, sampler)').toThrow();
-        expect('kernelWithLocalArgs.setArg(1, kernel)').toThrow();
+        expect('kernelWithLocalArgs.setArg(1, new Int32Array(1))').toThrow('INVALID_ARG_VALUE');
+        expect('kernelWithLocalArgs.setArg(1, new Uint16Array(2))').toThrow('INVALID_ARG_VALUE');
+        expect('kernelWithLocalArgs.setArg(1, new Uint32Array(0))').toThrow('INVALID_ARG_VALUE');
+        expect('kernelWithLocalArgs.setArg(1, new Uint32Array(2))').toThrow('INVALID_ARG_VALUE');
+        expect('kernelWithLocalArgs.setArg(1, buffer)').toThrow('INVALID_ARG_VALUE');
+        expect('kernelWithLocalArgs.setArg(1, image)').toThrow('INVALID_ARG_VALUE');
+        expect('kernelWithLocalArgs.setArg(1, sampler)').toThrow('INVALID_ARG_VALUE');
+        expect('kernelWithLocalArgs.setArg(1, [42])').toThrow('TypeError');
+        expect('kernelWithLocalArgs.setArg(1, 42)').toThrow('TypeError');
+        expect('kernelWithLocalArgs.setArg(1, {})').toThrow('TypeError');
+        expect('kernelWithLocalArgs.setArg(1, kernelWithLocalArgs)').toThrow('TypeError');
+        expect('kernelWithLocalArgs.setArg(1, new ArrayBuffer(4))').toThrow('TypeError');
       });
 
       it("setArg(index, value) must throw if attempting to set local memory size to zero", function() {
@@ -2318,6 +2323,7 @@ describe("Runtime", function() {
       descriptorRGBAf32 = { width : W, height : H, channelOrder : WebCL.RGBA, channelType: WebCL.FLOAT };
     }));
 
+    /*
     xit("createBuffer(hostPtr) + enqueueReadBuffer[Rect]", function() {
     });
 
@@ -2344,6 +2350,7 @@ describe("Runtime", function() {
 
     xit("enqueueWriteBuffer + enqueueNDRangeKernel + enqueueReadBuffer", function() {
     });
+    */
 
     it("enqueueWriteImage + enqueueNDRangeKernel + enqueueReadImage", function() {
       hostArraySrc = new Float32Array(W*H*Ch);
