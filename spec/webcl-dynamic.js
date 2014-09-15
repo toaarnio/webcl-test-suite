@@ -25,7 +25,7 @@ describe("Runtime", function() {
   //////////////////////////////////////////////////////////////////////////////
   //
   // Runtime -> createContext
-  // 
+  //
   describe("createContext", function() {
 
     beforeEach(setup.bind(this, function() {
@@ -136,7 +136,7 @@ describe("Runtime", function() {
   //////////////////////////////////////////////////////////////////////////////
   //
   // Runtime -> WebCLContext
-  // 
+  //
   describe("WebCLContext", function() {
 
     beforeEach(setup.bind(this, function() {
@@ -147,7 +147,7 @@ describe("Runtime", function() {
     //////////////////////////////////////////////////////////////////////////////
     //
     // Runtime -> WebCLContext -> getInfo
-    // 
+    //
     describe("getInfo", function() {
 
       var signature = [ 'Enum' ];
@@ -173,7 +173,7 @@ describe("Runtime", function() {
     //////////////////////////////////////////////////////////////////////////////
     //
     // Runtime -> WebCLContext -> getSupportedImageFormats
-    // 
+    //
 
     describe("getSupportedImageFormats", function() {
 
@@ -220,7 +220,7 @@ describe("Runtime", function() {
     //////////////////////////////////////////////////////////////////////////////
     //
     // Runtime -> WebCLContext -> createCommandQueue
-    // 
+    //
     describe("createCommandQueue", function() {
 
       var signature = [ 'OptionalWebCLObject', 'OptionalUint' ];
@@ -255,7 +255,7 @@ describe("Runtime", function() {
         supportedProperties = device.getInfo(WebCL.DEVICE_QUEUE_PROPERTIES);
         if (allProperties !== supportedProperties)
           expect('ctx.createCommandQueue(device, allProperties)').toThrow('INVALID_QUEUE_PROPERTIES');
-        else 
+        else
           expect('ctx.createCommandQueue(device, allProperties)').not.toThrow();
       });
 
@@ -264,7 +264,7 @@ describe("Runtime", function() {
     //////////////////////////////////////////////////////////////////////////////
     //
     // Runtime -> WebCLContext -> createProgram
-    // 
+    //
     describe("createProgram", function() {
 
       var signature = [ 'String' ];
@@ -286,7 +286,7 @@ describe("Runtime", function() {
     //////////////////////////////////////////////////////////////////////////////
     //
     // Runtime -> WebCLContext -> createBuffer
-    // 
+    //
     describe("createBuffer", function() {
 
       var signature = [ 'Enum', 'Uint', 'OptionalTypedArray' ];
@@ -322,7 +322,7 @@ describe("Runtime", function() {
     //////////////////////////////////////////////////////////////////////////////
     //
     // Runtime -> WebCLContext -> createImage
-    // 
+    //
     describe("createImage", function() {
 
       var signature = [ 'Enum', 'WebCLObject', 'OptionalTypedArray' ];
@@ -348,7 +348,7 @@ describe("Runtime", function() {
         for (i=0;  i < formats.length; i++) {
           formats[i].width = 7;
           formats[i].height = 11;
-          DEBUG("createImage(" + enumString(formats[i].channelOrder) + " [" + formats[i].channelOrder + "], " + 
+          DEBUG("createImage(" + enumString(formats[i].channelOrder) + " [" + formats[i].channelOrder + "], " +
                 enumString(formats[i].channelType) + " [" + formats[i].channelType + "])");
           expect('ctx.createImage(WebCL.MEM_READ_WRITE, formats[i])').not.toThrow();
         }
@@ -458,7 +458,7 @@ describe("Runtime", function() {
     //////////////////////////////////////////////////////////////////////////////
     //
     // Runtime -> WebCLContext -> createSampler
-    // 
+    //
     describe("createSampler", function() {
 
       var signature = [ 'Boolean', 'Enum', 'Enum' ];
@@ -489,7 +489,7 @@ describe("Runtime", function() {
     //////////////////////////////////////////////////////////////////////////////
     //
     // Runtime -> WebCLContext -> createUserEvent
-    // 
+    //
     describe("createUserEvent", function() {
 
       it("createUserEvent() must work", function() {
@@ -505,13 +505,13 @@ describe("Runtime", function() {
 
   });
 
-  
+
   //////////////////////////////////////////////////////////////////////////////
   //
   // Runtime -> WebCLSampler
-  // 
+  //
   describe("WebCLSampler", function() {
-    
+
     var signature = [ 'Enum' ];
     var valid = [ 'WebCL.SAMPLER_FILTER_MODE' ];
 
@@ -542,15 +542,15 @@ describe("Runtime", function() {
   //////////////////////////////////////////////////////////////////////////////
   //
   // Runtime -> WebCLMemoryObject
-  // 
+  //
   describe("WebCLMemoryObject", function() {
 
     //////////////////////////////////////////////////////////////////////////////
     //
     // Runtime -> WebCLMemoryObject -> WebCLBuffer
-    // 
+    //
     describe("WebCLBuffer", function() {
-      
+
       beforeEach(setup.bind(this, function() {
         ctx = createContext();
         device = ctx.getInfo(WebCL.CONTEXT_DEVICES)[0];
@@ -648,9 +648,9 @@ describe("Runtime", function() {
     //////////////////////////////////////////////////////////////////////////////
     //
     // Runtime -> WebCLMemoryObject -> WebCLImage
-    // 
+    //
     describe("WebCLImage", function() {
-      
+
       var signature = [ 'OptionalEnum' ];
       var valid = [ 'undefined' ];
 
@@ -715,9 +715,9 @@ describe("Runtime", function() {
   //////////////////////////////////////////////////////////////////////////////
   //
   // Runtime -> WebCLProgram
-  // 
+  //
   describe("WebCLProgram", function() {
-    
+
     beforeEach(setup.bind(this, function() {
       ctx = createContext();
       program = ctx.createProgram("kernel void dummy(global uint* buf) { buf[0]=0xdeadbeef; }");
@@ -728,7 +728,7 @@ describe("Runtime", function() {
     //////////////////////////////////////////////////////////////////////////////
     //
     // Runtime -> WebCLProgram -> getInfo
-    // 
+    //
     describe("getInfo", function() {
 
       var signature = [ 'Enum' ];
@@ -756,7 +756,7 @@ describe("Runtime", function() {
     //////////////////////////////////////////////////////////////////////////////
     //
     // Runtime -> WebCLProgram -> build
-    // 
+    //
     describe("build", function() {
 
       var signature = [ 'OptionalArray', 'OptionalString', 'OptionalFunction' ];
@@ -770,7 +770,7 @@ describe("Runtime", function() {
       });
 
       wait("build() must work in asynchronous form", function(done) {
-        program.build([device], null, function() { 
+        program.build([device], null, function() {
           suite.done = true;
           expect('program.getBuildInfo(device, WebCL.PROGRAM_BUILD_STATUS)').toEvalAs('WebCL.BUILD_SUCCESS');
         });
@@ -854,7 +854,7 @@ describe("Runtime", function() {
     //////////////////////////////////////////////////////////////////////////////
     //
     // Runtime -> WebCLProgram -> getBuildInfo
-    // 
+    //
     describe("getBuildInfo", function() {
 
       var signature = [ 'WebCLObject', 'Enum' ];
@@ -899,7 +899,7 @@ describe("Runtime", function() {
         expect('program.getBuildInfo(device, WebCL.PROGRAM_BUILD_LOG).length > 0').toEvalAs(true);
         expect('program.getBuildInfo(device, WebCL.PROGRAM_BUILD_LOG).indexOf("error") !== -1').toEvalAs(true);
       });
-        
+
       it("getBuildInfo(<invalid arguments>) must throw", function() {
         argc('program.getBuildInfo', valid, 'WEBCL_SYNTAX_ERROR');
         fuzz('program.getBuildInfo', signature, valid, invalid, [0], 'INVALID_DEVICE');
@@ -911,7 +911,7 @@ describe("Runtime", function() {
     //////////////////////////////////////////////////////////////////////////////
     //
     // Runtime -> WebCLProgram -> createKernel*
-    // 
+    //
     describe("createKernel[*]", function() {
 
       var signature = [ 'String' ];
@@ -969,9 +969,9 @@ describe("Runtime", function() {
   //////////////////////////////////////////////////////////////////////////////
   //
   // Runtime -> WebCLKernel
-  // 
+  //
   describe("WebCLKernel", function() {
-    
+
     beforeEach(setup.bind(this, function() {
       ctx = createContext();
       devices = ctx.getInfo(WebCL.CONTEXT_DEVICES);
@@ -981,7 +981,7 @@ describe("Runtime", function() {
     //////////////////////////////////////////////////////////////////////////////
     //
     // Runtime -> WebCLKernel -> getInfo
-    // 
+    //
     describe("getInfo", function() {
 
       var signature = [ 'Enum' ];
@@ -1008,13 +1008,13 @@ describe("Runtime", function() {
         argc('kernel.getInfo', valid, 'WEBCL_SYNTAX_ERROR');
         fuzz('kernel.getInfo', signature, valid, null, [0], 'INVALID_VALUE');
       });
-      
+
     });
 
     //////////////////////////////////////////////////////////////////////////////
     //
     // Runtime -> WebCLKernel -> getWorkGroupInfo
-    // 
+    //
     describe("getWorkGroupInfo", function() {
 
       var signature = [ 'OptionalWebCLObject', 'Enum' ];
@@ -1075,7 +1075,7 @@ describe("Runtime", function() {
     //////////////////////////////////////////////////////////////////////////////
     //
     // Runtime -> WebCLKernel -> setArg
-    // 
+    //
     describe("setArg", function() {
 
       beforeEach(setupWithSource.bind(this, 'kernels/argtypes.cl', function(src) {
@@ -1157,7 +1157,7 @@ describe("Runtime", function() {
       it("setArg(<invalid arguments>) must throw", function() {
         var signature = [ 'Uint', 'TypedArray' ];
         var valid = [ '0', 'new Int8Array(1)' ];
-        var invalid = [ '10', '0xdeadbeef' ]; 
+        var invalid = [ '10', '0xdeadbeef' ];
         expect('kernelWithScalarArgs instanceof WebCLKernel').toEvalAs(true);
         argc('kernelWithScalarArgs.setArg', valid, 'WEBCL_SYNTAX_ERROR');
         fuzz("kernelWithScalarArgs.setArg", signature, valid, invalid, [0], "INVALID_ARG_INDEX");
@@ -1307,7 +1307,7 @@ describe("Runtime", function() {
   //////////////////////////////////////////////////////////////////////////////
   //
   // Runtime -> WebCLCommandQueue
-  // 
+  //
   describe("WebCLCommandQueue", function() {
 
     beforeEach(setup.bind(this, function() {
@@ -1320,7 +1320,7 @@ describe("Runtime", function() {
     //////////////////////////////////////////////////////////////////////////////
     //
     // Runtime -> WebCLCommandQueue -> getInfo
-    // 
+    //
     describe("getInfo", function() {
 
       var signature = [ 'Enum' ];
@@ -1346,7 +1346,7 @@ describe("Runtime", function() {
     //////////////////////////////////////////////////////////////////////////////
     //
     // Runtime -> WebCLCommandQueue -> enqueue[Read,Write,Copy]Buffer
-    // 
+    //
     describe("enqueue[*]Buffer", function() {
 
       var signature = [ 'WebCLObject',            // buffer
@@ -1358,7 +1358,7 @@ describe("Runtime", function() {
                         'OptionalWebCLObject'     // event
                       ];
 
-      var valid = [ 'buffer', 
+      var valid = [ 'buffer',
                     'true',
                     '0',
                     'numBytes',
@@ -1474,7 +1474,7 @@ describe("Runtime", function() {
       ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
       describe("enqueueCopyBuffer", function() {
-        
+
         var signature = [ 'WebCLObject',            // srcBuffer
                           'WebCLObject',            // dstBuffer
                           'Uint',                   // srcOffset
@@ -1484,7 +1484,7 @@ describe("Runtime", function() {
                           'OptionalWebCLObject'     // event
                         ];
 
-        var valid = [ 'buffer1', 
+        var valid = [ 'buffer1',
                       'buffer2',
                       '0',
                       '0',
@@ -1516,7 +1516,7 @@ describe("Runtime", function() {
       ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
       describe("enqueueCopyBufferRect", function() {
-        
+
         var signature = [ 'WebCLObject',            // srcBuffer
                           'WebCLObject',            // dstBuffer
                           'Array',                  // srcOrigin
@@ -1530,7 +1530,7 @@ describe("Runtime", function() {
                           'OptionalWebCLObject'     // event
                         ];
 
-        var valid = [ 'buffer1', 
+        var valid = [ 'buffer1',
                       'buffer2',
                       '[0,0,0]',
                       '[0,0,0]',
@@ -1565,7 +1565,7 @@ describe("Runtime", function() {
     //////////////////////////////////////////////////////////////////////////////
     //
     // Runtime -> WebCLCommandQueue -> enqueue[Read,Write]Image
-    // 
+    //
     describe("enqueue[*]Image", function() {
 
       var signature = [ 'WebCLObject',            // image
@@ -1578,7 +1578,7 @@ describe("Runtime", function() {
                         'OptionalWebCLObject'     // event
                       ];
 
-      var valid = [ 'image', 
+      var valid = [ 'image',
                     'true',
                     '[0, 0]',
                     '[W, H]',
@@ -1793,7 +1793,7 @@ describe("Runtime", function() {
       ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
       describe("enqueueCopyImage", function() {
-        
+
         var signature = [ 'WebCLObject',            // srcImage
                           'WebCLObject',            // dstImage
                           'Array',                  // srcOrigin (TODO change spec to allow null)
@@ -1803,7 +1803,7 @@ describe("Runtime", function() {
                           'OptionalWebCLObject'     // event
                         ];
 
-        var valid = [ 'image1', 
+        var valid = [ 'image1',
                       'image2',
                       '[0, 0]',
                       '[0, 0]',
@@ -1857,9 +1857,9 @@ describe("Runtime", function() {
     //////////////////////////////////////////////////////////////////////////////
     //
     // Runtime -> WebCLCommandQueue -> enqueueNDRangeKernel
-    // 
+    //
     describe("enqueueNDRangeKernel", function() {
-      
+
       var signature = [ 'WebCLObject',            // kernel
                         'Uint',                   // workDim
                         'OptionalArray',          // globalOffset
@@ -1869,7 +1869,7 @@ describe("Runtime", function() {
                         'OptionalWebCLObject'     // event
                       ];
 
-      var valid = [ 'kernel', 
+      var valid = [ 'kernel',
                     '1',
                     'null',
                     '[7]',
@@ -2042,9 +2042,9 @@ describe("Runtime", function() {
   //////////////////////////////////////////////////////////////////////////////
   //
   // Runtime -> WebCLEvent
-  // 
+  //
   describe("WebCLEvent", function() {
-    
+
     beforeEach(setup.bind(this, function() {
       ctx = createContext();
       queue = ctx.createCommandQueue(null, WebCL.QUEUE_PROFILING_ENABLE);
@@ -2058,7 +2058,7 @@ describe("Runtime", function() {
     //////////////////////////////////////////////////////////////////////////////
     //
     // Runtime -> WebCLEvent -> Initializing
-    // 
+    //
     describe("Initializing", function() {
 
       it("new WebCLEvent() must work", function() {
@@ -2093,11 +2093,11 @@ describe("Runtime", function() {
     //////////////////////////////////////////////////////////////////////////////
     //
     // Runtime -> WebCLEvent -> Waiting
-    // 
+    //
     describe("Waiting", function() {
 
       var API = {
-        'webcl.waitForEvents' : { 
+        'webcl.waitForEvents' : {
           signature : [ 'Array', 'OptionalFunction' ],
           validArgs : [ '[ emptyEvent ]', 'undefined' ],
         },
@@ -2142,7 +2142,7 @@ describe("Runtime", function() {
         expect('queue.enqueueCopyBufferRect(buffer1, buffer2, [0,0,0], [0,0,0], [32,32,1], 0, 0, 0, 0, [event2])').not.toThrow();
         expect('queue.finish()').not.toThrow();
       });
-      
+
       it("waitForEvents(<invalid arguments>) must throw", function() {
         argc('webcl.waitForEvents', API['webcl.waitForEvents'].validArgs);
         fuzz2('webcl.waitForEvents', API, [0], 'TypeError');
@@ -2166,13 +2166,11 @@ describe("Runtime", function() {
 
       it("enqueueWaitForEvents(<invalid eventWaitList>) must throw", function() {
         userEvent.setStatus(-1);
-        expect('queue.enqueueWaitForEvents([userEvent])').toThrow('EXEC_STATUS_ERROR_FOR_EVENTS_IN_WAIT_LIST');
         expect('queue.enqueueWaitForEvents([emptyEvent])').toThrow('INVALID_EVENT_WAIT_LIST');
+        expect('queue.enqueueWaitForEvents([userEvent])').toThrow('EXEC_STATUS_ERROR_FOR_EVENTS_IN_WAIT_LIST');
         expect('queue.enqueueWaitForEvents([])').toThrow('INVALID_VALUE');
         expect('queue.enqueueWaitForEvents(null)').toThrow('TypeError');
         expect('queue.enqueueWaitForEvents({})').toThrow('TypeError');
-        expect('queue.enqueueMarker(emptyEvent)').not.toThrow();
-        expect('queue.enqueueWaitForEvents([emptyEvent])').not.toThrow();
         expect('queue.finish()').not.toThrow();
       });
 
@@ -2185,7 +2183,7 @@ describe("Runtime", function() {
         expect('queue2.enqueueMarker(eventCtx2)').not.toThrow();
         expect('queue.enqueueWaitForEvents([eventCtx1, eventCtx2])').toThrow('INVALID_CONTEXT');
       });
-      
+
       it("enqueueWriteImage(<invalid event in wait list>) must throw", function() {
         W = 32; H = 32;
         hostPtr = new Uint8Array(W*H*4);
@@ -2199,11 +2197,11 @@ describe("Runtime", function() {
     //////////////////////////////////////////////////////////////////////////////
     //
     // Runtime -> WebCLEvent -> getInfo
-    // 
+    //
     describe("getInfo", function() {
 
       var API = {
-        'event.getInfo' : { 
+        'event.getInfo' : {
           signature : [ 'Enum' ],
           validArgs : [ 'WebCL.EVENT_COMMAND_TYPE' ],
           invalidArgs : [ 'WebCL.PROFILING_COMMAND_SUBMIT' ]
@@ -2248,11 +2246,11 @@ describe("Runtime", function() {
       });
 
     });
-    
+
     //////////////////////////////////////////////////////////////////////////////
     //
     // Runtime -> WebCLEvent -> getProfilingInfo
-    // 
+    //
     describe("getProfilingInfo", function() {
 
       var signature = [ 'Enum' ];
@@ -2304,15 +2302,15 @@ describe("Runtime", function() {
       });
 
     });
-    
+
   });
- 
+
   //////////////////////////////////////////////////////////////////////////////
   //
   // Runtime -> Functionality
-  // 
+  //
   describe("Functionality", function() {
-    
+
     beforeEach(setup.bind(this, function() {
       ctx = createContext();
       device = ctx.getInfo(WebCL.CONTEXT_DEVICES)[0];
