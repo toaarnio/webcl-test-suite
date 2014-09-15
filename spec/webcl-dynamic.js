@@ -782,9 +782,13 @@ describe("Runtime", function() {
         [ '',
           '-D foo',
           '-D foo=0xdeadbeef',
-          '-D VALID_OPTION=0xdeadbeef',
-          '-D VALID_OPTION=0.001',
-          '-D VALID_OPTION=0.001f',
+          '-D VALID_OPTION1=0xdeadbeef',
+          '-D VALID_OPTION2=0.001',
+          '-D VALID_OPTION3=.001f',
+          '-D VALID_OPTION3=-.001f',
+          '-D VALID_OPTION4=0.001e+03f',
+          '-D VALID_OPTION5=-3.001E-4',
+          '-D VALID_OPTION6=-.001E-4f',
           '-cl-opt-disable',
           '-cl-single-precision-constant',
           '-cl-denorms-are-zero',
@@ -822,6 +826,11 @@ describe("Runtime", function() {
         expect('program.build(devices, "-D foo=#include<file.h>")').toThrow('INVALID_BUILD_OPTIONS');
         expect('program.build(devices, "-D foo=")').toThrow('INVALID_BUILD_OPTIONS');
         expect('program.build(devices, "-D =bar")').toThrow('INVALID_BUILD_OPTIONS');
+        expect('program.build(devices, "-D foo bar")').toThrow('INVALID_BUILD_OPTIONS');
+        expect('program.build(devices, "-D foo=0.0.0")').toThrow('INVALID_BUILD_OPTIONS');
+        expect('program.build(devices, "-D foo=0..0")').toThrow('INVALID_BUILD_OPTIONS');
+        expect('program.build(devices, "-D foo=..0")').toThrow('INVALID_BUILD_OPTIONS');
+        expect('program.build(devices, "-D foo=1+bar")').toThrow('INVALID_BUILD_OPTIONS');
       });
 
       it("build() must throw if program source is invalid", function() {
