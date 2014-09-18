@@ -139,15 +139,6 @@ describe("Kernel language", function() {
     //  [pass] Khronos WebCL Validator (2014-09-10)
     //  [pass] Win7 / NVIDIA GPU driver (332.21)
     //  [pass] Win7 / Intel CPU driver (3.0.1.15216)
-    //
-    it("must not allow writing to 'constant' address space", function() {
-      expect('kernels/constantWrite.cl').not.toBuild();
-    });
-
-    // Status:
-    //  [pass] Khronos WebCL Validator (2014-09-10)
-    //  [pass] Win7 / NVIDIA GPU driver (332.21)
-    //  [pass] Win7 / Intel CPU driver (3.0.1.15216)
     //  [FAIL] OSX 10.9.2 / MBP 2008 / All devices
     //
     it("must not allow the 'long long' datatype", function() {
@@ -172,6 +163,16 @@ describe("Kernel language", function() {
     //
     it("must not allow allocating 6 GB of 'private' memory", function() {
       expect('kernels/largeArrayPrivate.cl').not.toBuild();
+    });
+
+    // Status:
+    //  [pass] Khronos WebCL Validator (2014-09-10)
+    //  [pass] Win7 / NVIDIA GPU driver (332.21)
+    //  [pass] Win7 / Intel CPU driver (3.0.1.15216)
+    //  [CRASH] Ubuntu 12.04 / AMD CPU Driver (1214.3)
+    //
+    xit("must not allow writing to 'constant' address space", function() {
+      expect('kernels/constantWrite.cl').not.toBuild();
     });
 
     // Status:

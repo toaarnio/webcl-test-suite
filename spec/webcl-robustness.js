@@ -167,6 +167,18 @@ describe("Robustness", function() {
     expect('kernels/externVariable.cl').not.toBuild();
   });
 
+  // Status:
+  //  [pass] Khronos WebCL Validator (2014-09-10)
+  //  [pass] Win7 / NVIDIA GPU driver (332.21)
+  //  [pass] Win7 / Intel CPU driver (3.0.1.15216)
+  //  [CRASH] Ubuntu 12.04 / AMD CPU Driver (1214.3)
+  //
+  it("must not allow writing to 'constant' address space", function() {
+    var r = confirm("This test case will likely crash your browser on AMD OpenCL driver on Linux . Run anyway?");
+    if (r === false) pending();
+    expect('kernels/constantWrite.cl').not.toBuild();
+  });
+
   // Known failures as of 2014-02-12:
   //  * Win7 / NVIDIA GPU driver (crashes)
   //  * Win7 / Intel CPU driver (freezes)
