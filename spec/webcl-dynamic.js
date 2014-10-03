@@ -777,6 +777,16 @@ describe("Runtime", function() {
         expect('program.getBuildInfo(device, WebCL.PROGRAM_BUILD_STATUS) < 0').toEvalAs(true);
       });
 
+      xit("build() of a complex kernel must work in asynchronous form", function(done) {
+        bigSource = loadSource('kernels/argtypes.cl');
+        bigProgram = ctx.createProgram(bigSource);
+        bigProgram.build([device], null, function() {
+          suite.done = true;
+          expect('program.getBuildInfo(device, WebCL.PROGRAM_BUILD_STATUS)').toEvalAs('WebCL.BUILD_SUCCESS');
+        });
+        expect('program.getBuildInfo(device, WebCL.PROGRAM_BUILD_STATUS) < 0').toEvalAs(true);
+      });
+
       it("build(<valid build options>) must not throw", function() {
         expect('program.build(devices, null)').not.toThrow();
         [ '',
@@ -2325,9 +2335,28 @@ describe("Runtime", function() {
       device = ctx.getInfo(WebCL.CONTEXT_DEVICES)[0];
       queue = ctx.createCommandQueue(device);
 
-      W = 32; H = 32; Ch = 4;
+      W = 7; H = 5; C = 4; numElements = W*H*C;
       descriptorRGBA8 = { width : W, height : H };
       descriptorRGBAf32 = { width : W, height : H, channelOrder : WebCL.RGBA, channelType: WebCL.FLOAT };
+      numBytesRGBA8 = numElements;
+      numBytesRGBAf32 = numElements*4;
+
+      suite.fillRandomBytes = function(array) {
+        var buffer = new DataView(array.buffer);
+        var len = array.byteLength;
+        for (var i=0; i < len; i++) {
+          buffer.setInt8(i, Math.floor(Math.random()*255))
+        }
+      }
+      suite.arrayCompare = function(result, expected) {
+        var len = Math.min(result.length, expected.length);
+        for (var i=0; i < len; i++) {
+          if (isNaN(result[i]) === false) {
+            expect(result[i]).toBeCloseTo(expected[i], 3);
+          }
+        }
+      }
+
     }));
 
     /*
@@ -2360,10 +2389,10 @@ describe("Runtime", function() {
     */
 
     it("enqueueWriteImage + enqueueNDRangeKernel + enqueueReadImage", function() {
-      hostArraySrc = new Float32Array(W*H*Ch);
-      hostArrayDst = new Float32Array(W*H*Ch);
-      fillRandomBytes(hostArraySrc);
-      hostArraySrc[0] = 3.141;
+      hostArraySrc = new Float32Array(W*H*C);
+      hostArrayDst = new Float32Array(W*H*C);
+      suite.fillRandomBytes(hostArraySrc);
+      hostArraySrc[0] = 314159.0; // integers up to 2^24 are exactly representable in float32
       expect('kernels/copyImage.cl').toBuild();
       expect('copyKernel = program.createKernelsInProgram()[0]').not.toThrow();
       expect('srcImage = ctx.createImage(WebCL.MEM_READ_WRITE, descriptorRGBAf32)').not.toThrow();
@@ -2373,25 +2402,31 @@ describe("Runtime", function() {
       expect('queue.enqueueWriteImage(srcImage, true, [0,0], [W,H], 0, hostArraySrc)').not.toThrow();
       expect('queue.enqueueNDRangeKernel(copyKernel, 2, null, [W,H])').not.toThrow();
       expect('queue.enqueueReadImage(dstImage, true, [0,0], [W,H], 0, hostArrayDst)').not.toThrow();
-      expect(hostArraySrc[0]).toBeCloseTo(3.141, 3);
-      expect(hostArrayDst[0]).toBeCloseTo(3.141, 3);
-      arrayCompare(hostArrayDst, hostArraySrc);
+      expect('hostArrayDst[0]').toEvalTo(314159.0);
+      expect('hostArrayDst[1]').toEvalTo(hostArraySrc[1]);
+      expect('hostArrayDst[10]').toEvalTo(hostArraySrc[10]);
+      suite.arrayCompare(hostArrayDst, hostArraySrc);
+    });
 
-      function fillRandomBytes(array) {
-        var buffer = new DataView(array.buffer);
-        var len = array.byteLength;
-        for (var i=0; i < len; i++) {
-          buffer.setInt8(i, Math.floor(Math.random()*255))
-        }
-      }
-      function arrayCompare(arr1, arr2) {
-        var len = Math.min(arr1.length, arr2.length);
-        for (var i=0; i < len; i++) {
-          if (isNaN(arr1[i]) === false) {
-            expect(arr1[i]).toBeCloseTo(arr2[i], 3);
-          }
-        }
-      }
+    it("enqueueWriteBuffer + enqueueNDRangeKernel + enqueueReadBuffer", function() {
+      hostArraySrc = new Float32Array(W*H*C);
+      hostArrayDst = new Float32Array(W*H*C);
+      suite.fillRandomBytes(hostArraySrc);
+      hostArraySrc[0] = 314159.0; // integers up to 2^24 are exactly representable in float32
+      expect('kernels/copyBuffer.cl').toBuild();
+      console.log(program.getInfo(WebCL.PROGRAM_SOURCE));
+      expect('copyKernel = program.createKernelsInProgram()[0]').not.toThrow();
+      expect('srcBuffer = ctx.createBuffer(WebCL.MEM_READ_WRITE, numBytesRGBAf32)').not.toThrow();
+      expect('dstBuffer = ctx.createBuffer(WebCL.MEM_READ_WRITE, numBytesRGBAf32)').not.toThrow();
+      expect('copyKernel.setArg(0, srcBuffer)').not.toThrow();
+      expect('copyKernel.setArg(1, dstBuffer)').not.toThrow();
+      expect('queue.enqueueWriteBuffer(srcBuffer, true, 0, numBytesRGBAf32, hostArraySrc)').not.toThrow();
+      expect('queue.enqueueNDRangeKernel(copyKernel, 1, null, [numElements])').not.toThrow();
+      expect('queue.enqueueReadBuffer(dstBuffer, true, 0, numBytesRGBAf32, hostArrayDst)').not.toThrow();
+      expect('hostArrayDst[0]').toEvalTo(314159.0);
+      expect('hostArrayDst[1]').toEvalTo(hostArraySrc[1]);
+      expect('hostArrayDst[10]').toEvalTo(hostArraySrc[10]);
+      suite.arrayCompare(hostArrayDst, hostArraySrc);
     });
 
   });
