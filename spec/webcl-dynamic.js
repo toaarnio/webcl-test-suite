@@ -2414,7 +2414,6 @@ describe("Runtime", function() {
       suite.fillRandomBytes(hostArraySrc);
       hostArraySrc[0] = 314159.0; // integers up to 2^24 are exactly representable in float32
       expect('kernels/copyBuffer.cl').toBuild();
-      console.log(program.getInfo(WebCL.PROGRAM_SOURCE));
       expect('copyKernel = program.createKernelsInProgram()[0]').not.toThrow();
       expect('srcBuffer = ctx.createBuffer(WebCL.MEM_READ_WRITE, numBytesRGBAf32)').not.toThrow();
       expect('dstBuffer = ctx.createBuffer(WebCL.MEM_READ_WRITE, numBytesRGBAf32)').not.toThrow();
